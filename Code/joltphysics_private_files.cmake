@@ -1,0 +1,26 @@
+
+set(FILES
+    Source/JoltPhysicsModuleInterface.cpp
+    Source/JoltPhysicsModuleInterface.h
+
+    Source/Clients/JoltPhysicsSystemComponent.cpp
+    Source/Clients/JoltPhysicsSystemComponent.h
+
+    Source/Clients/JoltRigidBodyComponent.cpp
+    Source/Clients/JoltRigidBodyComponent.h
+
+#    Source/Clients/RigidBody.cpp
+#    Source/Clients/RigidBody.h
+    
+    Source/System/JoltJobSystemThreaded.cpp
+    Source/System/JoltJobSystemThreaded.h
+    
+    Source/System/SystemInterface.cpp
+    Source/System/SystemInterface.h
+    
+    Source/System/JoltPhysicsSystem.cpp
+    Source/System/JoltPhysicsSystem.h
+    
+#    Source/Configuration/SystemConfiguration.cpp
+#    Source/Configuration/SystemConfiguration.h
+    )
