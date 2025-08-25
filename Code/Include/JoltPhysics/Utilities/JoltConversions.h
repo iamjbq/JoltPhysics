@@ -18,7 +18,7 @@ namespace JPH
     class Quat;
     class Mat44;
     // class RMat44; // Real/double precision
-    enum class EMotionType : uint8;
+    enum class EMotionType;
     enum class EActivation;
 }
 
@@ -28,7 +28,7 @@ namespace JoltPhysics::Conversions
     AZ::Vector3 JoltToAzVector3(const JPH::Vec3& joltVec);
     // AZ::Vector3 JoltToAzVector3(const JPH::RVec3& joltVec);  // Real/double precision
     JPH::Vec3 AzToJoltVec3(const AZ::Vector3& azVec);
-    JPH::RVec3 AzToJoltRVec3(const AZ::Vector3& azVec);
+    // JPH::RVec3 AzToJoltRVec3(const AZ::Vector3& azVec);
 
     // Vector4 conversions
     AZ::Vector4 JoltToAzVector4(const JPH::Vec4& joltVec);
@@ -41,7 +41,7 @@ namespace JoltPhysics::Conversions
     // Transform/Matrix conversions
     AZ::Transform JoltToAzTransform(const JPH::Mat44& joltMatrix);
     // AZ::Transform JoltToAzTransform(const JPH::RMat44& joltMatrix); // Real/double precision
-    JPH::RMat44 AzToJoltRMat44(const AZ::Transform& azTransform);
+    // JPH::RMat44 AzToJoltRMat44(const AZ::Transform& azTransform);
     JPH::Mat44 AzToJoltMat44(const AZ::Transform& azTransform);
 
     // Enum conversions

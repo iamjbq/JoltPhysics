@@ -25,4 +25,10 @@ set(FILES
 #    Source/Configuration/SystemConfiguration.h
 
     Source/Utilities/JoltConversions.cpp
+
+    Source/System/BodyInterface.cpp
+    Source/System/BodyInterface.h
+
+    Source/System/JoltBodyInterface.cpp
+    Source/System/JoltBodyInterface.h
     )

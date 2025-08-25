@@ -13,17 +13,18 @@
 
 #include <Jolt/Jolt.h>
 
-JPH_NAMESPACE_BEGIN
-class ObjectVsBroadPhaseLayerFilter;
-class BroadPhaseLayerInterface;
-class ObjectLayerPairFilter;
-class JobSystem;
-class StateRecorder;
-class TempAllocator;
-class PhysicsStepListener;
-class SoftBodyContactListener;
-class SimShapeFilter;
-JPH_NAMESPACE_END
+namespace JPH
+{
+    class ObjectVsBroadPhaseLayerFilter;
+    class BroadPhaseLayerInterface;
+    class ObjectLayerPairFilter;
+    class JobSystem;
+    class StateRecorder;
+    class TempAllocator;
+    class PhysicsStepListener;
+    class SoftBodyContactListener;
+    class SimShapeFilter;
+}
 
 // #include <Configuration/SystemConfiguration.h>
 
