@@ -41,7 +41,6 @@ namespace JoltPhysics
         static void Reflect(AZ::ReflectContext* context);
 
         virtual void Initialize(JPH::uint inMaxBodies, JPH::uint inNumBodyMutexes, JPH::uint inMaxBodyPairs, JPH::uint inMaxContactConstraints, const JPH::BroadPhaseLayerInterface& inBroadPhaseLayerInterface, const JPH::ObjectVsBroadPhaseLayerFilter& inObjectVsBroadPhaseLayerFilter, const JPH::ObjectLayerPairFilter& inObjectLayerPairFilter) = 0;
-        virtual void Update();
 
     protected:
         // Just to remind me I may need to create event callbacks for Jolt too, or maybe I can use AzPhysics ones
