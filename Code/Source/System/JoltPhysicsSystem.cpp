@@ -3,18 +3,16 @@
 
 namespace JoltPhysics
 {
+    AZ_CLASS_ALLOCATOR_IMPL(JoltPhysicsSystem, AZ::SystemAllocator);
+
     JoltPhysicsSystem::JoltPhysicsSystem()
     {
         m_physicsSystem = AZStd::make_unique<JPH::PhysicsSystem>();
     }
 
-    JoltPhysicsSystem::~JoltPhysicsSystem()
+    void JoltPhysicsSystem::Initialize(JPH::uint inMaxBodies, JPH::uint inNumBodyMutexes, JPH::uint inMaxBodyPairs, JPH::uint inMaxContactConstraints, const JPH::BroadPhaseLayerInterface& inBroadPhaseLayerInterface, const JPH::ObjectVsBroadPhaseLayerFilter& inObjectVsBroadPhaseLayerFilter, const JPH::ObjectLayerPairFilter& inObjectLayerPairFilter)
     {
-    }
-
-    void JoltPhysicsSystem::Initialize([[maybe_unused]]JPH::uint inMaxBodies, [[maybe_unused]]JPH::uint inNumBodyMutexes, [[maybe_unused]]JPH::uint inMaxBodyPairs, [[maybe_unused]]JPH::uint inMaxContactConstraints, [[maybe_unused]]const JPH::BroadPhaseLayerInterface& inBroadPhaseLayerInterface, [[maybe_unused]]const JPH::ObjectVsBroadPhaseLayerFilter& inObjectVsBroadPhaseLayerFilter, [[maybe_unused]]const JPH::ObjectLayerPairFilter& inObjectLayerPairFilter)
-    {
-        // m_physicsSystem->Init(inMaxBodies, inNumBodyMutexes, inMaxBodyPairs, inMaxContactConstraints, inBroadPhaseLayerInterface, inObjectVsBroadPhaseLayerFilter, inObjectLayerPairFilter);
+        m_physicsSystem->Init(inMaxBodies, inNumBodyMutexes, inMaxBodyPairs, inMaxContactConstraints, inBroadPhaseLayerInterface, inObjectVsBroadPhaseLayerFilter, inObjectLayerPairFilter);
 
         m_state = State::Initialized;
     }
@@ -22,6 +20,11 @@ namespace JoltPhysics
     const JPH::BodyInterface& JoltPhysicsSystem::GetBodyInterface() const
     {
         return m_physicsSystem->GetBodyInterface();
+    }
+
+    AZ::Debug::PerformanceCollector* JoltPhysicsSystem::GetPerformanceCollector() const
+    {
+        return m_performanceCollector.get();
     }
 
 

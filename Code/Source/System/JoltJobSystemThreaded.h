@@ -20,25 +20,25 @@ namespace JoltPhysics
 
         JoltJobSystemThreaded(JPH::uint inMaxJobs, JPH::uint inMaxBarriers, int inNumThreads = -1);
         JoltJobSystemThreaded() = default;
-        virtual ~JoltJobSystemThreaded() override;
+        ~JoltJobSystemThreaded() override;
 
         void Init(JPH::uint inMaxJobs, JPH::uint inMaxBarriers, int inNumThreads = -1);
         
-        virtual int GetMaxConcurrency() const override { return static_cast<int>(m_numWorkerThreads); }
+        int GetMaxConcurrency() const override { return static_cast<int>(m_numWorkerThreads); }
         
         // Creates a Job and returns a prepared JobHandle for adding to a Barrier for execution.
         // If the job has no dependencies, it will be immediately queued for execution using O3DE's job system.
         // Created Jobs are tracked between Jolt's internal Barrier system and O3DE's job system to prevent double execution.
-        virtual JobHandle CreateJob(const char* inName, JPH::ColorArg inColor, const JobFunction& inJobFunction, JPH::uint32 inNumDependencies) override;
+        JobHandle CreateJob(const char* inName, JPH::ColorArg inColor, const JobFunction& inJobFunction, JPH::uint32 inNumDependencies) override;
 
         // Queues a Job for immediate execution using O3DE's job system.
-        virtual void QueueJob(Job* inJob) override;
+        void QueueJob(Job* inJob) override;
 
         // Queues multiple Jobs for immediate execution using O3DE's job system.
-        virtual void QueueJobs(Job** inJobs, JPH::uint inNumJobs) override;
+        void QueueJobs(Job** inJobs, JPH::uint inNumJobs) override;
 
         // Removes Job from the job pointer array. 
-        virtual void FreeJob(Job* inJob) override;
+        void FreeJob(Job* inJob) override;
 
     protected:
         class JoltJob : public AZ::Job
@@ -46,7 +46,7 @@ namespace JoltPhysics
         public:
             AZ_CLASS_ALLOCATOR(JoltJob, AZ::ThreadPoolAllocator);
 
-            JoltJob(JobHandle& inJobHandle, AZ::JobContext* context = nullptr);
+            explicit JoltJob(JobHandle& inJobHandle, AZ::JobContext* context = nullptr);
             ~JoltJob() override = default;
 
         protected:
@@ -64,7 +64,7 @@ namespace JoltPhysics
         using AvailableJobs = JPH::FixedSizeFreeList<Job>;
         AvailableJobs mJobs;
         
-        unsigned int m_numWorkerThreads;
+        unsigned int m_numWorkerThreads = 0;
         
         AZStd::shared_ptr<AZ::JobManager> m_jobManager;
         AZStd::shared_ptr<AZ::JobContext> m_jobContext;

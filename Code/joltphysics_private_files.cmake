@@ -23,4 +23,6 @@ set(FILES
     
 #    Source/Configuration/SystemConfiguration.cpp
 #    Source/Configuration/SystemConfiguration.h
+
+    Source/Utilities/JoltConversions.cpp
     )

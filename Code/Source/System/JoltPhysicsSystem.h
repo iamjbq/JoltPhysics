@@ -12,7 +12,7 @@
 
 namespace JoltPhysics
 {
-    class JoltPhysicsSystem
+    class JoltPhysicsSystem final
         : public AZ::Interface<JoltPhysics::SystemInterface>::Registrar
     {
     public:
@@ -20,22 +20,13 @@ namespace JoltPhysics
         AZ_RTTI(JoltPhysicsSystem, "{A843AAB0-3604-4DB9-B7B1-378E80869DF9}", JoltPhysics::SystemInterface);
 
         JoltPhysicsSystem();
-        virtual ~JoltPhysicsSystem();
+        ~JoltPhysicsSystem() override = default;
 
         // SystemInterface interface ...
         void Initialize(JPH::uint inMaxBodies, JPH::uint inNumBodyMutexes, JPH::uint inMaxBodyPairs, JPH::uint inMaxContactConstraints, const JPH::BroadPhaseLayerInterface& inBroadPhaseLayerInterface, const JPH::ObjectVsBroadPhaseLayerFilter& inObjectVsBroadPhaseLayerFilter, const JPH::ObjectLayerPairFilter& inObjectLayerPairFilter) override;
         [[nodiscard]] const JPH::BodyInterface& GetBodyInterface() const;
-        
-        // TODO: Putting these here to strategize about building config settings
-        ////////////////////////////////////////////////////////////////////////////
-        //! Accessor to get the current PhysX configuration data.
-        // const PhysXSystemConfiguration& GetPhysXConfiguration() const;
 
-        //! Accessor to get the Settings Registry Manager.
-        // const PhysXSettingsRegistryManager& GetSettingsRegistryManager() const;
-        ////////////////////////////////////////////////////////////////////////////
-        
-        // AZ::Debug::PerformanceCollector* GetPerformanceCollector();
+        [[nodiscard]] AZ::Debug::PerformanceCollector* GetPerformanceCollector() const;
 
     private:
         AZStd::unique_ptr<JPH::PhysicsSystem> m_physicsSystem;
