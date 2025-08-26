@@ -31,4 +31,7 @@ set(FILES
 
     Source/System/JoltBodyInterface.cpp
     Source/System/JoltBodyInterface.h
+
+    Source/System/WorldSimulationOwner.cpp
+    Source/System/WorldSimulationOwner.h
     )

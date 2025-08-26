@@ -9,7 +9,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 
 #include <System/SystemInterface.h>
-
+// TODO: make a separate physics system interface class and leave PhysicsSystem for the world sim owner
 namespace JoltPhysics
 {
     class JoltPhysicsSystem final
@@ -44,14 +44,6 @@ namespace JoltPhysics
         };
         State m_state = State::Uninitialized;
 
-        // TODO: Could also be good guidance for anything with a Jolt equivalent
-        ////////////////////////////////////////////////////////////////////////////
-        // Debug::PhysXDebug m_physXDebug; //! Handler for the PhysXDebug Interface.
-        // AZStd::unique_ptr<PhysXSettingsRegistryManager> m_registryManager; //! Handles all settings registry interactions.
-        // PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
-        // PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
-        ////////////////////////////////////////////////////////////////////////////
-
         static constexpr AZStd::string_view PerformanceLogCategory = "Jolt Physics";
         static constexpr AZStd::string_view PerformanceSpecPhysXSimulationTime = "Jolt Simulation Time";
 
@@ -60,5 +52,8 @@ namespace JoltPhysics
 
     //! Helper function for getting the Jolt System interface from inside the Jolt Physics gem.
     JoltPhysicsSystem* GetInternalJoltPhysicsSystem();
+
+    //! Ease of use type for storing a list of System points
+    using SystemList = AZStd::vector<AZStd::unique_ptr<JoltPhysicsSystem>>;
 }
 
