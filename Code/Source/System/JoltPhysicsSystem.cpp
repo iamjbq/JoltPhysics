@@ -5,7 +5,7 @@ namespace JoltPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(JoltPhysicsSystem, AZ::SystemAllocator);
 
-    JoltPhysicsSystem::JoltPhysicsSystem()
+    JoltPhysicsSystem::JoltPhysicsSystem([[maybe_unused]] JoltPhysics::SystemConfiguration inConfig, [[maybe_unused]] SystemHandle inHandle)
     {
         m_physicsSystem = AZStd::make_unique<JPH::PhysicsSystem>();
     }

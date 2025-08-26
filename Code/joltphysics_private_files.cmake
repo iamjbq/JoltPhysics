@@ -21,8 +21,8 @@ set(FILES
     Source/System/JoltPhysicsSystem.cpp
     Source/System/JoltPhysicsSystem.h
     
-#    Source/Configuration/SystemConfiguration.cpp
-#    Source/Configuration/SystemConfiguration.h
+    Source/Configuration/SystemConfiguration.cpp
+    Source/Configuration/SystemConfiguration.h
 
     Source/Utilities/JoltConversions.cpp
 

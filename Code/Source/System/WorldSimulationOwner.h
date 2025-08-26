@@ -21,6 +21,10 @@ namespace JoltPhysics
         WorldSimulationOwner();
         virtual ~WorldSimulationOwner();
 
+        //WorldSimulationInterface
+        void Initialize();
+        SystemHandle AddPhysicsSystem(const SystemConfiguration& config);
+
         const unsigned int AllocationArenaSize = 256 * 1024 * 1024;
 
         // TODO: Actually not sure yet if these need to be PER system or for one world

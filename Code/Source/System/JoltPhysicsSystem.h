@@ -7,8 +7,12 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
-
 #include <System/SystemInterface.h>
+
+#include "Configuration/SystemConfiguration.h"
+#include "JoltPhysics/JoltPhysicsTypes.h"
+
+
 // TODO: make a separate physics system interface class and leave PhysicsSystem for the world sim owner
 namespace JoltPhysics
 {
@@ -19,7 +23,7 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(JoltPhysicsSystem, "{A843AAB0-3604-4DB9-B7B1-378E80869DF9}", JoltPhysics::SystemInterface);
 
-        JoltPhysicsSystem();
+        JoltPhysicsSystem(JoltPhysics::SystemConfiguration inConfig, SystemHandle inHandle);
         ~JoltPhysicsSystem() override = default;
 
         // SystemInterface interface ...
