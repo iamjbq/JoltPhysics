@@ -1,10 +1,14 @@
 ﻿
 #pragma once
 
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+
+#include <JoltPhysics/JoltPhysicsTypes.h>
 
 // #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 //
@@ -48,6 +52,9 @@ namespace JoltPhysics
 
         AZStd::string m_systemName;
 
+        AZ::Aabb m_worldBounds = AZ::Aabb::CreateFromMinMax(-AZ::Vector3(1000.f, 1000.f, 1000.f), AZ::Vector3(1000.f, 1000.f, 1000.f));
+        AZ::Vector3 m_gravity = JoltPhysics::DefaultGravity;
+
         static constexpr float DefaultFixedTimestep = 0.0166667f; //! Value represents 1/60th or 60 FPS.
 
         float m_maxTimestep = 0.1f; //!< Maximum fixed timestep in seconds to run the physics update (10FPS).
@@ -58,8 +65,8 @@ namespace JoltPhysics
 
     private:
         // helpers for edit context
-        // AZ::u32 OnMaxTimeStepChanged();
-        // float GetFixedTimeStepMax() const;
+        AZ::u32 OnMaxTimeStepChanged();
+        float GetFixedTimeStepMax() const;
 
         // Padding with a 16 byte aligned structure to make SystemConfiguration aligned to 16 bytes too.
         // Without this, SystemConfiguration generates warnings everywhere it is used indicating that
@@ -73,6 +80,6 @@ namespace JoltPhysics
         AZ_POP_DISABLE_WARNING    
     };
     //! Alias for a list of SceneConfiguration objects, used for the creation of multiple Scenes at once.
-    // using SystemConfigurationList = AZStd::vector<SystemConfiguration>;
+    using SystemConfigurationList = AZStd::vector<SystemConfiguration>;
 }
 

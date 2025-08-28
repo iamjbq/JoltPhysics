@@ -27,7 +27,8 @@ namespace JoltPhysics
 
         const unsigned int AllocationArenaSize = 256 * 1024 * 1024;
 
-        // TODO: Actually not sure yet if these need to be PER system or for one world
+        // All systems can share these as long as they are updated consecutively.
+        // Considering moving to an O3DE allocator in the future if any benefits
         AZStd::shared_ptr<JPH::TempAllocatorImpl> m_allocator;
         AZStd::shared_ptr<JoltJobSystemThreaded> m_jobSystem;
 
