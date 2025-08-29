@@ -1,0 +1,20 @@
+
+#pragma once
+
+#include <System/SystemInterface.h>
+
+namespace JoltPhysics
+{
+    class JoltPhysicsSystemInterface
+        : public AZ::Interface<JoltPhysics::SystemInterface>::Registrar
+    {
+        public:
+            explicit JoltPhysicsSystemInterface();
+
+            // SystemInterface interface ...
+            SystemHandle GetSystemHandle(const AZStd::string& SystemName) override;
+            System* GetSystem(SystemHandle handle) override;
+            void StartUpdate(SystemHandle SystemHandle, float deltatime) override;
+            void FinishUpdate(SystemHandle SystemHandle) override;
+    };
+}

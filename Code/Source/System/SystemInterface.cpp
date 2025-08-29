@@ -6,28 +6,38 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Interface/Interface.h>
 
+#include "Configuration/SystemConfiguration.h"
+
 namespace JoltPhysics
 {
-    void SystemInterface::Reflect(AZ::ReflectContext* context)
+    AZ_CLASS_ALLOCATOR_IMPL(System, AZ::SystemAllocator)
+
+    void System::Reflect(AZ::ReflectContext* context)
     {
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<SystemInterface>("PhysicsSystemInterface")
+            behaviorContext->Class<System>("PhysicsSystem")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
-                // ->Method("GetSceneHandle", &SystemInterface::GetSceneHandle)
-                // ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                // ->Method("GetScene", &SystemInterface::GetScene)
-                // ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                // ->Method("GetOnGravityChangeEvent", getOnGravityChange)
+                //     ->Attribute(AZ::Script::Attributes::AzEventDescription, gravityChangedEventDescription)
+                // ->Method("QuerySystem", [](System* self, const SystemQueryRequest* request)
+                // {
+                //     return self->QuerySystem(request);
+                // })
                 ;
-        
-            behaviorContext->Method(
-                    "GetPhysicsSystem",
-                    []()
-                    {
-                        return AZ::Interface<JoltPhysics::SystemInterface>::Get();
-                    });
         }
+    }
+
+    System::System(const SystemConfiguration& config)
+        : m_id(config.m_systemName)
+    {
+
+    }
+
+    const AZ::Crc32& System::GetId() const
+    {
+        return m_id;
     }
 }

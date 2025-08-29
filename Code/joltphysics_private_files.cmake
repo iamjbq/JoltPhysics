@@ -20,6 +20,9 @@ set(FILES
     
     Source/System/JoltPhysicsSystem.cpp
     Source/System/JoltPhysicsSystem.h
+
+    Source/System/JoltPhysicsSystemInterface.cpp
+    Source/System/JoltPhysicsSystemInterface.h
     
     Source/Configuration/SystemConfiguration.cpp
     Source/Configuration/SystemConfiguration.h

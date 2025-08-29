@@ -16,24 +16,27 @@
 // TODO: make a separate physics system interface class and leave PhysicsSystem for the world sim owner
 namespace JoltPhysics
 {
-    class JoltPhysicsSystem final
-        : public AZ::Interface<JoltPhysics::SystemInterface>::Registrar
+    class JoltPhysicsSystem
+        : public JoltPhysics::System
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(JoltPhysicsSystem, "{A843AAB0-3604-4DB9-B7B1-378E80869DF9}", JoltPhysics::SystemInterface);
+        AZ_RTTI(JoltPhysicsSystem, "{A843AAB0-3604-4DB9-B7B1-378E80869DF9}", JoltPhysics::System);
 
-        JoltPhysicsSystem(JoltPhysics::SystemConfiguration inConfig, SystemHandle inHandle);
-        ~JoltPhysicsSystem() override = default;
+        explicit JoltPhysicsSystem(const JoltPhysics::SystemConfiguration& inConfig, const SystemHandle& inHandle);
+        ~JoltPhysicsSystem();
 
-        // SystemInterface interface ...
-        void Initialize(JPH::uint inMaxBodies, JPH::uint inNumBodyMutexes, JPH::uint inMaxBodyPairs, JPH::uint inMaxContactConstraints, const JPH::BroadPhaseLayerInterface& inBroadPhaseLayerInterface, const JPH::ObjectVsBroadPhaseLayerFilter& inObjectVsBroadPhaseLayerFilter, const JPH::ObjectLayerPairFilter& inObjectLayerPairFilter) override;
+        void StartUpdate(float deltatime) override;
+        void FinishUpdate() override;
+
+        // void Initialize(JPH::uint inMaxBodies, JPH::uint inNumBodyMutexes, JPH::uint inMaxBodyPairs, JPH::uint inMaxContactConstraints, const JPH::BroadPhaseLayerInterface& inBroadPhaseLayerInterface, const JPH::ObjectVsBroadPhaseLayerFilter& inObjectVsBroadPhaseLayerFilter, const JPH::ObjectLayerPairFilter& inObjectLayerPairFilter) override;
         [[nodiscard]] const JPH::BodyInterface& GetBodyInterface() const;
-
         [[nodiscard]] AZ::Debug::PerformanceCollector* GetPerformanceCollector() const;
 
     private:
         AZStd::unique_ptr<JPH::PhysicsSystem> m_physicsSystem;
+        JoltPhysics::SystemConfiguration m_config;
+        JoltPhysics::SystemHandle m_handle;
         // JoltJobSystemThreaded* m_jobSystem;
         // JPH::TempAllocatorImpl* m_tempAllocator;
         
@@ -56,8 +59,5 @@ namespace JoltPhysics
 
     //! Helper function for getting the Jolt System interface from inside the Jolt Physics gem.
     JoltPhysicsSystem* GetInternalJoltPhysicsSystem();
-
-    //! Ease of use type for storing a list of System points
-    using SystemList = AZStd::vector<AZStd::unique_ptr<JoltPhysicsSystem>>;
 }
 
