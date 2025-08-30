@@ -43,7 +43,7 @@ namespace JoltPhysics
 
         const SystemHandle systemHandle(AZ::Crc32(config.m_systemName), freeIndex);
 
-        m_systemList[freeIndex] = AZStd::make_unique<JoltPhysicsSystem>(config, systemHandle);
+        m_systemList[freeIndex] = AZStd::make_unique<JoltSystem>(config, systemHandle);
 
         // m_systemAddedEvent.Signal(systemHandle);
 

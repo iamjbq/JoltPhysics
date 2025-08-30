@@ -17,9 +17,9 @@ set(FILES
     
     Source/System/SystemInterface.cpp
     Source/System/SystemInterface.h
-    
-    Source/System/JoltPhysicsSystem.cpp
-    Source/System/JoltPhysicsSystem.h
+
+    Source/System/JoltSystem.cpp
+    Source/System/JoltSystem.h
 
     Source/System/JoltPhysicsSystemInterface.cpp
     Source/System/JoltPhysicsSystemInterface.h

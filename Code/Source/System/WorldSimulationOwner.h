@@ -5,7 +5,8 @@
 
 #include <JoltPhysics/JoltPhysicsTypes.h>
 #include <System/JoltJobSystemThreaded.h>
-#include <System/JoltPhysicsSystem.h>
+#include <System/JoltSystem.h>
+
 #include <System/WorldSimulationInterface.h>
 
 namespace JPH

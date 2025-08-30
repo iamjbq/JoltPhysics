@@ -18,15 +18,15 @@ namespace JoltPhysics
 {
     class JoltJobSystemThreaded;
 
-    class JoltPhysicsSystem
+    class JoltSystem
         : public JoltPhysics::System
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(JoltPhysicsSystem, "{A843AAB0-3604-4DB9-B7B1-378E80869DF9}", JoltPhysics::System);
+        AZ_RTTI(JoltSystem, "{A843AAB0-3604-4DB9-B7B1-378E80869DF9}", JoltPhysics::System);
 
-        explicit JoltPhysicsSystem(const JoltPhysics::SystemConfiguration& inConfig, const SystemHandle& inHandle);
-        ~JoltPhysicsSystem();
+        explicit JoltSystem(const JoltPhysics::SystemConfiguration& inConfig, const SystemHandle& inHandle);
+        ~JoltSystem();
 
         void StartUpdate(float deltatime) override;
         void FinishUpdate() override;
@@ -62,6 +62,6 @@ namespace JoltPhysics
     };
 
     //! Helper function for getting the Jolt System interface from inside the Jolt Physics gem.
-    JoltPhysicsSystem* GetInternalJoltPhysicsSystem();
+    JoltSystem* GetInternalJoltPhysicsSystem();
 }
 
