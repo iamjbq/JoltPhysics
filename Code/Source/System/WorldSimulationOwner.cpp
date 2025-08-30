@@ -18,6 +18,25 @@ namespace JoltPhysics
 
     }
 
+    void WorldSimulationOwner::Update()
+    {
+        // TODO: figure out where system config lives and pass in config.m_timeStep
+        auto updateSystems = [this](float timeStep)
+        {
+            for (auto& systemPtr : m_systemList)
+            {
+                if (systemPtr != nullptr)
+                {
+                    systemPtr->StartUpdate(timeStep);
+                    systemPtr->FinishUpdate();
+                }
+            }
+        };
+
+        // TODO: need more here to track accumulated time, etc. See PhysXSystem.cpp Simulate() function
+        updateSystems(0.0166667f);
+    }
+
     SystemHandle WorldSimulationOwner::AddPhysicsSystem(const SystemConfiguration& config)
     {
         SystemIndex freeIndex = m_freeSystemSlots.front();

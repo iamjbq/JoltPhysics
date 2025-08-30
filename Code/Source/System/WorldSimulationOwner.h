@@ -27,6 +27,7 @@ namespace JoltPhysics
 
             //WorldSimulationInterface
             void Initialize() override;
+            void Update() override;
             SystemHandle AddPhysicsSystem(const SystemConfiguration& config) override;
 
         private:
@@ -58,6 +59,7 @@ namespace JoltPhysics
             const unsigned int m_maxContactConstraints = 10240;
 
             JoltPhysics::SystemList m_systemList;
+
             // When a system is removed cache its index here to be used for the next
             // Ideally we won't be willy-nilly creating and destroying systems though
             AZStd::queue<JoltPhysics::SystemIndex> m_freeSystemSlots;

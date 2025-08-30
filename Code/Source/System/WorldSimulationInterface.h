@@ -23,6 +23,7 @@ namespace JoltPhysics
             static void Reflect(AZ::ReflectContext* context);
 
             virtual void Initialize() = 0;
+            virtual void Update() = 0;
             virtual SystemHandle AddPhysicsSystem(const SystemConfiguration& config) = 0;
     };
 }

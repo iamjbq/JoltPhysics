@@ -18,7 +18,7 @@ namespace JoltPhysics
 
     }
 
-    void JoltPhysicsSystem::StartUpdate([[maybe_unused]] float deltatime)
+    void JoltPhysicsSystem::StartUpdate(float deltatime)
     {
         m_physicsSystem->Update(deltatime, m_collisionSteps, m_tempAllocator, m_jobSystem);
     }
