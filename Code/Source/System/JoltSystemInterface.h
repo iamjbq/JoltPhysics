@@ -7,11 +7,11 @@
 
 namespace JoltPhysics
 {
-    class JoltPhysicsSystemInterface
+    class JoltSystemInterface
         : public AZ::Interface<JoltPhysics::SystemInterface>::Registrar
     {
         public:
-            explicit JoltPhysicsSystemInterface();
+            explicit JoltSystemInterface();
 
             // SystemInterface interface ...
             SystemHandle GetSystemHandle(const AZStd::string& SystemName) override;
