@@ -18,6 +18,16 @@ namespace JoltPhysics
 
     }
 
+    void JoltPhysicsSystem::StartUpdate([[maybe_unused]] float deltatime)
+    {
+        m_physicsSystem->Update(deltatime, m_collisionSteps, m_tempAllocator, m_jobSystem);
+    }
+
+    void JoltPhysicsSystem::FinishUpdate()
+    {
+
+    }
+
     // void JoltPhysicsSystem::Initialize(JPH::uint inMaxBodies, JPH::uint inNumBodyMutexes, JPH::uint inMaxBodyPairs, JPH::uint inMaxContactConstraints, const JPH::BroadPhaseLayerInterface& inBroadPhaseLayerInterface, const JPH::ObjectVsBroadPhaseLayerFilter& inObjectVsBroadPhaseLayerFilter, const JPH::ObjectLayerPairFilter& inObjectLayerPairFilter)
     // {
     //     m_physicsSystem->Init(inMaxBodies, inNumBodyMutexes, inMaxBodyPairs, inMaxContactConstraints, inBroadPhaseLayerInterface, inObjectVsBroadPhaseLayerFilter, inObjectLayerPairFilter);

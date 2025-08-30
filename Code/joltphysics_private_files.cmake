@@ -37,4 +37,7 @@ set(FILES
 
     Source/System/WorldSimulationOwner.cpp
     Source/System/WorldSimulationOwner.h
+
+    Source/System/WorldSimulationInterface.cpp
+    Source/System/WorldSimulationInterface.h
     )

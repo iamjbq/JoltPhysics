@@ -3,6 +3,16 @@
 
 namespace JoltPhysics
 {
+    WorldSimulationOwner::WorldSimulationOwner()
+    {
+
+    }
+
+    WorldSimulationOwner::~WorldSimulationOwner()
+    {
+
+    }
+
     void WorldSimulationOwner::Initialize()
     {
 

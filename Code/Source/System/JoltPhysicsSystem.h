@@ -16,6 +16,8 @@
 // TODO: make a separate physics system interface class and leave PhysicsSystem for the world sim owner
 namespace JoltPhysics
 {
+    class JoltJobSystemThreaded;
+
     class JoltPhysicsSystem
         : public JoltPhysics::System
     {
@@ -37,12 +39,14 @@ namespace JoltPhysics
         AZStd::unique_ptr<JPH::PhysicsSystem> m_physicsSystem;
         JoltPhysics::SystemConfiguration m_config;
         JoltPhysics::SystemHandle m_handle;
-        // JoltJobSystemThreaded* m_jobSystem;
-        // JPH::TempAllocatorImpl* m_tempAllocator;
+        JPH::JobSystem* m_jobSystem;
+        JPH::TempAllocatorImpl* m_tempAllocator;
+
+        int m_collisionSteps = 1;
         
         float m_accumulatedTime = 0.0f;
 
-        // This seems like it could be useful from PhysX. We'll see if it applies to Jolt in the same way
+        // TODO: move this to worldSimulationOwner
         enum class State : AZ::u8
         {
             Uninitialized = 0,

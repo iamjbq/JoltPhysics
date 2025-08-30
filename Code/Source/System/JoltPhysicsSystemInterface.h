@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <AzCore/Interface/Interface.h>
+
 #include <System/SystemInterface.h>
 
 namespace JoltPhysics
