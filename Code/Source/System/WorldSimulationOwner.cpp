@@ -37,7 +37,7 @@ namespace JoltPhysics
         inDeltaTime = AZ::GetClamp(inDeltaTime, 0.0f, 0.1f);
         float tickTime = inDeltaTime;
 
-        if (tempFixedTimeStep > 0.0f) // use fixed time step
+        if constexpr (tempFixedTimeStep > 0.0f) // use fixed time step
         {
             m_accumulatedTime += tickTime;
             //divide accumulated time by the fixed step and floor it to get the number of steps that would occur. Then multiply by fixedTimeStep to get the total executed time.
