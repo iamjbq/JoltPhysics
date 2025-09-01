@@ -50,7 +50,15 @@ namespace JoltPhysics
         ////////////////////////////////////////////////////////////////////////
 
     private:
-        WorldSimulationOwner* m_worldSimulationOwner;
+        WorldSimulationOwner* m_worldSimulationOwner; // TODO: set this up in Init()
+        bool m_isTickingPhysics = false;
+        // AzPhysics::SystemEvents::OnInitializedEvent::Handler m_onSystemInitializedHandler;
+        // AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_onSystemConfigChangedHandler;
+
+        // Not sure if this is needed for Jolt implementation, but maybe a good switch to have
+        void EnableAutoManagedPhysicsTick(bool shouldTick);
+
+        void ActivateWorldSimulation();
     };
 
 } // namespace JoltPhysics

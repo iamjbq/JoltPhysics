@@ -55,7 +55,8 @@ namespace JoltPhysics
     void JoltPhysicsSystemComponent::Activate()
     {
         JoltPhysicsRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+
+        ActivateWorldSimulation();
     }
 
     void JoltPhysicsSystemComponent::Deactivate()
@@ -75,5 +76,28 @@ namespace JoltPhysics
     int JoltPhysicsSystemComponent::GetTickOrder()
     {
         return AZ::ComponentTickBus::TICK_PHYSICS_SYSTEM;
+    }
+
+    void JoltPhysicsSystemComponent::EnableAutoManagedPhysicsTick(bool shouldTick)
+    {
+        if (shouldTick && !m_isTickingPhysics)
+        {
+            AZ::TickBus::Handler::BusConnect();
+        }
+        else if (!shouldTick && m_isTickingPhysics)
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+        m_isTickingPhysics = shouldTick;
+    }
+
+    void JoltPhysicsSystemComponent::ActivateWorldSimulation()
+    {
+        m_worldSimulationOwner = GetWorldSimulationOwner();
+
+        if (m_worldSimulationOwner)
+        {
+            m_worldSimulationOwner->Initialize();
+        }
     }
 } // namespace JoltPhysics

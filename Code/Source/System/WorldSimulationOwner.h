@@ -69,4 +69,6 @@ namespace JoltPhysics
             AZStd::queue<JoltPhysics::SystemIndex> m_freeSystemSlots;
 
     };
+    // Helper function to get this from the system component
+    WorldSimulationOwner* GetWorldSimulationOwner();
 } // JoltPhysics

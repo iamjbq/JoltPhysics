@@ -70,4 +70,9 @@ namespace JoltPhysics
 
         return systemHandle;
     }
+
+    WorldSimulationOwner* GetWorldSimulationOwner()
+    {
+        return azdynamic_cast<WorldSimulationOwner*>(AZ::Interface<JoltPhysics::WorldSimulationInterface>::Get());
+    }
 } // JoltPhysics

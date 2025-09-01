@@ -21,8 +21,8 @@ set(FILES
     Source/System/JoltSystem.cpp
     Source/System/JoltSystem.h
 
-        Source/System/JoltSystemInterface.cpp
-        Source/System/JoltSystemInterface.h
+    Source/System/JoltSystemInterface.cpp
+    Source/System/JoltSystemInterface.h
     
     Source/Configuration/SystemConfiguration.cpp
     Source/Configuration/SystemConfiguration.h
@@ -40,4 +40,7 @@ set(FILES
 
     Source/System/WorldSimulationInterface.cpp
     Source/System/WorldSimulationInterface.h
+
+    Source/Configuration/WorldSimulationConfiguration.cpp
+
     )
