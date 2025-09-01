@@ -5,6 +5,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include "System/WorldSimulationOwner.h"
+
 namespace JoltPhysics
 {
     AZ_COMPONENT_IMPL(JoltPhysicsSystemComponent, "JoltPhysicsSystemComponent",
@@ -62,8 +64,16 @@ namespace JoltPhysics
         JoltPhysicsRequestBus::Handler::BusDisconnect();
     }
 
-    void JoltPhysicsSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void JoltPhysicsSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        if (m_worldSimulationOwner)
+        {
+            m_worldSimulationOwner->Update(deltaTime);
+        }
     }
 
+    int JoltPhysicsSystemComponent::GetTickOrder()
+    {
+        return AZ::ComponentTickBus::TICK_PHYSICS_SYSTEM;
+    }
 } // namespace JoltPhysics

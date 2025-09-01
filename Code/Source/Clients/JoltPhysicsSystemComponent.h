@@ -7,6 +7,11 @@
 
 namespace JoltPhysics
 {
+    class WorldSimulationOwner;
+}
+
+namespace JoltPhysics
+{
     class JoltPhysicsSystemComponent
         : public AZ::Component
         , protected JoltPhysicsRequestBus::Handler
@@ -41,7 +46,11 @@ namespace JoltPhysics
         ////////////////////////////////////////////////////////////////////////
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        int GetTickOrder() override;
         ////////////////////////////////////////////////////////////////////////
+
+    private:
+        WorldSimulationOwner* m_worldSimulationOwner;
     };
 
 } // namespace JoltPhysics

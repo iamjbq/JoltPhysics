@@ -28,10 +28,13 @@ namespace JoltPhysics
 
             //WorldSimulationInterface
             void Initialize() override;
-            void Update() override;
+            void Update(float inDeltaTime) override;
             SystemHandle AddPhysicsSystem(const SystemConfiguration& config) override;
 
         private:
+            float m_accumulatedTime = 0.0f;
+            static constexpr float tempFixedTimeStep = 1.0f / 60.0f; // TODO: use config.m_fixedTimeStep eventually
+
             const unsigned int AllocationArenaSize = 256 * 1024 * 1024;
 
             // All systems can share these as long as they are updated consecutively.

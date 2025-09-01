@@ -44,7 +44,7 @@ namespace JoltPhysics
 
         int m_collisionSteps = 1;
         
-        float m_accumulatedTime = 0.0f;
+        // float m_accumulatedTime = 0.0f;
 
         // TODO: move this to worldSimulationOwner
         enum class State : AZ::u8
