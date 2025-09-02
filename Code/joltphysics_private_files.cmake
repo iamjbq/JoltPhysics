@@ -43,4 +43,6 @@ set(FILES
 
     Source/Configuration/WorldSimulationConfiguration.cpp
 
+    Source/AzRefactor/JoltPhysicsSystem.cpp
+    Source/AzRefactor/JoltPhysicsSystem.h
     )

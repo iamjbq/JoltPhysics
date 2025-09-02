@@ -12,8 +12,6 @@
 #include "Configuration/SystemConfiguration.h"
 #include "JoltPhysics/JoltPhysicsTypes.h"
 
-
-// TODO: make a separate physics system interface class and leave PhysicsSystem for the world sim owner
 namespace JoltPhysics
 {
     class JoltJobSystemThreaded;
