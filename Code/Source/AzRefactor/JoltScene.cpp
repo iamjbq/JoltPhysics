@@ -1,5 +1,5 @@
 
-#include <AzRefactor/JoltPhysicsSystem.h>
+#include <AzRefactor/JoltScene.h>
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/ProfilerBus.h>
@@ -21,9 +21,9 @@
 
 namespace JoltPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JoltPhysicsSystem, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(JoltScene, AZ::SystemAllocator, 0)
 
-    JoltPhysicsSystem::JoltPhysicsSystem(const AzPhysics::SceneConfiguration& config, const AzPhysics::SceneHandle& sceneHandle)
+    JoltScene::JoltScene(const AzPhysics::SceneConfiguration& config, const AzPhysics::SceneHandle& sceneHandle)
         : Scene(config)
         , m_config(config)
         , m_sceneHandle(sceneHandle)
@@ -41,7 +41,7 @@ namespace JoltPhysics
         m_gravity = m_config.m_gravity;
     }
 
-    JoltPhysicsSystem::~JoltPhysicsSystem()
+    JoltScene::~JoltScene()
     {
         for (auto& simulatedBody : m_simulatedBodies)
         {
@@ -64,9 +64,9 @@ namespace JoltPhysics
         }
     }
 
-    void JoltPhysicsSystem::StartSimulation(float deltatime)
+    void JoltScene::StartSimulation(float deltatime)
     {
-        AZ_PROFILE_SCOPE(Physics, "JoltPhysicsSystem::StartSimulation");
+        AZ_PROFILE_SCOPE(Physics, "JoltScene::StartSimulation");
 
         if (!IsEnabled())
         {
@@ -83,9 +83,9 @@ namespace JoltPhysics
         m_joltSystem->Update(deltatime, m_collisionSteps, m_tempAllocator, m_jobSystem);
     }
 
-    void JoltPhysicsSystem::FinishSimulation()
+    void JoltScene::FinishSimulation()
     {
-        AZ_PROFILE_SCOPE(Physics, "JoltPhysicsSystem::FinishSimulation");
+        AZ_PROFILE_SCOPE(Physics, "JoltScene::FinishSimulation");
 
         if (!IsEnabled())
         {
@@ -93,22 +93,22 @@ namespace JoltPhysics
         }
     }
 
-    void JoltPhysicsSystem::SetEnabled(bool enable)
+    void JoltScene::SetEnabled(bool enable)
     {
         m_isEnabled = enable;
     }
 
-    bool JoltPhysicsSystem::IsEnabled() const
+    bool JoltScene::IsEnabled() const
     {
         return m_isEnabled;
     }
 
-    const AzPhysics::SceneConfiguration& JoltPhysicsSystem::GetConfiguration() const
+    const AzPhysics::SceneConfiguration& JoltScene::GetConfiguration() const
     {
         return m_config;
     }
 
-    void JoltPhysicsSystem::UpdateConfiguration(const AzPhysics::SceneConfiguration& config)
+    void JoltScene::UpdateConfiguration(const AzPhysics::SceneConfiguration& config)
     {
         if (m_config != config)
         {

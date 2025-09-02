@@ -5,7 +5,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 
 #include <JoltPhysics/JoltPhysicsTypes.h>
-#include <System/JoltSystem.h>
+#include <System/JoltSystemOld.h>
 #include <Configuration/SystemConfiguration.h>
 
 

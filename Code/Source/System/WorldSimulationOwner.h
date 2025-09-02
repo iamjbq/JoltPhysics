@@ -5,7 +5,7 @@
 
 #include <JoltPhysics/JoltPhysicsTypes.h>
 #include <System/JoltJobSystemThreaded.h>
-#include <System/JoltSystem.h>
+#include <System/JoltSystemOld.h>
 
 #include <System/WorldSimulationInterface.h>
 

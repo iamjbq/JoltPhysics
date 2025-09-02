@@ -16,19 +16,18 @@ namespace JPH
 
 namespace JoltPhysics
 {
-
     //! The Jolt implementation of a Physics Scene.
     //! Functionally it operates similar to a PhysX Scene, but under the hood is a Jolt Physics System
     //! containing a single simulation scene.
-    class JoltPhysicsSystem final
+    class JoltScene final
         : public AzPhysics::Scene
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(JoltPhysicsSystem, "{5F024E70-F590-4C6B-A150-996998F98D50}", AzPhysics::Scene);
+        AZ_RTTI(JoltScene, "{5F024E70-F590-4C6B-A150-996998F98D50}", AzPhysics::Scene);
 
-        explicit JoltPhysicsSystem(const AzPhysics::SceneConfiguration& config, const AzPhysics::SceneHandle& sceneHandle);
-        ~JoltPhysicsSystem();
+        explicit JoltScene(const AzPhysics::SceneConfiguration& config, const AzPhysics::SceneHandle& sceneHandle);
+        ~JoltScene();
 
         // AzPhysics::PhysicsScene ...
         void StartSimulation(float deltatime) override;

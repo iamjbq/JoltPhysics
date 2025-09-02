@@ -13,7 +13,7 @@
 namespace JoltPhysics
 {
     class System;
-    class JoltSystem;
+    class JoltSystemOld;
 
     struct SystemConfiguration;
 }
