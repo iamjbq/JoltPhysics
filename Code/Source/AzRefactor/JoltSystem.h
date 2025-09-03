@@ -65,6 +65,9 @@ namespace JoltPhysics
         };
         State m_state = State::Uninitialized;
 
+        // TODO: Implement the JoltSceneInterface
+        // PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
+
         static constexpr AZStd::string_view PerformanceLogCategory = "JoltPhysics";
         static constexpr AZStd::string_view PerformanceSpecPhysXSimulationTime = "Jolt Simulation Time";
 

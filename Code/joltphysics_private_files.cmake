@@ -48,4 +48,6 @@ set(FILES
 
         Source/AzRefactor/JoltSystem.cpp
         Source/AzRefactor/JoltSystem.h
+
+        Source/Configuration/JoltConfiguration.cpp
     )

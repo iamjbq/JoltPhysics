@@ -20,8 +20,6 @@ namespace JoltPhysics
 
     void WorldSimulationOwner::Update(float inDeltaTime)
     {
-
-        // TODO: figure out where system config lives
         auto updateSystems = [this](float timeStep)
         {
             for (auto& systemPtr : m_systemList)

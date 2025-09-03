@@ -14,6 +14,8 @@ namespace JPH
     class TempAllocatorImpl;
 }
 
+// TODO: make JoltSceneInterface
+
 namespace JoltPhysics
 {
     //! The Jolt implementation of a Physics Scene.
