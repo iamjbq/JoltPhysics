@@ -50,4 +50,7 @@ set(FILES
         Source/AzRefactor/JoltSystem.h
 
         Source/Configuration/JoltConfiguration.cpp
+
+        Source/AzRefactor/JoltSceneInterface.cpp
+        Source/AzRefactor/JoltSceneInterface.h
     )
