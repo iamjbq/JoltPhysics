@@ -15,6 +15,11 @@ namespace AZ::Debug
     class PerformanceCollector;
 }
 
+namespace JPH
+{
+
+}
+
 namespace JoltPhysics
 {
     class JoltSystem
@@ -24,7 +29,7 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(JoltSystem, "{39383D29-C69C-4C36-84EE-874A3B5C9106}", AzPhysics::SystemInterface);
 
-        JoltSystem();
+        JoltSystem(); // TODO: Constructor should take std Jolt classes for filters and phases
         virtual ~JoltSystem();
 
         // SystemInterface interface ...

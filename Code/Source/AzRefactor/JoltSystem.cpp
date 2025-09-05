@@ -1,7 +1,4 @@
 
-#include <AzRefactor/JoltSystem.h>
-
-#include <AzRefactor/JoltScene.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -13,7 +10,13 @@
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include "JoltPhysics/Configuration/JoltConfiguration.h"
+#include <AzRefactor/JoltSystem.h>
+#include <AzRefactor/JoltScene.h>
+#include <System/JoltJobSystemThreaded.h>
+#include <JoltPhysics/Configuration/JoltConfiguration.h>
+
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/PhysicsSystem.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -149,6 +152,137 @@ namespace JoltPhysics
         m_postSimulateEvent.Signal(tickTime);
     }
 
+    AzPhysics::SceneHandle JoltSystem::AddScene(const AzPhysics::SceneConfiguration& config)
+    {
+        if (config.m_sceneName.empty())
+        {
+            AZ_Error("JoltSystem", false, "AddScene: Trying to Add a scene without a name. SceneConfiguration::m_sceneName must have a value");
+            return AzPhysics::InvalidSceneHandle;
+        }
+
+        if (!m_freeSceneSlots.empty()) //fill any free slots first before increasing the size of the scene list vector.
+        {
+            AzPhysics::SceneIndex freeIndex = m_freeSceneSlots.front();
+            m_freeSceneSlots.pop();
+
+            AZ_Assert(freeIndex < m_sceneList.size(), "JoltSystem::AddScene: Free scene index is out of bounds!");
+            AZ_Assert(m_sceneList[freeIndex] == nullptr, "JoltSystem::AddScene: Free scene index is not free");
+
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), freeIndex);
+            m_sceneList[freeIndex] = AZStd::make_unique<JoltScene>(config, sceneHandle);
+            m_sceneAddedEvent.Signal(sceneHandle);
+            return sceneHandle;
+        }
+
+        if (m_sceneList.size() < AzPhysics::MaxNumberOfScenes) //add a new scene if it is under the limit
+        {
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
+            m_sceneList.emplace_back(AZStd::make_unique<JoltScene>(config, sceneHandle));
+            m_sceneAddedEvent.Signal(sceneHandle);
+            return sceneHandle;
+        }
+        AZ_Warning("Jolt", false, "Scene Limit reached[%u], unable to add new scene [%s]",
+            AzPhysics::MaxNumberOfScenes,
+            config.m_sceneName.c_str());
+        return AzPhysics::InvalidSceneHandle;
+    }
+
+    AzPhysics::SceneHandleList JoltSystem::AddScenes(const AzPhysics::SceneConfigurationList& configs)
+    {
+        AzPhysics::SceneHandleList sceneHandles;
+        sceneHandles.reserve(configs.size());
+        for (const auto& config : configs)
+        {
+            AzPhysics::SceneHandle sceneHandle = AddScene(config);
+            sceneHandles.emplace_back(sceneHandle);
+        }
+        return sceneHandles;
+    }
+
+    AzPhysics::SceneHandle JoltSystem::GetSceneHandle(const AZStd::string& sceneName)
+    {
+        const AZ::Crc32 sceneCrc(sceneName);
+        auto sceneItr = AZStd::find_if(m_sceneList.begin(), m_sceneList.end(), [sceneCrc](auto& scene) {
+            return scene != nullptr && sceneCrc == scene->GetId();
+            });
+
+        if (sceneItr != m_sceneList.end())
+        {
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), static_cast<AzPhysics::SceneIndex>(AZStd::distance(m_sceneList.begin(), sceneItr)));
+        }
+        return AzPhysics::InvalidSceneHandle;
+    }
+
+    AzPhysics::Scene* JoltSystem::GetScene(AzPhysics::SceneHandle handle)
+    {
+        if (handle == AzPhysics::InvalidSceneHandle)
+        {
+            return nullptr;
+        }
+
+        AzPhysics::SceneIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(handle);
+        if (index < m_sceneList.size())
+        {
+            if (auto& scenePtr = m_sceneList[index];
+                scenePtr != nullptr)
+            {
+                if (scenePtr->GetId() == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(handle))
+                {
+                    return scenePtr.get();
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    AzPhysics::SceneList JoltSystem::GetScenes(const AzPhysics::SceneHandleList& handles)
+    {
+        AzPhysics::SceneList requestedSceneList;
+        requestedSceneList.reserve(handles.size());
+        for (const auto& handle : handles)
+        {
+            AzPhysics::Scene* scene = GetScene(handle);
+            requestedSceneList.emplace_back(scene);
+        }
+        return requestedSceneList;
+    }
+
+    AzPhysics::SceneList& JoltSystem::GetAllScenes()
+    {
+        return m_sceneList;
+    }
+
+    void JoltSystem::RemoveScene(AzPhysics::SceneHandle handle)
+    {
+        if (handle == AzPhysics::InvalidSceneHandle)
+        {
+            return;
+        }
+
+        AZ::u64 index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(handle);
+        if (index < m_sceneList.size() )
+        {
+            if (auto& scenePtr = m_sceneList[index];
+                scenePtr != nullptr)
+            {
+                if (scenePtr->GetId() == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(handle))
+                {
+                    m_sceneRemovedEvent.Signal(handle);
+                    m_sceneList[index].reset();
+                    m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
+                }
+            }
+        }
+    }
+
+    void JoltSystem::RemoveScenes(const AzPhysics::SceneHandleList& handles)
+    {
+        for (const auto& handle : handles)
+        {
+            RemoveScene(handle);
+        }
+    }
+
     void JoltSystem::RemoveAllScenes()
     {
         m_sceneList.clear();
@@ -156,7 +290,83 @@ namespace JoltPhysics
         //clear the free slots queue
         AZStd::queue<AzPhysics::SceneIndex> empty;
         m_freeSceneSlots.swap(empty);
-    };
+    }
 
+    AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> JoltSystem::FindAttachedBodyHandleFromEntityId(
+        AZ::EntityId entityId)
+    {
+        for (auto& scenePtr : m_sceneList)
+        {
+            if (scenePtr == nullptr)
+            {
+                continue;
+            }
+            if (auto* joltScene = azdynamic_cast<JoltScene*>(scenePtr.get()))
+            {
+                for (const auto& [_, body] : joltScene->GetSimulatedBodyList())
+                {
+                    if (body != nullptr && body->GetEntityId() == entityId)
+                    {
+                        return AZStd::make_pair(joltScene->GetSceneHandle(), body->m_bodyHandle);
+                    }
+                }
+            }
+        }
+        return AZStd::make_pair(AzPhysics::InvalidSceneHandle, AzPhysics::InvalidSimulatedBodyHandle);
+    }
+
+    const AzPhysics::SystemConfiguration* JoltSystem::GetConfiguration() const
+    {
+        return &m_systemConfig;
+    }
+
+    void JoltSystem::UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization)
+    {
+        if (const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(newConfig);
+            m_systemConfig != (*joltConfig))
+        {
+            m_systemConfig = (*joltConfig);
+            m_configChangeEvent.Signal(joltConfig);
+
+            // May need to restart simulation, as per PhysX comment
+        }
+    }
+
+    void JoltSystem::UpdateDefaultSceneConfiguration(const AzPhysics::SceneConfiguration& sceneConfiguration)
+    {
+        if (m_defaultSceneConfiguration != sceneConfiguration)
+        {
+            m_defaultSceneConfiguration = sceneConfiguration;
+
+            m_onDefaultSceneConfigurationChangedEvent.Signal(&m_defaultSceneConfiguration);
+        }
+    }
+
+    const AzPhysics::SceneConfiguration& JoltSystem::GetDefaultSceneConfiguration() const
+    {
+        return m_defaultSceneConfiguration;
+    }
+
+    // These are noted in PhysX to be temporary, but unsure if this is still true.
+
+    void JoltSystem::SetCollisionLayerName(int index, const AZStd::string& layerName)
+    {
+        m_systemConfig.m_collisionConfig.m_collisionLayers.SetName(aznumeric_cast<AZ::u64>(index), layerName);
+    }
+
+    void JoltSystem::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
+    {
+        m_systemConfig.m_collisionConfig.m_collisionGroups.CreateGroup(groupName, group);
+    }
+
+    AZ::Debug::PerformanceCollector* JoltSystem::GetPerformanceCollector()
+    {
+        return m_performanceCollector.get();
+    }
+
+    JoltSystem* GetJoltSystem()
+    {
+        return azdynamic_cast<JoltSystem*>(AZ::Interface<JoltPhysics::JoltSystem>::Get());
+    };
 
 } // JoltPhysics
