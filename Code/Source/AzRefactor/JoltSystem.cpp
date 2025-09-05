@@ -13,6 +13,8 @@
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#include "JoltPhysics/Configuration/JoltConfiguration.h"
+
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
 #define ENABLE_JOLT_TIMESTEP_WARNING
@@ -49,7 +51,7 @@ namespace JoltPhysics
     }
 
     JoltSystem::JoltSystem()
-        // : m_sceneInterface(this)
+        : m_sceneInterface(this)
     {
 
     }
@@ -59,7 +61,7 @@ namespace JoltPhysics
         Shutdown();
     }
 
-    void JoltSystem::Initialize([[maybe_unused]] const AzPhysics::SystemConfiguration* config)
+    void JoltSystem::Initialize(const AzPhysics::SystemConfiguration* config)
     {
         if (m_state == State::Initialized)
         {
@@ -67,14 +69,14 @@ namespace JoltPhysics
             return;
         }
 
-        // TODO: Implement the AZ::SystemConfiguration and native Jolt variant
-        // if (const auto* physXConfig = azdynamic_cast<const PhysXSystemConfiguration*>(config))
-        // {
-        //     m_systemConfig = *physXConfig;
-        // }
+        // TODO: Implement the native Jolt variant
+        if (const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(config))
+        {
+            m_systemConfig = *joltConfig;
+        }
 
         m_state = State::Initialized;
-        // m_initializeEvent.Signal(&m_systemConfig);
+        m_initializeEvent.Signal(&m_systemConfig);
     }
 
     void JoltSystem::Reinitialize()
@@ -111,38 +113,40 @@ namespace JoltPhysics
             {
                 if (scenePtr != nullptr && scenePtr->IsEnabled())
                 {
-                    AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecPhysXSimulationTime);
+                    AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecJoltSimulationTime);
                     scenePtr->StartSimulation(timeStep);
                     scenePtr->FinishSimulation();
                 }
             }
         };
 
-        // deltaTime = AZ::GetClamp(deltaTime, 0.0f, m_systemConfig.m_maxTimestep);
-        //
-        // AZ_Assert(m_systemConfig.m_fixedTimestep >= 0.0f, "PhysXSystem - fixed timestep is negitive.");
+        deltaTime = AZ::GetClamp(deltaTime, 0.0f, m_systemConfig.m_maxTimestep);
+
+        AZ_Assert(m_systemConfig.m_fixedTimestep >= 0.0f, "JoltSystem - fixed timestep is negitive.");
         float tickTime = deltaTime;
-        // if (m_systemConfig.m_fixedTimestep > 0.0f) //use the fixed timestep
-        // {
-        m_accumulatedTime += tickTime;
-        //     //divide accumulated time by the fixed step and floor it to get the number of steps that would occur. Then multiply by fixedTimeStep to get the total executed time.
-        //     tickTime = AZStd::floorf(m_accumulatedTime / m_systemConfig.m_fixedTimestep) * m_systemConfig.m_fixedTimestep;
-        m_preSimulateEvent.Signal(tickTime);
-        //
-        //     while (m_accumulatedTime >= m_systemConfig.m_fixedTimestep)
-        //     {
-        //         simulateScenes(m_systemConfig.m_fixedTimestep);
-        //         m_accumulatedTime -= m_systemConfig.m_fixedTimestep;
-        //     }
-        // }
-        // else
+        if (m_systemConfig.m_fixedTimestep > 0.0f) //use the fixed timestep
+        {
+            m_accumulatedTime += tickTime;
+
+            // Divide accumulated time by the fixed step and floor it to get the number of steps that would occur.
+            // Then multiply by fixedTimeStep to get the total executed time.
+            tickTime = AZStd::floorf(m_accumulatedTime / m_systemConfig.m_fixedTimestep) * m_systemConfig.m_fixedTimestep;
+            m_preSimulateEvent.Signal(tickTime);
+
+            while (m_accumulatedTime >= m_systemConfig.m_fixedTimestep)
+            {
+                simulateScenes(m_systemConfig.m_fixedTimestep);
+                m_accumulatedTime -= m_systemConfig.m_fixedTimestep;
+            }
+        }
+        else
         {
             m_preSimulateEvent.Signal(tickTime);
 
             simulateScenes(tickTime);
         }
 
-        // m_postSimulateEvent.Signal(tickTime);
+        m_postSimulateEvent.Signal(tickTime);
     }
 
     void JoltSystem::RemoveAllScenes()

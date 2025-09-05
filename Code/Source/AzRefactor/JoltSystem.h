@@ -7,6 +7,9 @@
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
+#include <AzRefactor/JoltSceneInterface.h>
+#include <JoltPhysics/Configuration/JoltConfiguration.h>
+
 namespace AZ::Debug
 {
     class PerformanceCollector;
@@ -51,6 +54,7 @@ namespace JoltPhysics
         AZ::Debug::PerformanceCollector* GetPerformanceCollector();
 
     private:
+        JoltSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
         AzPhysics::SceneList m_sceneList;
         AZStd::queue<AzPhysics::SceneIndex> m_freeSceneSlots; //when a scene is removed cache its index here to be used for the next add.
@@ -65,11 +69,10 @@ namespace JoltPhysics
         };
         State m_state = State::Uninitialized;
 
-        // TODO: Implement the JoltSceneInterface
-        // PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
+        JoltSceneInterface m_sceneInterface; //! Implement the Scene Az::Interface.
 
         static constexpr AZStd::string_view PerformanceLogCategory = "JoltPhysics";
-        static constexpr AZStd::string_view PerformanceSpecPhysXSimulationTime = "Jolt Simulation Time";
+        static constexpr AZStd::string_view PerformanceSpecJoltSimulationTime = "Jolt Simulation Time";
 
         AZStd::unique_ptr<AZ::Debug::PerformanceCollector> m_performanceCollector;
     };

@@ -106,8 +106,8 @@ namespace JoltPhysics
         AZ::u32 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
 
         AZStd::unique_ptr<JPH::PhysicsSystem> m_joltSystem; //!< The underlying Jolt System
-        JPH::JobSystem* m_jobSystem;
-        JPH::TempAllocatorImpl* m_tempAllocator;
+        JPH::JobSystem* m_jobSystem = nullptr;
+        JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
         int m_collisionSteps = 1;
 
         AZ::Vector3 m_gravity; // cache the gravity of the scene to avoid a lock in GetGravity().
