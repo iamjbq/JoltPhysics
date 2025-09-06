@@ -26,6 +26,97 @@
 
 namespace JoltPhysics
 {
+    namespace Internal
+    {
+        // TODO: Start implementing bodies - start with rigid body and work up to character controller
+
+        // bool AddShape(AZStd::variant<AzPhysics::RigidBody*, AzPhysics::StaticRigidBody*> simulatedBody, const AzPhysics::ShapeVariantData& shapeData)
+        // {
+        //     if (const auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
+        //     {
+        //         bool shapeAdded = false;
+        //         auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderPair->first), *(shapeColliderPair->second));
+        //         AZStd::visit([shapePtr, &shapeAdded](auto&& body)
+        //             {
+        //                 if (shapePtr->GetPxShape())
+        //                 {
+        //                     body->AddShape(shapePtr);
+        //                     shapeAdded = true;
+        //                 }
+        //             }, simulatedBody);
+        //         return shapeAdded;
+        //     }
+        //     else if (const auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
+        //     {
+        //         bool shapeAdded = false;
+        //         for (const auto& shapeColliderConfigs : *shapeColliderPairList)
+        //         {
+        //             auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
+        //             AZStd::visit([shapePtr, &shapeAdded](auto&& body)
+        //                 {
+        //                     if (shapePtr->GetPxShape())
+        //                     {
+        //                         body->AddShape(shapePtr);
+        //                         shapeAdded = true;
+        //                     }
+        //                 }, simulatedBody);
+        //         }
+        //         return shapeAdded;
+        //     }
+        //     else if (const auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
+        //     {
+        //         auto shapePtr = *shape;
+        //         AZStd::visit([shapePtr](auto&& body)
+        //             {
+        //                 body->AddShape(shapePtr);
+        //             }, simulatedBody);
+        //         return true;
+        //     }
+        //     else if (const auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
+        //     {
+        //         for (auto shapePtr : *shapeList)
+        //         {
+        //             AZStd::visit([shapePtr](auto&& body)
+        //                 {
+        //                     body->AddShape(shapePtr);
+        //                 }, simulatedBody);
+        //         }
+        //         return true;
+        //     }
+        //     return false;
+        // }
+
+        template<class SimulatedBodyType, class ConfigurationType>
+        AzPhysics::SimulatedBody* CreateSimulatedBody(const ConfigurationType* configuration, AZ::Crc32& crc)
+        {
+            SimulatedBodyType* newBody = aznew SimulatedBodyType(*configuration);
+            if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
+            {
+                [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                AZ_Warning("JoltScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+            }
+            crc = AZ::Crc32(newBody, sizeof(*newBody));
+            return newBody;
+        }
+
+        // AzPhysics::SimulatedBody* CreateRigidBody(const AzPhysics::RigidBodyConfiguration* configuration, AZ::Crc32& crc)
+        // {
+        //     RigidBody* newBody = aznew RigidBody(*configuration);
+        //     if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
+        //     {
+        //         [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+        //         AZ_Warning("JoltScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+        //     }
+        //     const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
+        //     newBody->UpdateMassProperties(flags, configuration->m_centerOfMassOffset,
+        //         configuration->m_inertiaTensor, configuration->m_mass);
+        //
+        //     crc = AZ::Crc32(newBody, sizeof(*newBody));
+        //     return newBody;
+        // }
+
+    }
+
     AZ_CLASS_ALLOCATOR_IMPL(JoltScene, AZ::SystemAllocator, 0)
 
     JoltScene::JoltScene(const AzPhysics::SceneConfiguration& config, const AzPhysics::SceneHandle& sceneHandle)
@@ -69,7 +160,7 @@ namespace JoltPhysics
         }
     }
 
-    void JoltScene::StartSimulation(float deltatime)
+    void JoltScene::StartSimulation(float deltaTime)
     {
         AZ_PROFILE_SCOPE(Physics, "JoltScene::StartSimulation");
 
@@ -80,12 +171,12 @@ namespace JoltPhysics
 
         {
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationStartEvent::Signaled");
-            m_sceneSimulationStartEvent.Signal(m_sceneHandle, deltatime);
+            m_sceneSimulationStartEvent.Signal(m_sceneHandle, deltaTime);
         }
 
-        m_currentDeltaTime = deltatime;
+        m_currentDeltaTime = deltaTime;
 
-        m_joltSystem->Update(deltatime, m_collisionSteps, m_tempAllocator, m_jobSystem);
+        m_joltSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem);
     }
 
     void JoltScene::FinishSimulation()

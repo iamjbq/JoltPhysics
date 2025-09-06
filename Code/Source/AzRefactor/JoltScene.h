@@ -10,11 +10,10 @@
 namespace JPH
 {
     class PhysicsSystem;
+    class BodyInterface;
     class JobSystem;
     class TempAllocatorImpl;
 }
-
-// TODO: make JoltSceneInterface
 
 namespace JoltPhysics
 {
@@ -32,7 +31,7 @@ namespace JoltPhysics
         ~JoltScene();
 
         // AzPhysics::PhysicsScene ...
-        void StartSimulation(float deltatime) override;
+        void StartSimulation(float deltaTime) override;
         void FinishSimulation() override;
         void SetEnabled(bool enable) override;
         bool IsEnabled() const override;
