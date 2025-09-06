@@ -17,11 +17,13 @@ namespace AZ::Debug
 
 namespace JPH
 {
-
+    class TempAllocatorImpl;
 }
 
 namespace JoltPhysics
 {
+    class JoltJobSystemThreaded;
+
     class JoltSystem
         : public AZ::Interface<AzPhysics::SystemInterface>::Registrar
     {
@@ -29,11 +31,11 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(JoltSystem, "{39383D29-C69C-4C36-84EE-874A3B5C9106}", AzPhysics::SystemInterface);
 
-        JoltSystem(); // TODO: Constructor should take std Jolt classes for filters and phases
+        JoltSystem();
         virtual ~JoltSystem();
 
         // SystemInterface interface ...
-        void Initialize(const AzPhysics::SystemConfiguration* config) override;
+        void Initialize(const AzPhysics::SystemConfiguration* config) override; // TODO: Constructor should take std Jolt classes for filters and phases
         void Reinitialize() override;
         void Shutdown() override;
         void Simulate(float deltaTime) override;
@@ -73,6 +75,11 @@ namespace JoltPhysics
             Shutdown
         };
         State m_state = State::Uninitialized;
+
+        // All systems can share these as long as they are updated consecutively.
+        // Considering moving to an O3DE allocator in the future if any benefits
+        AZStd::shared_ptr<JPH::TempAllocatorImpl> m_allocator;
+        AZStd::shared_ptr<JoltJobSystemThreaded> m_jobSystem;
 
         JoltSceneInterface m_sceneInterface; //! Implement the Scene Az::Interface.
 

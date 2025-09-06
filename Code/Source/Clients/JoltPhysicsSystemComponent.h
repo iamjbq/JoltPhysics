@@ -3,15 +3,13 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+
 #include <JoltPhysics/JoltPhysicsBus.h>
 
 namespace JoltPhysics
 {
-    class WorldSimulationOwner;
-}
+    class JoltSystem;
 
-namespace JoltPhysics
-{
     class JoltPhysicsSystemComponent
         : public AZ::Component
         , protected JoltPhysicsRequestBus::Handler
@@ -50,7 +48,7 @@ namespace JoltPhysics
         ////////////////////////////////////////////////////////////////////////
 
     private:
-        WorldSimulationOwner* m_worldSimulationOwner; // TODO: set this up in Init()
+        JoltSystem* m_joltSystem;
         bool m_isTickingPhysics = false;
         // AzPhysics::SystemEvents::OnInitializedEvent::Handler m_onSystemInitializedHandler;
         // AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_onSystemConfigChangedHandler;
@@ -58,7 +56,7 @@ namespace JoltPhysics
         // Not sure if this is needed for Jolt implementation, but maybe a good switch to have
         void EnableAutoManagedPhysicsTick(bool shouldTick);
 
-        void ActivateWorldSimulation();
+        void ActivateSimulation();
     };
 
 } // namespace JoltPhysics

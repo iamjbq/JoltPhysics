@@ -1,11 +1,11 @@
 
 #include "JoltPhysicsSystemComponent.h"
 
-#include <JoltPhysics/JoltPhysicsTypeIds.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include "System/WorldSimulationOwner.h"
+#include <AzRefactor/JoltSystem.h>
+#include <JoltPhysics/Configuration/JoltConfiguration.h>
+#include <JoltPhysics/JoltPhysicsTypeIds.h>
 
 namespace JoltPhysics
 {
@@ -56,7 +56,7 @@ namespace JoltPhysics
     {
         JoltPhysicsRequestBus::Handler::BusConnect();
 
-        ActivateWorldSimulation();
+        ActivateSimulation();
     }
 
     void JoltPhysicsSystemComponent::Deactivate()
@@ -67,9 +67,9 @@ namespace JoltPhysics
 
     void JoltPhysicsSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (m_worldSimulationOwner)
+        if (m_joltSystem)
         {
-            m_worldSimulationOwner->Update(deltaTime);
+            m_joltSystem->Simulate(deltaTime);
         }
     }
 
@@ -91,13 +91,14 @@ namespace JoltPhysics
         m_isTickingPhysics = shouldTick;
     }
 
-    void JoltPhysicsSystemComponent::ActivateWorldSimulation()
+    void JoltPhysicsSystemComponent::ActivateSimulation()
     {
-        m_worldSimulationOwner = GetWorldSimulationOwner();
+        m_joltSystem = GetJoltSystem();
 
-        if (m_worldSimulationOwner)
+        if (m_joltSystem)
         {
-            m_worldSimulationOwner->Initialize();
+            // TODO: How to pass config in?
+            // m_joltSystem->Initialize();
         }
     }
 } // namespace JoltPhysics

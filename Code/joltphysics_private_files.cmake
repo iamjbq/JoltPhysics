@@ -15,18 +15,6 @@ set(FILES
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h
 
-        Source/System/SystemInterface.cpp
-        Source/System/SystemInterface.h
-
-        Source/System/JoltSystemOld.cpp
-        Source/System/JoltSystemOld.h
-
-        Source/System/JoltSystemInterface.cpp
-        Source/System/JoltSystemInterface.h
-
-        Source/Configuration/SystemConfiguration.cpp
-        Source/Configuration/SystemConfiguration.h
-
         Source/Utilities/JoltConversions.cpp
 
         Source/System/BodyInterface.cpp
@@ -34,14 +22,6 @@ set(FILES
 
         Source/System/JoltBodyInterface.cpp
         Source/System/JoltBodyInterface.h
-
-        Source/System/WorldSimulationOwner.cpp
-        Source/System/WorldSimulationOwner.h
-
-        Source/System/WorldSimulationInterface.cpp
-        Source/System/WorldSimulationInterface.h
-
-        Source/Configuration/WorldSimulationConfiguration.cpp
 
         Source/AzRefactor/JoltScene.cpp
         Source/AzRefactor/JoltScene.h
