@@ -168,6 +168,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             INTERFACE
                 AZ::AzToolsFramework
+                Jolt
     )
 
     # The ${gem_name}.Editor.Private.Object target is an internal target

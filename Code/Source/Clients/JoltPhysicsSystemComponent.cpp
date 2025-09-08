@@ -3,7 +3,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <AzRefactor/JoltSystem.h>
+#include <System/JoltSystem.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 

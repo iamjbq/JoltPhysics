@@ -1,5 +1,5 @@
 
-#include <AzRefactor/JoltScene.h>
+#include "JoltScene.h"
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/ProfilerBus.h>
@@ -23,6 +23,9 @@
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
+
+#include <Clients/RigidBody.h>
+#include <JoltPhysics/MathConversions.h>
 
 namespace JoltPhysics
 {
@@ -214,7 +217,205 @@ namespace JoltPhysics
             // set gravity verifies this is a new value.
             SetGravity(m_config.m_gravity);
         }
-    };
+    }
 
+    AzPhysics::SimulatedBodyHandle JoltScene::AddSimulatedBody([[maybe_unused]] const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig)
+    {
+        // TODO: Incomplete
+        // AzPhysics::SimulatedBody* newBody = nullptr;
+        // AZ::Crc32 newBodyCrc;
 
+        return AzPhysics::InvalidSimulatedBodyHandle;
+    }
+
+    AzPhysics::SimulatedBodyHandleList JoltScene::AddSimulatedBodies(const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs)
+    {
+        AzPhysics::SimulatedBodyHandleList newBodyHandles;
+        newBodyHandles.reserve(simulatedBodyConfigs.size());
+        for (auto* config : simulatedBodyConfigs)
+        {
+            newBodyHandles.emplace_back(AddSimulatedBody(config));
+        }
+        return newBodyHandles;
+    }
+
+    AzPhysics::SimulatedBody* JoltScene::GetSimulatedBodyFromHandle(AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return nullptr;
+        }
+
+        AzPhysics::SimulatedBodyIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(bodyHandle);
+        if (index < m_simulatedBodies.size()
+            && m_simulatedBodies[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(bodyHandle))
+        {
+            return m_simulatedBodies[index].second;
+        }
+        return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyList JoltScene::GetSimulatedBodiesFromHandle(const AzPhysics::SimulatedBodyHandleList& bodyHandles)
+    {
+        AzPhysics::SimulatedBodyList results;
+        for (auto& handle : bodyHandles)
+        {
+            results.emplace_back(GetSimulatedBodyFromHandle(handle));
+        }
+        return results;
+    }
+
+    void JoltScene::RemoveSimulatedBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle& bodyHandle)
+    {
+        // TODO: Incomplete
+    }
+
+    void JoltScene::RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles)
+    {
+        for (auto& handle: bodyHandles)
+        {
+            RemoveSimulatedBody(handle);
+        }
+    }
+
+    void JoltScene::EnableSimulationOfBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        // TODO: Incomplete
+    }
+
+    void JoltScene::DisableSimulationOfBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle)
+    {
+        // TODO: Incomplete
+    }
+
+    AzPhysics::JointHandle JoltScene::AddJoint([[maybe_unused]] const AzPhysics::JointConfiguration* jointConfig,
+    [[maybe_unused]] AzPhysics::SimulatedBodyHandle parentBody, [[maybe_unused]] AzPhysics::SimulatedBodyHandle childBody)
+    {
+        // TODO: Incomplete
+        return AzPhysics::InvalidJointHandle;
+    }
+
+    AzPhysics::Joint* JoltScene::GetJointFromHandle(AzPhysics::JointHandle jointHandle)
+    {
+        if (jointHandle == AzPhysics::InvalidJointHandle)
+        {
+            return nullptr;
+        }
+
+        AzPhysics::JointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
+        if (index < m_joints.size()
+            && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
+        {
+            return m_joints[index].second;
+        }
+        return nullptr;
+    }
+
+    void JoltScene::RemoveJoint(AzPhysics::JointHandle jointHandle)
+    {
+        if (jointHandle == AzPhysics::InvalidJointHandle)
+        {
+            return;
+        }
+
+        AzPhysics::JointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
+        if (index < m_joints.size()
+            && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
+        {
+            m_deferredDeletionsJoints.push_back(m_joints[index].second);
+            m_joints[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
+            m_freeJointSlots.push(index);
+            jointHandle = AzPhysics::InvalidJointHandle;
+        }
+    }
+
+    AzPhysics::SceneQueryHits JoltScene::QueryScene(const AzPhysics::SceneQueryRequest* request)
+    {
+        AzPhysics::SceneQueryHits hits;
+        QueryScene(request, hits);
+        return hits;
+    }
+
+    bool JoltScene::QueryScene([[maybe_unused]] const AzPhysics::SceneQueryRequest* request, [[maybe_unused]] AzPhysics::SceneQueryHits& result)
+    {
+        // TODO: Incomplete
+        return false;
+    }
+
+    AzPhysics::SceneQueryHitsList JoltScene::QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests)
+    {
+        AzPhysics::SceneQueryHitsList results;
+        results.reserve(requests.size());
+        for (auto& request : requests)
+        {
+            results.emplace_back(QueryScene(request.get()));
+        }
+        return results;
+    }
+
+    [[nodiscard]] bool JoltScene::QuerySceneAsync([[maybe_unused]] AzPhysics::SceneQuery::AsyncRequestId requestId,
+        [[maybe_unused]] const AzPhysics::SceneQueryRequest* request, [[maybe_unused]] AzPhysics::SceneQuery::AsyncCallback callback)
+    {
+        AZ_Warning("Jolt", false, "Currently unimplemented.");
+        return false;
+    }
+
+    [[nodiscard]] bool JoltScene::QuerySceneAsyncBatch([[maybe_unused]] AzPhysics::SceneQuery::AsyncRequestId requestId,
+        [[maybe_unused]] const AzPhysics::SceneQueryRequests& requests, [[maybe_unused]] AzPhysics::SceneQuery::AsyncBatchCallback callback)
+    {
+        AZ_Warning("Jolt", false, "Currently unimplemented.");
+        return false;
+    }
+
+    // Not sure if this has an equivalent in Jolt
+    void JoltScene::SuppressCollisionEvents([[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA, [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleB)
+    {
+        AzPhysics::SimulatedBody* bodyA = GetSimulatedBodyFromHandle(bodyHandleA);
+        AzPhysics::SimulatedBody* bodyB = GetSimulatedBodyFromHandle(bodyHandleB);
+        if (bodyA != nullptr && bodyB != nullptr)
+        {
+            // m_collisionFilterCallback.RegisterSuppressedCollision(bodyA, bodyB);
+            AZ_Warning("Jolt", false, "Currently unimplemented.");
+        }
+    }
+
+    // Not sure if this has an equivalent in Jolt
+    void JoltScene::UnsuppressCollisionEvents([[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA, [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleB)
+    {
+        AzPhysics::SimulatedBody* bodyA = GetSimulatedBodyFromHandle(bodyHandleA);
+        AzPhysics::SimulatedBody* bodyB = GetSimulatedBodyFromHandle(bodyHandleB);
+        if (bodyA != nullptr && bodyB != nullptr)
+        {
+            // m_collisionFilterCallback.UnregisterSuppressedCollision(bodyA, bodyB);
+            AZ_Warning("Jolt", false, "Currently unimplemented.");
+        }
+    }
+
+    void JoltScene::SetGravity(const AZ::Vector3& gravity)
+    {
+        if (m_joltSystem && !m_gravity.IsClose(gravity))
+        {
+            m_gravity = gravity;
+            {
+                // TODO: Need to make sure this is safe. It may already be handled internally by Jolt
+                m_joltSystem->SetGravity(JoltMathConvert(gravity));
+            }
+            m_sceneGravityChangedEvent.Signal(m_sceneHandle, m_gravity);
+        }
+    }
+
+    AZ::Vector3 JoltScene::GetGravity() const
+    {
+        return m_gravity;
+    }
+
+    void* JoltScene::GetNativePointer() const
+    {
+        return m_joltSystem.get();
+    }
+
+    // void JoltScene::FlushTransformSync()
+    // {
+    //
+    // }
 }

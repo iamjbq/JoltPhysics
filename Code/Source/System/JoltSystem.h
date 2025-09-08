@@ -7,8 +7,10 @@
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
-#include <AzRefactor/JoltSceneInterface.h>
+#include <System/JoltSceneInterface.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
+
+
 
 namespace AZ::Debug
 {

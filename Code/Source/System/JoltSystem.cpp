@@ -10,8 +10,8 @@
 #include <AzCore/PlatformId/PlatformId.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <AzRefactor/JoltSystem.h>
-#include <AzRefactor/JoltScene.h>
+#include <System/JoltSystem.h>
+#include <System/JoltScene.h>
 #include <System/JoltJobSystemThreaded.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 

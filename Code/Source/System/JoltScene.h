@@ -34,8 +34,8 @@ namespace JoltPhysics
         void StartSimulation(float deltaTime) override;
         void FinishSimulation() override;
         void SetEnabled(bool enable) override;
-        bool IsEnabled() const override;
-        const AzPhysics::SceneConfiguration& GetConfiguration() const override;
+        [[nodiscard]] bool IsEnabled() const override;
+        [[nodiscard]] const AzPhysics::SceneConfiguration& GetConfiguration() const override;
         void UpdateConfiguration(const AzPhysics::SceneConfiguration& config) override;
         AzPhysics::SimulatedBodyHandle AddSimulatedBody(const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig) override;
         AzPhysics::SimulatedBodyHandleList AddSimulatedBodies(const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs) override;
@@ -73,7 +73,7 @@ namespace JoltPhysics
 
         //! Apply batched transform sync events for the current simulation pass.
         //! This will clear the batched data for the next simulation pass.
-        void FlushTransformSync();
+        // void FlushTransformSync();
 
     private:
 

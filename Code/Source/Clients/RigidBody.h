@@ -4,6 +4,14 @@
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+
+namespace JPH
+{
+    class Body;
+}
+
 namespace AzPhysics
 {
     struct RigidBodyConfiguration;
@@ -11,6 +19,7 @@ namespace AzPhysics
 
 namespace JoltPhysics
 {
+    class Shape;
     class RigidBodyComponent;
 
     //! Jolt-specific settings which are not generic enough to be stored in the AzPhysics rigid body configuration.
@@ -42,90 +51,90 @@ namespace JoltPhysics
 
         static void Reflect(AZ::ReflectContext* context);
 
-    //     AZ::u32 GetShapeCount() const override;
-    //     AZStd::shared_ptr<Physics::Shape> GetShape(AZ::u32 index) override;
-    //     AZStd::shared_ptr<const Physics::Shape> GetShape(AZ::u32 index) const override;
-    //
-    //     AZ::Vector3 GetCenterOfMassWorld() const override;
-    //     AZ::Vector3 GetCenterOfMassLocal() const override;
-    //
-    //     AZ::Matrix3x3 GetInertiaWorld() const override;
-    //     AZ::Matrix3x3 GetInertiaLocal() const override;
-    //     AZ::Matrix3x3 GetInverseInertiaWorld() const override;
-    //     AZ::Matrix3x3 GetInverseInertiaLocal() const override;
-    //
-    //     float GetMass() const override;
-    //     float GetInverseMass() const override;
-    //     void SetMass(float mass) override;
-    //     void SetCenterOfMassOffset(const AZ::Vector3& comOffset) override;
-    //     AZ::Vector3 GetLinearVelocity() const override;
-    //     void SetLinearVelocity(const AZ::Vector3& velocity) override;
-    //     AZ::Vector3 GetAngularVelocity() const override;
-    //     void SetAngularVelocity(const AZ::Vector3& angularVelocity) override;
-    //     AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) const override;
-    //     void ApplyLinearImpulse(const AZ::Vector3& impulse) override;
-    //     void ApplyLinearImpulseAtWorldPoint(const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) override;
-    //     void ApplyAngularImpulse(const AZ::Vector3& angularImpulse) override;
-    //
-    //     bool IsKinematic() const override;
-    //     void SetKinematic(bool isKinematic) override;
-    //     void SetKinematicTarget(const AZ::Transform& targetPosition) override;
-    //
-    //     bool IsGravityEnabled() const override;
-    //     void SetGravityEnabled(bool enabled) override;
-    //     void SetSimulationEnabled(bool enabled) override;
-    //     void SetCCDEnabled(bool enabled) override;
-    //
-    //     // AzPhysics::SimulatedBody
-    //     AZ::Transform GetTransform() const override;
-    //     void SetTransform(const AZ::Transform& transform) override;
-    //     AZ::Vector3 GetPosition() const override;
-    //     AZ::Quaternion GetOrientation() const override;
-    //     AZ::Aabb GetAabb() const override;
-    //     AZ::EntityId GetEntityId() const override;
-    //
-    //     AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
-    //
-    //     // Physics::ReferenceBase
-    //     AZ::Crc32 GetNativeType() const override;
-    //     void* GetNativePointer() const override;
-    //
-    //     // Not in API but needed to support PhysicsComponentBus
-    //     float GetLinearDamping() const override;
-    //     void SetLinearDamping(float damping) override;
-    //     float GetAngularDamping() const override;
-    //     void SetAngularDamping(float damping) override;
-    //
-    //     //sleeping
-    //     bool IsAwake() const override;
-    //     void ForceAsleep() override;
-    //     void ForceAwake() override;
-    //     float GetSleepThreshold() const override;
-    //     void SetSleepThreshold(float threshold) override;
-    //
-    //     bool ShouldStartAsleep() const { return m_startAsleep; }
-    //
-    //     void SetName(const AZStd::string& entityName);
-    //     const AZStd::string& GetName() const;
-    //
-    //     void AddShape(AZStd::shared_ptr<Physics::Shape> shape) override;
-    //     void RemoveShape(AZStd::shared_ptr<Physics::Shape> shape) override;
-    //
-    //     void UpdateMassProperties(AzPhysics::MassComputeFlags flags = AzPhysics::MassComputeFlags::DEFAULT,
-    //         const AZ::Vector3& centerOfMassOffsetOverride = AZ::Vector3::CreateZero(),
-    //         const AZ::Matrix3x3& inertiaTensorOverride = AZ::Matrix3x3::CreateIdentity(),
-    //         const float massOverride = 1.0f) override;
-    //
-    // private:
-    //     void CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration);
-    //
-    //     void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
-    //     void SetInertia(const AZ::Matrix3x3& inertia);
-    //
-    //     AZStd::shared_ptr<physx::PxRigidDynamic> m_pxRigidActor;
-    //     AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;
-    //     AZStd::string m_name;
-    //     PhysX::ActorData m_actorUserData;
-    //     bool m_startAsleep = false;
+        AZ::u32 GetShapeCount() const override;
+        AZStd::shared_ptr<Physics::Shape> GetShape(AZ::u32 index) override;
+        AZStd::shared_ptr<const Physics::Shape> GetShape(AZ::u32 index) const override;
+
+        AZ::Vector3 GetCenterOfMassWorld() const override;
+        AZ::Vector3 GetCenterOfMassLocal() const override;
+
+        AZ::Matrix3x3 GetInertiaWorld() const override;
+        AZ::Matrix3x3 GetInertiaLocal() const override;
+        AZ::Matrix3x3 GetInverseInertiaWorld() const override;
+        AZ::Matrix3x3 GetInverseInertiaLocal() const override;
+
+        float GetMass() const override;
+        float GetInverseMass() const override;
+        void SetMass(float mass) override;
+        void SetCenterOfMassOffset(const AZ::Vector3& comOffset) override;
+        AZ::Vector3 GetLinearVelocity() const override;
+        void SetLinearVelocity(const AZ::Vector3& velocity) override;
+        AZ::Vector3 GetAngularVelocity() const override;
+        void SetAngularVelocity(const AZ::Vector3& angularVelocity) override;
+        AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) const override;
+        void ApplyLinearImpulse(const AZ::Vector3& impulse) override;
+        void ApplyLinearImpulseAtWorldPoint(const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) override;
+        void ApplyAngularImpulse(const AZ::Vector3& angularImpulse) override;
+
+        bool IsKinematic() const override;
+        void SetKinematic(bool isKinematic) override;
+        void SetKinematicTarget(const AZ::Transform& targetPosition) override;
+
+        bool IsGravityEnabled() const override;
+        void SetGravityEnabled(bool enabled) override;
+        void SetSimulationEnabled(bool enabled) override;
+        void SetCCDEnabled(bool enabled) override;
+
+        // AzPhysics::SimulatedBody
+        AZ::Transform GetTransform() const override;
+        void SetTransform(const AZ::Transform& transform) override;
+        AZ::Vector3 GetPosition() const override;
+        AZ::Quaternion GetOrientation() const override;
+        AZ::Aabb GetAabb() const override;
+        AZ::EntityId GetEntityId() const override;
+
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
+
+        // Physics::ReferenceBase
+        AZ::Crc32 GetNativeType() const override;
+        void* GetNativePointer() const override;
+
+        // Not in API but needed to support PhysicsComponentBus
+        float GetLinearDamping() const override;
+        void SetLinearDamping(float damping) override;
+        float GetAngularDamping() const override;
+        void SetAngularDamping(float damping) override;
+
+        //sleeping
+        bool IsAwake() const override;
+        void ForceAsleep() override;
+        void ForceAwake() override;
+        float GetSleepThreshold() const override;
+        void SetSleepThreshold(float threshold) override;
+
+        bool ShouldStartAsleep() const { return m_startAsleep; }
+
+        void SetName(const AZStd::string& entityName);
+        const AZStd::string& GetName() const;
+
+        void AddShape(AZStd::shared_ptr<Physics::Shape> shape) override;
+        void RemoveShape(AZStd::shared_ptr<Physics::Shape> shape) override;
+
+        void UpdateMassProperties(AzPhysics::MassComputeFlags flags = AzPhysics::MassComputeFlags::DEFAULT,
+            const AZ::Vector3& centerOfMassOffsetOverride = AZ::Vector3::CreateZero(),
+            const AZ::Matrix3x3& inertiaTensorOverride = AZ::Matrix3x3::CreateIdentity(),
+            const float massOverride = 1.0f) override;
+
+    private:
+        void CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration);
+
+        void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
+        void SetInertia(const AZ::Matrix3x3& inertia);
+
+        AZStd::shared_ptr<JPH::Body> m_pxRigidActor;
+        AZStd::vector<AZStd::shared_ptr<JoltPhysics::Shape>> m_shapes;
+        AZStd::string m_name;
+        JPH::BodyCreationSettings m_actorUserData;
+        bool m_startAsleep = false;
     };
 }

@@ -1,7 +1,6 @@
 
-#include <AzRefactor/JoltSceneInterface.h>
-
-#include <AzRefactor/JoltSystem.h>
+#include <System/JoltSceneInterface.h>
+#include <System/JoltSystem.h>
 
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>

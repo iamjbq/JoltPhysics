@@ -9,13 +9,14 @@ set(FILES
         Source/Clients/JoltRigidBodyComponent.cpp
         Source/Clients/JoltRigidBodyComponent.h
 
-    #    Source/Clients/RigidBody.cpp
-    #    Source/Clients/RigidBody.h
+        Source/Clients/RigidBody.cpp
+        Source/Clients/RigidBody.h
+
+        Source/Clients/Shape.cpp
+        Source/Clients/Shape.h
 
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h
-
-        Source/Utilities/JoltConversions.cpp
 
         Source/System/BodyInterface.cpp
         Source/System/BodyInterface.h
@@ -23,14 +24,14 @@ set(FILES
         Source/System/JoltBodyInterface.cpp
         Source/System/JoltBodyInterface.h
 
-        Source/AzRefactor/JoltScene.cpp
-        Source/AzRefactor/JoltScene.h
+        Source/System/JoltScene.cpp
+        Source/System/JoltScene.h
 
-        Source/AzRefactor/JoltSystem.cpp
-        Source/AzRefactor/JoltSystem.h
+        Source/System/JoltSystem.cpp
+        Source/System/JoltSystem.h
 
         Source/Configuration/JoltConfiguration.cpp
 
-        Source/AzRefactor/JoltSceneInterface.cpp
-        Source/AzRefactor/JoltSceneInterface.h
+        Source/System/JoltSceneInterface.cpp
+        Source/System/JoltSceneInterface.h
     )
