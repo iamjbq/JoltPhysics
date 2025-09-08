@@ -12,6 +12,8 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 
+#include <Scene/JoltScene.h>
+
 
 namespace JPH
 {
@@ -25,7 +27,7 @@ namespace Physics
 
 namespace JoltPhysics
 {
-    class JoltScene;
+    class Material;
 
     class Shape
         : public Physics::Shape

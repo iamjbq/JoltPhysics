@@ -34,4 +34,6 @@ set(FILES
 
         Source/Scene/JoltSceneInterface.cpp
         Source/Scene/JoltSceneInterface.h
+
+        Source/Material/JoltMaterial.cpp
     )
