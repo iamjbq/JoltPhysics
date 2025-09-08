@@ -53,7 +53,7 @@ namespace JoltPhysics
 
         AZ::u32 GetShapeCount() const override;
         AZStd::shared_ptr<Physics::Shape> GetShape(AZ::u32 index) override;
-        AZStd::shared_ptr<const Physics::Shape> GetShape(AZ::u32 index) const override;
+        AZStd::shared_ptr<const Physics::Shape> GetShape(AZ::u32 index) const override;;
 
         AZ::Vector3 GetCenterOfMassWorld() const override;
         AZ::Vector3 GetCenterOfMassLocal() const override;

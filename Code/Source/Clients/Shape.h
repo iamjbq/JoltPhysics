@@ -81,5 +81,7 @@ namespace JoltPhysics
         AzPhysics::CollisionGroup m_collisionGroup;
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         AZ::Crc32 m_tag;
+
+        Shape() = default;
     };
 } // JoltPhysics

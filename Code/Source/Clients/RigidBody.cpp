@@ -8,6 +8,9 @@
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 
+#include <JoltPhysics/MathConversions.h>
+#include <Clients/Shape.h>
+
 namespace JoltPhysics
 {
     void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
@@ -54,14 +57,12 @@ namespace JoltPhysics
         return AZStd::const_pointer_cast<Physics::Shape>(constShape);
     }
 
-    AZStd::shared_ptr<const Physics::Shape> RigidBody::GetShape([[maybe_unused]] AZ::u32 index) const
+    AZStd::shared_ptr<const Physics::Shape> RigidBody::GetShape(AZ::u32 index) const
     {
-        // if (index >= m_shapes.size())
-        // {
-        //     return nullptr;
-        // }
-        // return m_shapes[index];
-
-        return nullptr;
+        if (index >= m_shapes.size())
+        {
+            return nullptr;
+        }
+        return m_shapes[index];
     }
 }
