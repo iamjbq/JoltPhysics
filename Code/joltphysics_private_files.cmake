@@ -24,14 +24,14 @@ set(FILES
         Source/System/JoltBodyInterface.cpp
         Source/System/JoltBodyInterface.h
 
-        Source/System/JoltScene.cpp
-        Source/System/JoltScene.h
+        Source/Scene/JoltScene.cpp
+        Source/Scene/JoltScene.h
 
         Source/System/JoltSystem.cpp
         Source/System/JoltSystem.h
 
         Source/Configuration/JoltConfiguration.cpp
 
-        Source/System/JoltSceneInterface.cpp
-        Source/System/JoltSceneInterface.h
+        Source/Scene/JoltSceneInterface.cpp
+        Source/Scene/JoltSceneInterface.h
     )

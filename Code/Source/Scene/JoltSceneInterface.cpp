@@ -1,5 +1,5 @@
 
-#include <System/JoltSceneInterface.h>
+#include <Scene/JoltSceneInterface.h>
 #include <System/JoltSystem.h>
 
 #include <AzFramework/Physics/Common/PhysicsJoint.h>

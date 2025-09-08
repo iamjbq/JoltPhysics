@@ -7,7 +7,7 @@
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
-#include <System/JoltSceneInterface.h>
+#include <Scene/JoltSceneInterface.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 
 

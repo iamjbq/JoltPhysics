@@ -11,7 +11,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <System/JoltSystem.h>
-#include <System/JoltScene.h>
+#include <Scene/JoltScene.h>
 #include <System/JoltJobSystemThreaded.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 
