@@ -31,9 +31,10 @@ namespace JoltPhysics
 
         RigidBodyConfiguration() = default;
         virtual ~RigidBodyConfiguration() = default;
-        
 
         static void Reflect(AZ::ReflectContext* context);
+
+        // TODO: Determine if there is anything that needs to be here
     };
 
     class RigidBody
