@@ -47,7 +47,7 @@ namespace JoltPhysics
 
         EditorRigidBodyComponent();
         explicit EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration);
-        EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& physxSpecificConfiguration);
+        EditorRigidBodyComponent(const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& joltSpecificConfiguration);
         ~EditorRigidBodyComponent() = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -120,7 +120,7 @@ namespace JoltPhysics
         // Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
         EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
-        RigidBodyConfiguration m_physxSpecificConfig; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.
+        RigidBodyConfiguration m_joltSpecificConfig; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.
         AzPhysics::SimulatedBodyHandle m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
 

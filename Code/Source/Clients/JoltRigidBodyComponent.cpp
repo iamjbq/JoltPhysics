@@ -1,14 +1,20 @@
 
-#include "JoltRigidBodyComponent.h"
-
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Configuration/SceneConfiguration.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Utils.h>
+
+#include <Clients/JoltRigidBodyComponent.h>
+#include <Clients/RigidBody.h>
+#include <Clients/Shape.h>
 
 namespace JoltPhysics
 {
-    AZ_COMPONENT_IMPL(JoltRigidBodyComponent, "JoltRigidBodyComponent", "{281F429A-4D56-4391-9E81-A7F696006061}");
-
     void JoltRigidBodyComponent::Activate()
     {
         JoltRigidBodyRequestBus::Handler::BusConnect(GetEntityId());
@@ -19,8 +25,27 @@ namespace JoltPhysics
         JoltRigidBodyRequestBus::Handler::BusDisconnect(GetEntityId());
     }
 
+    void JoltRigidBodyComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+
+    }
+
+    int JoltRigidBodyComponent::GetTickOrder()
+    {
+        return AZ::ComponentTickBus::TICK_PHYSICS;
+    }
+
+    void JoltRigidBodyComponent::InitPhysicsTickHandler()
+    {
+
+    }
+
+
     void JoltRigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
+        RigidBodyConfiguration::Reflect(context);
+        RigidBody::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JoltRigidBodyComponent, AZ::Component>()
@@ -46,20 +71,26 @@ namespace JoltPhysics
         }
     }
 
-    void JoltRigidBodyComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    JoltRigidBodyComponent::JoltRigidBodyComponent()
     {
-        provided.push_back(AZ_CRC_CE("JoltRigidBodyComponentService"));
+        InitPhysicsTickHandler();
     }
 
-    void JoltRigidBodyComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    JoltRigidBodyComponent::JoltRigidBodyComponent(const AzPhysics::RigidBodyConfiguration& config, AzPhysics::SceneHandle sceneHandle)
+        : m_configuration(config)
+        , m_attachedSceneHandle(sceneHandle)
     {
+        InitPhysicsTickHandler();
     }
 
-    void JoltRigidBodyComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    JoltRigidBodyComponent::JoltRigidBodyComponent(
+        const AzPhysics::RigidBodyConfiguration& baseConfig,
+        const RigidBodyConfiguration& joltSpecificConfig,
+        AzPhysics::SceneHandle sceneHandle)
+        : m_configuration(baseConfig)
+        , m_joltSpecificConfiguration(joltSpecificConfig)
+        , m_attachedSceneHandle(sceneHandle)
     {
-    }
-
-    void JoltRigidBodyComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
+        InitPhysicsTickHandler();
     }
 } // namespace JoltPhysics
