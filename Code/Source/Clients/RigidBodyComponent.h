@@ -26,11 +26,11 @@ namespace JoltPhysics
 
     /*
     * TODO: Register this component in your Gem's AZ::Module interface by inserting the following into the list of m_descriptors:
-    *       JoltRigidBodyComponent::CreateDescriptor(),
+    *       RigidBodyComponent::CreateDescriptor(),
     */
 
     /// Component used to register an entity as a dynamic rigid body in the PhysX simulation.
-    class JoltRigidBodyComponent
+    class RigidBodyComponent
         : public AZ::Component
         , public JoltRigidBodyRequestBus::Handler
         , public AZ::EntityBus::Handler
@@ -40,17 +40,17 @@ namespace JoltPhysics
         , protected AZ::TransformNotificationBus::MultiHandler
     {
     public:
-        AZ_COMPONENT(JoltRigidBodyComponent, "{1AB9E4FD-5513-4B17-BB1E-55EC0CF41F16}");
+        AZ_COMPONENT(RigidBodyComponent, "{1AB9E4FD-5513-4B17-BB1E-55EC0CF41F16}");
 
         static void Reflect(AZ::ReflectContext* context);
 
-        JoltRigidBodyComponent();
-        explicit JoltRigidBodyComponent(const AzPhysics::RigidBodyConfiguration& config, AzPhysics::SceneHandle sceneHandle);
-        JoltRigidBodyComponent(
+        RigidBodyComponent();
+        explicit RigidBodyComponent(const AzPhysics::RigidBodyConfiguration& config, AzPhysics::SceneHandle sceneHandle);
+        RigidBodyComponent(
             const AzPhysics::RigidBodyConfiguration& baseConfig,
             const RigidBodyConfiguration& joltSpecificConfig,
             AzPhysics::SceneHandle sceneHandle);
-        ~JoltRigidBodyComponent() override = default;
+        ~RigidBodyComponent() override = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
@@ -142,6 +142,7 @@ namespace JoltPhysics
         // AZ::EntityBus overrides ...
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
+        // Optionally will perform interpolation outside of simulation loop
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
 
@@ -152,7 +153,7 @@ namespace JoltPhysics
         void SetupConfiguration();
         void CreateRigidBody();
         void DestroyRigidBody();
-        void ApplyPhysxSpecificConfiguration();
+        void ApplyJoltSpecificConfiguration();
         void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
 

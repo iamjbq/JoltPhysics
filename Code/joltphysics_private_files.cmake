@@ -6,8 +6,8 @@ set(FILES
         Source/Clients/JoltPhysicsSystemComponent.cpp
         Source/Clients/JoltPhysicsSystemComponent.h
 
-        Source/Clients/JoltRigidBodyComponent.cpp
-        Source/Clients/JoltRigidBodyComponent.h
+        Source/Clients/RigidBodyComponent.cpp
+        Source/Clients/RigidBodyComponent.h
 
         Source/Clients/RigidBody.cpp
         Source/Clients/RigidBody.h
