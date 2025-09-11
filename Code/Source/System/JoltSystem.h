@@ -37,7 +37,7 @@ namespace JoltPhysics
         virtual ~JoltSystem();
 
         // SystemInterface interface ...
-        void Initialize(const AzPhysics::SystemConfiguration* config) override; // TODO: Constructor should take std Jolt classes for filters and phases
+        void Initialize(const AzPhysics::SystemConfiguration* config) override;
         void Reinitialize() override;
         void Shutdown() override;
         void Simulate(float deltaTime) override;

@@ -65,4 +65,17 @@ namespace JoltPhysics
         }
         return m_shapes[index];
     }
+
+    void RigidBody::UpdateMassProperties(
+        AzPhysics::MassComputeFlags flags,
+        const AZ::Vector3& centerOfMassOffsetOverride,
+        const AZ::Matrix3x3& inertiaTensorOverride,
+        const float massOverride)
+    {
+        const bool computeCenterOfMass = AzPhysics::MassComputeFlags::COMPUTE_COM == (flags & AzPhysics::MassComputeFlags::COMPUTE_COM);
+        const bool computeInertiaTensor = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
+        const bool computeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
+        const bool needsCompute = computeCenterOfMass || computeInertiaTensor || computeMass;
+        const bool includeAllShapesInMassCalculation = AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
+    }
 }

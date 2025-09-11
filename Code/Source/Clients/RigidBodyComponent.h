@@ -24,11 +24,6 @@ namespace JoltPhysics
 {
     class TransformForwardTimeInterpolator;
 
-    /*
-    * TODO: Register this component in your Gem's AZ::Module interface by inserting the following into the list of m_descriptors:
-    *       RigidBodyComponent::CreateDescriptor(),
-    */
-
     /// Component used to register an entity as a dynamic rigid body in the PhysX simulation.
     class RigidBodyComponent
         : public AZ::Component

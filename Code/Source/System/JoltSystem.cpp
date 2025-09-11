@@ -18,7 +18,7 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
-// only enable physx timestep warning when not running debug or in Release
+// only enable Jolt timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
 #define ENABLE_JOLT_TIMESTEP_WARNING
 #endif
@@ -72,7 +72,6 @@ namespace JoltPhysics
             return;
         }
 
-        // TODO: Implement the native Jolt variant
         if (const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(config))
         {
             m_systemConfig = *joltConfig;

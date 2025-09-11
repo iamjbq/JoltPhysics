@@ -132,27 +132,4 @@ namespace JoltPhysics
                                 AZStd::vector<ShapeColliderPair>,
                                 AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>;
 
-    // Motion types matching Jolt but AZ-style
-    enum class MotionType : uint8_t // TODO: Find the AzPhysics analogue
-    {
-        Static = 0,
-        Kinematic,
-        Dynamic
-    };
-
-    // Activation states
-    enum class ActivationState : uint8_t
-    {
-        Active = 0,
-        Inactive
-    };
-
-    // // Object layers (might want more sophisticated layer management later)
-    // enum class ObjectLayer : uint16_t
-    // {
-    //     Static = 0,
-    //     Moving = 1,
-    //     Debris = 2,
-    //     // Add more as needed
-    // };
 } // namespace JoltPhysics

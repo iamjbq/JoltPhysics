@@ -85,7 +85,6 @@ namespace JoltPhysics
             }
         }
 
-        // TODO: Check if Jolt does this internally
         if (m_configuration.m_interpolateMotion)
         {
             AZ::TickBus::Handler::BusConnect();
