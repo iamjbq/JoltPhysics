@@ -9,6 +9,7 @@ namespace JoltPhysics
 {
     namespace JoltInternal
     {
+        // To work with Jolt 32-bit ObjectLayers, will
         AzPhysics::CollisionConfiguration CreateDefaultCollisionConfiguration()
         {
             AzPhysics::CollisionConfiguration configuration;

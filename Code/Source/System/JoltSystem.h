@@ -62,7 +62,15 @@ namespace JoltPhysics
 
         AZ::Debug::PerformanceCollector* GetPerformanceCollector();
 
+        // Convenience functions to get the actual index of a collision group
+        AZ::u64 GetCollisionGroupIndex(const AzPhysics::CollisionGroup& group) const;
+        AZ::u64 GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id & groupId) const;
+
+        // System may not be the best place to access this, but let's start here
+        AZ::u64 GetCollisionMask(const AZ::u64 index) const;
+
     private:
+        AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers> m_collisionGroupMasks;
         JoltSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
         AzPhysics::SceneList m_sceneList;
