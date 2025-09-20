@@ -373,11 +373,11 @@ namespace JoltPhysics
         return m_performanceCollector.get();
     }
 
-    AZ::u64 JoltSystem::GetCollisionGroupIndex(const AzPhysics::CollisionGroup& group) const
+    AZ::u32 JoltSystem::GetCollisionGroupIndex(const AzPhysics::CollisionGroup& group) const
     {
         const AZStd::vector<AzPhysics::CollisionGroups::Preset>& presets = m_systemConfig.m_collisionConfig.m_collisionGroups.GetPresets();
 
-        for (AZ::u64 i = 0; i < presets.size(); ++i)
+        for (AZ::u32 i = 0; i < presets.size(); ++i)
         {
             if (presets.at(i).m_group == group)
                 return i;
@@ -386,11 +386,11 @@ namespace JoltPhysics
         return 0;
     }
 
-    AZ::u64 JoltSystem::GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id& groupId) const
+    AZ::u32 JoltSystem::GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id& groupId) const
     {
         const AZStd::vector<AzPhysics::CollisionGroups::Preset>& presets = m_systemConfig.m_collisionConfig.m_collisionGroups.GetPresets();
 
-        for (AZ::u64 i = 0; i < presets.size(); ++i)
+        for (AZ::u32 i = 0; i < presets.size(); ++i)
         {
             if (presets.at(i).m_id == groupId)
                 return i;
@@ -399,7 +399,7 @@ namespace JoltPhysics
         return 0;
     }
 
-    AZ::u64 JoltSystem::GetCollisionMask(const AZ::u64 index) const
+    AZ::u64 JoltSystem::GetCollisionMask(AZ::u32 index) const
     {
         return m_collisionGroupMasks.at(index);
     }
