@@ -67,7 +67,6 @@ namespace JoltPhysics
         AZ::u32 GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id & groupId) const;
 
         // System may not be the best place to access this, but let's start here
-        // TODO: Future me, it's probably excessive to use u64 for the index, but u8 is below vector size_type
         AZ::u64 GetCollisionMask(AZ::u32 index) const;
 
     private:
