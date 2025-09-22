@@ -6,14 +6,14 @@ set(FILES
         Source/Clients/JoltPhysicsSystemComponent.cpp
         Source/Clients/JoltPhysicsSystemComponent.h
 
-        Source/Clients/RigidBodyComponent.cpp
-        Source/Clients/RigidBodyComponent.h
+#        Source/Clients/RigidBodyComponent.cpp
+#        Source/Clients/RigidBodyComponent.h
 
-        Source/Clients/RigidBody.cpp
-        Source/Clients/RigidBody.h
-
-        Source/Clients/Shape.cpp
-        Source/Clients/Shape.h
+#        Source/Clients/RigidBody.cpp
+#        Source/Clients/RigidBody.h
+#
+#        Source/Clients/Shape.cpp
+#        Source/Clients/Shape.h
 
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h

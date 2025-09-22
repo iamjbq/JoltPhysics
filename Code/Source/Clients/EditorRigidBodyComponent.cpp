@@ -1,6 +1,6 @@
 
 #include <Clients/EditorRigidBodyComponent.h>
-#include <Clients/RigidBodyComponent.h>
+// #include <Clients/RigidBodyComponent.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -23,9 +23,9 @@ namespace JoltPhysics
     {
     }
 
-    void EditorRigidBodyComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    void EditorRigidBodyComponent::BuildGameEntity([[maybe_unused]] AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<JoltPhysics::RigidBodyComponent>(m_config, m_joltSpecificConfig, AzPhysics::InvalidSceneHandle);
+        // gameEntity->CreateComponent<JoltPhysics::RigidBodyComponent>(m_config, m_joltSpecificConfig, AzPhysics::InvalidSceneHandle);
     }
 
     void EditorRigidBodyComponent::Reflect(AZ::ReflectContext* context)
@@ -55,20 +55,4 @@ namespace JoltPhysics
         }
     }
 
-    void EditorRigidBodyComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-    {
-        provided.push_back(AZ_CRC_CE("JoltEditorRigidBodyComponentService"));
-    }
-
-    void EditorRigidBodyComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-    }
-
-    void EditorRigidBodyComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void EditorRigidBodyComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-    }
 } // namespace JoltPhysics

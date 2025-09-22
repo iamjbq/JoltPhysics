@@ -1,7 +1,10 @@
 
 #include "JoltPhysicsSystemComponent.h"
 
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
 #include <System/JoltSystem.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
@@ -9,8 +12,7 @@
 
 namespace JoltPhysics
 {
-    AZ_COMPONENT_IMPL(JoltPhysicsSystemComponent, "JoltPhysicsSystemComponent",
-        JoltPhysicsSystemComponentTypeId);
+    AZ_COMPONENT_IMPL(JoltPhysicsSystemComponent, "JoltPhysicsSystemComponent", JoltPhysicsSystemComponentTypeId);
 
     void JoltPhysicsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -41,20 +43,44 @@ namespace JoltPhysics
     }
 
     JoltPhysicsSystemComponent::JoltPhysicsSystemComponent()
+        : m_enabled(true)
+        , m_onSystemInitializedHandler(
+            [this](const AzPhysics::SystemConfiguration* config)
+            {
+                EnableAutoManagedPhysicsTick(config->m_autoManageSimulationUpdate);
+            })
+        , m_onSystemConfigChangedHandler(
+            [this](const AzPhysics::SystemConfiguration* config)
+            {
+                EnableAutoManagedPhysicsTick(config->m_autoManageSimulationUpdate);
+            })
     {
+
     }
 
     JoltPhysicsSystemComponent::~JoltPhysicsSystemComponent()
     {
+        // if (m_physicsSystem.Get() == this)
+        // {
+        //     m_physicsSystem.Unregister(this);
+        // }
     }
 
     void JoltPhysicsSystemComponent::Init()
     {
+        // if (m_physicsSystem.Get() == nullptr)
+        // {
+        //     m_physicsSystem.Register(this);
+        // }
     }
 
     void JoltPhysicsSystemComponent::Activate()
     {
-        JoltPhysicsRequestBus::Handler::BusConnect();
+        if (!m_enabled)
+        {
+            return;
+        }
+        // JoltPhysicsRequestBus::Handler::BusConnect();
 
         ActivateSimulation();
     }
@@ -62,7 +88,13 @@ namespace JoltPhysics
     void JoltPhysicsSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        JoltPhysicsRequestBus::Handler::BusDisconnect();
+        // JoltPhysicsRequestBus::Handler::BusDisconnect();
+
+        if (m_joltSystem != nullptr)
+        {
+            // m_joltSystem->Shutdown();
+            m_joltSystem = nullptr;
+        }
     }
 
     void JoltPhysicsSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)

@@ -27,6 +27,8 @@
 #include <Clients/RigidBody.h>
 #include <JoltPhysics/MathConversions.h>
 
+#include "System/CollisionLayerFilters.h"
+
 namespace JoltPhysics
 {
     namespace Internal
@@ -412,6 +414,12 @@ namespace JoltPhysics
     void* JoltScene::GetNativePointer() const
     {
         return m_joltSystem.get();
+    }
+
+    void JoltScene::InitializeJoltSystem()
+    {
+        // TODO: instantiate the collision classes in JoltSystem and pass references to Scene through config
+        // m_joltSystem.get()->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints);
     }
 
     // void JoltScene::FlushTransformSync()

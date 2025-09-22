@@ -1,13 +1,13 @@
 
 #pragma once
 
+#include <AzCore/base.h>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 
-#include "JoltSystem.h"
-#include "AzCore/std/typetraits/add_const.h"
+#include <System/JoltSystem.h> // TODO: This should not be necessary
 
 namespace AZ
 {
@@ -23,6 +23,7 @@ namespace AzPhysics
 
 namespace JoltPhysics
 {
+	class JoltSystem;
 	struct JoltSystemConfiguration;
 
 	// Each broadPhase layer results in a separate bounding volume tree in the broad phase. You at least want to have
@@ -75,17 +76,19 @@ namespace JoltPhysics
     class ObjectLayerPairFilterImpl final : public JPH::ObjectLayerPairFilter
     {
     public:
+    	ObjectLayerPairFilterImpl() = default;
+
     	// ObjectLayer structure is 1-8: BroadPhaseLayer, 9-16: CollisionLayer idx, 17-24: CollisionGroup idx
         [[nodiscard]] bool ShouldCollide(const JPH::ObjectLayer inObject1, const JPH::ObjectLayer inObject2) const override
         {
 			const AZ::u64 collisionLayer1 = 1ULL << static_cast<AZ::u8>(inObject1 >> 8);
         	const AZ::u64 collisionLayer2 = 1ULL << static_cast<AZ::u8>(inObject2 >> 8);
 
-        	// The mask vector should be passed by ref to this class to eliminate this
-			if (const JoltSystem* system = GetJoltSystem())
+        	// TODO: This needs to be an interface directly to avoid including the entire system header
+			if (JoltSystem* system = GetJoltSystem())
 			{
-				const AZ::u64 collisionMask1 = system->GetCollisionMask(inObject1 >> 16);
-				const AZ::u64 collisionMask2 = system->GetCollisionMask(inObject2 >> 16);
+				const AZ::u64 collisionMask1 = system->GetCollisionMask(static_cast<AZ::u32>(inObject1 >> 16));
+				const AZ::u64 collisionMask2 = system->GetCollisionMask(static_cast<AZ::u32>(inObject2 >> 16));
 
 				return (collisionMask1 & collisionLayer2) && (collisionMask2 & collisionLayer1);
 			}
@@ -94,7 +97,7 @@ namespace JoltPhysics
     };
 
 	// BroadPhaseLayerInterface implementation
-	// This defines a mapping between object and broadphase layers.
+	// This defines a mapping between object and broadPhase layers.
 	class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
 	{
 	public:
@@ -137,8 +140,6 @@ namespace JoltPhysics
 		}
 	#endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
 
-	private:
-
 	};
 
 	/// Class that determines if an object layer can collide with a broadPhase layer
@@ -149,7 +150,7 @@ namespace JoltPhysics
 		{
 			// BroadPhase is stored as index in ObjectLayer
 			const AZ::u8 mask1 = 1 << static_cast<AZ::u8>(inLayer1);
-			const AZ::u8 mask2 = GetBroadPhaseCollisionMask(static_cast<JoltBroadPhaseLayer>((AZ::u8)inLayer2));
+			const AZ::u8 mask2 = GetBroadPhaseCollisionMask(static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer2)));
 
 			return (mask1 & mask2) != 0;
 		}

@@ -21,7 +21,7 @@ namespace JoltPhysics
         // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(m_descriptors.end(), {
             JoltPhysicsSystemComponent::CreateDescriptor(),
-            RigidBodyComponent::CreateDescriptor(),
+            // RigidBodyComponent::CreateDescriptor(),
             });
     }
 

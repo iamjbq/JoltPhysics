@@ -23,6 +23,7 @@ endif()
 set(JOLTPHYSICS_GIT_REPO "https://github.com/jrouwe/JoltPhysics")
 set(JOLTPHYSICS_GIT_TAG "v5.3.0")
 
+
 include(FetchContent)
 FetchContent_Declare(
         JoltPhysics
@@ -31,6 +32,12 @@ FetchContent_Declare(
         UPDATE_DISCONNECTED TRUE
         SOURCE_SUBDIR "Jolt"
 )
+# Number of bits to use in ObjectLayer. Can be 16 or 32.
+set(OBJECT_LAYER_BITS 32)
+
+# When turning this option on, the library will be compiled in such a way to attempt to keep the simulation deterministic across platforms
+set(CROSS_PLATFORM_DETERMINISTIC OFF)
+
 
 # please always be really clear about what third parties your gem uses.
 message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 0373ec0 (License: MIT)")

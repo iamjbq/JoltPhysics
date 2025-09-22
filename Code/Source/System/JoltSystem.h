@@ -9,8 +9,7 @@
 
 #include <Scene/JoltSceneInterface.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
-
-
+// #include <System/CollisionLayerFilters.h>
 
 namespace AZ::Debug
 {
@@ -58,7 +57,6 @@ namespace JoltPhysics
 
         void SetCollisionLayerName(int index, const AZStd::string& layerName);
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group);
-        //TEMP -- until these are fully moved over here
 
         AZ::Debug::PerformanceCollector* GetPerformanceCollector();
 
@@ -77,6 +75,11 @@ namespace JoltPhysics
         AZStd::queue<AzPhysics::SceneIndex> m_freeSceneSlots; //when a scene is removed cache its index here to be used for the next add.
 
         float m_accumulatedTime = 0.0f;
+
+        // Collision filtering objects shared with all scenes
+        // JoltPhysics::BPLayerInterfaceImpl m_broadPhaseInterface;
+        // JoltPhysics::ObjectVsBroadPhaseLayerFilterImpl m_broadPhaseLayerFilter;
+        // JoltPhysics::ObjectLayerPairFilterImpl m_objectLayerPairFilter;
 
         enum class State : AZ::u8
         {
@@ -98,6 +101,7 @@ namespace JoltPhysics
 
         AZStd::unique_ptr<AZ::Debug::PerformanceCollector> m_performanceCollector;
     };
-    //! Helper function for getting the Jolt System  from inside the Jolt Physics gem.
+
+    //! Helper function for getting the Jolt System from inside the Jolt Physics gem.
     JoltSystem* GetJoltSystem();
 } // JoltPhysics

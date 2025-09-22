@@ -404,10 +404,9 @@ namespace JoltPhysics
         return m_collisionGroupMasks.at(index);
     }
 
-
     JoltSystem* GetJoltSystem()
     {
-        return azdynamic_cast<JoltSystem*>(AZ::Interface<JoltPhysics::JoltSystem>::Get());
+        return azdynamic_cast<JoltSystem*>(AZ::Interface<AzPhysics::SystemInterface>::Get());
     }
 
 } // JoltPhysics
