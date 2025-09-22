@@ -87,8 +87,8 @@ namespace JoltPhysics
         	// TODO: This needs to be an interface directly to avoid including the entire system header
 			if (JoltSystem* system = GetJoltSystem())
 			{
-				const AZ::u64 collisionMask1 = system->GetCollisionMask(static_cast<AZ::u32>(inObject1 >> 16));
-				const AZ::u64 collisionMask2 = system->GetCollisionMask(static_cast<AZ::u32>(inObject2 >> 16));
+				const AZ::u64 collisionMask1 = system->GetCollisionMask(inObject1 >> 16);
+				const AZ::u64 collisionMask2 = system->GetCollisionMask(inObject2 >> 16);
 
 				return (collisionMask1 & collisionLayer2) && (collisionMask2 & collisionLayer1);
 			}

@@ -82,9 +82,13 @@ namespace JoltPhysics
 
         // We need to store the raw bitmasks for direct collision lookup in Jolt
         // Since we don't have anything convenient like pxFilterData
-        for (const auto& preset : presets)
+        // for (const auto& preset : presets)
+        // {
+        //     m_collisionGroupMasks.push_back(preset.m_group.GetMask());
+        // }
+        for (AZ::u32 i = 0; i < presets.size(); ++i)
         {
-            m_collisionGroupMasks.push_back(preset.m_group.GetMask());
+            m_collisionGroupMasks[i] = presets.at(i).m_group.GetMask();
         }
 
         m_state = State::Initialized;
@@ -401,7 +405,8 @@ namespace JoltPhysics
 
     AZ::u64 JoltSystem::GetCollisionMask(AZ::u32 index) const
     {
-        return m_collisionGroupMasks.at(index);
+        // return m_collisionGroupMasks.at(index);
+        return m_collisionGroupMasks[index];
     }
 
     JoltSystem* GetJoltSystem()

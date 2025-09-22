@@ -68,7 +68,9 @@ namespace JoltPhysics
         AZ::u64 GetCollisionMask(AZ::u32 index) const;
 
     private:
-        AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers> m_collisionGroupMasks;
+        // AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers> m_collisionGroupMasks;
+        AZ::u64 m_collisionGroupMasks[AzPhysics::CollisionLayers::MaxCollisionLayers];
+
         JoltSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
         AzPhysics::SceneList m_sceneList;
