@@ -7,9 +7,9 @@
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
-#include <Scene/JoltSceneInterface.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
-// #include <System/CollisionLayerFilters.h>
+#include <Scene/JoltSceneInterface.h>
+#include <System/CollisionLayerFilters.h>
 
 namespace AZ::Debug
 {
@@ -64,12 +64,10 @@ namespace JoltPhysics
         AZ::u32 GetCollisionGroupIndex(const AzPhysics::CollisionGroup& group) const;
         AZ::u32 GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id & groupId) const;
 
-        // System may not be the best place to access this, but let's start here
         AZ::u64 GetCollisionMask(AZ::u32 index) const;
 
     private:
-        // AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers> m_collisionGroupMasks;
-        AZ::u64 m_collisionGroupMasks[AzPhysics::CollisionLayers::MaxCollisionLayers];
+        AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers> m_collisionGroupMasks;
 
         JoltSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
@@ -77,11 +75,6 @@ namespace JoltPhysics
         AZStd::queue<AzPhysics::SceneIndex> m_freeSceneSlots; //when a scene is removed cache its index here to be used for the next add.
 
         float m_accumulatedTime = 0.0f;
-
-        // Collision filtering objects shared with all scenes
-        // JoltPhysics::BPLayerInterfaceImpl m_broadPhaseInterface;
-        // JoltPhysics::ObjectVsBroadPhaseLayerFilterImpl m_broadPhaseLayerFilter;
-        // JoltPhysics::ObjectLayerPairFilterImpl m_objectLayerPairFilter;
 
         enum class State : AZ::u8
         {
@@ -91,10 +84,18 @@ namespace JoltPhysics
         };
         State m_state = State::Uninitialized;
 
+        // 10 MB is given in HelloWorld example, but this is ~268 MB
+        // TODO: Move to editor eventually
+        const unsigned int cAllocationArenaSize = 256 * 1024 * 1024;
+
         // All systems can share these as long as they are updated consecutively.
-        // Considering moving to an O3DE allocator in the future if any benefits
-        AZStd::shared_ptr<JPH::TempAllocatorImpl> m_allocator;
-        AZStd::shared_ptr<JoltJobSystemThreaded> m_jobSystem;
+        AZStd::unique_ptr<JPH::TempAllocatorImpl> m_allocator;
+        AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
+
+        // Collision filtering objects shared with all scenes
+        BPLayerInterfaceImpl m_broadPhaseInterface;
+        ObjectVsBroadPhaseLayerFilterImpl m_objectVsBroadPhaseLayerFilter;
+        ObjectLayerPairFilterImpl m_objectLayerPairFilter;
 
         JoltSceneInterface m_sceneInterface; //! Implement the Scene Az::Interface.
 

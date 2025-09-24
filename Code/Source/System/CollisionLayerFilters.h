@@ -7,8 +7,6 @@
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 
-#include <System/JoltSystem.h> // TODO: This should not be necessary
-
 namespace AZ
 {
 	class ReflectContext;
@@ -76,24 +74,13 @@ namespace JoltPhysics
     class ObjectLayerPairFilterImpl final : public JPH::ObjectLayerPairFilter
     {
     public:
-    	ObjectLayerPairFilterImpl() = default;
+		ObjectLayerPairFilterImpl();
 
     	// ObjectLayer structure is 1-8: BroadPhaseLayer, 9-16: CollisionLayer idx, 17-24: CollisionGroup idx
-        [[nodiscard]] bool ShouldCollide(const JPH::ObjectLayer inObject1, const JPH::ObjectLayer inObject2) const override
-        {
-			const AZ::u64 collisionLayer1 = 1ULL << static_cast<AZ::u8>(inObject1 >> 8);
-        	const AZ::u64 collisionLayer2 = 1ULL << static_cast<AZ::u8>(inObject2 >> 8);
+        [[nodiscard]] bool ShouldCollide(const JPH::ObjectLayer inObject1, const JPH::ObjectLayer inObject2) const override;
 
-        	// TODO: This needs to be an interface directly to avoid including the entire system header
-			if (JoltSystem* system = GetJoltSystem())
-			{
-				const AZ::u64 collisionMask1 = system->GetCollisionMask(inObject1 >> 16);
-				const AZ::u64 collisionMask2 = system->GetCollisionMask(inObject2 >> 16);
-
-				return (collisionMask1 & collisionLayer2) && (collisionMask2 & collisionLayer1);
-			}
-        	return false;
-        }
+    private:
+    	JoltSystem* m_joltSystem = nullptr;
     };
 
 	// BroadPhaseLayerInterface implementation
@@ -110,8 +97,7 @@ namespace JoltPhysics
 
 		[[nodiscard]] JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
 		{
-			// We don't have a way to enforce this asset in the form that ObjectLayers are
-			// JPH_ASSERT(inLayer < Layers::NUM_LAYERS);
+			JPH_ASSERT(inLayer != 0);
 			return JPH::BroadPhaseLayer(static_cast<AZ::u8>(inLayer));
 		}
 
@@ -146,6 +132,8 @@ namespace JoltPhysics
 	class ObjectVsBroadPhaseLayerFilterImpl final : public JPH::ObjectVsBroadPhaseLayerFilter
 	{
 	public:
+		ObjectVsBroadPhaseLayerFilterImpl() = default;
+
 		[[nodiscard]] bool ShouldCollide(const JPH::ObjectLayer inLayer1, const JPH::BroadPhaseLayer inLayer2) const override
 		{
 			// BroadPhase is stored as index in ObjectLayer

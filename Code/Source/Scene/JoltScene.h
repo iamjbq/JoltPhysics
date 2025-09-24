@@ -7,6 +7,8 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 
+#include <System/CollisionLayerFilters.h>
+
 namespace JPH
 {
     class PhysicsSystem;
@@ -99,7 +101,6 @@ namespace JoltPhysics
         void InitializeJoltSystem();
 
     private:
-
         bool m_isEnabled = true;
 
         // Accumulated delta time over multiple simulation sub-steps.
@@ -128,9 +129,11 @@ namespace JoltPhysics
         AZ::u32 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
 
         AZStd::unique_ptr<JPH::PhysicsSystem> m_joltSystem; //!< The underlying Jolt System
+
+        // Cached variables to save look-up as they are inputs for every physics update loop
         JPH::JobSystem* m_jobSystem = nullptr;
         JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
-        int m_collisionSteps = 1;
+        int m_collisionSteps = 1; // TODO: Should move to the editor eventually
 
         AZ::Vector3 m_gravity; // cache the gravity of the scene to avoid a lock in GetGravity().
     };

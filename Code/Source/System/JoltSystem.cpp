@@ -11,13 +11,14 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/PhysicsSettings.h>
+
 #include <System/JoltSystem.h>
 #include <Scene/JoltScene.h>
 #include <System/JoltJobSystemThreaded.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
-
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/PhysicsSystem.h>
 
 // only enable Jolt timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -57,7 +58,6 @@ namespace JoltPhysics
     JoltSystem::JoltSystem()
         : m_sceneInterface(this)
     {
-
     }
 
     JoltSystem::~JoltSystem()
@@ -82,14 +82,13 @@ namespace JoltPhysics
 
         // We need to store the raw bitmasks for direct collision lookup in Jolt
         // Since we don't have anything convenient like pxFilterData
-        // for (const auto& preset : presets)
-        // {
-        //     m_collisionGroupMasks.push_back(preset.m_group.GetMask());
-        // }
-        for (AZ::u32 i = 0; i < presets.size(); ++i)
+        for (const auto& preset : presets)
         {
-            m_collisionGroupMasks[i] = presets.at(i).m_group.GetMask();
+            m_collisionGroupMasks.push_back(preset.m_group.GetMask());
         }
+
+        m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(cAllocationArenaSize);
+        m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -405,8 +404,7 @@ namespace JoltPhysics
 
     AZ::u64 JoltSystem::GetCollisionMask(AZ::u32 index) const
     {
-        // return m_collisionGroupMasks.at(index);
-        return m_collisionGroupMasks[index];
+        return m_collisionGroupMasks.at(index);
     }
 
     JoltSystem* GetJoltSystem()

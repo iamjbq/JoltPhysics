@@ -135,6 +135,8 @@ namespace JoltPhysics
             m_overlapBufferSize = config->m_overlapBufferSize;
         })
     {
+
+
         m_joltSystem = AZStd::make_unique<JPH::PhysicsSystem>();
 
         AZ_Assert(m_joltSystem != nullptr, "JPH::PhysicsSystem creation failed.");
@@ -418,8 +420,8 @@ namespace JoltPhysics
 
     void JoltScene::InitializeJoltSystem()
     {
-        // TODO: instantiate the collision classes in JoltSystem and pass references to Scene through config
-        // m_joltSystem.get()->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints);
+        // TODO: Pass references to Scene through config
+        // m_joltSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, m_broadPhaseInterface, m_objectVsBroadPhaseLayerFilter, m_objectLayerPairFilter);
     }
 
     // void JoltScene::FlushTransformSync()

@@ -66,8 +66,8 @@ namespace JoltPhysics
         
         unsigned int m_numWorkerThreads = 0;
         
-        AZStd::shared_ptr<AZ::JobManager> m_jobManager;
-        AZStd::shared_ptr<AZ::JobContext> m_jobContext;
+        AZStd::unique_ptr<AZ::JobManager> m_jobManager;
+        AZStd::unique_ptr<AZ::JobContext> m_jobContext;
         
         /// Boolean to indicate that we want to stop the job system
         std::atomic<bool> mQuit = false;

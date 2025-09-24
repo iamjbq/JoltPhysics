@@ -43,10 +43,10 @@ namespace JoltPhysics
         {
             jobDesc.m_workerThreads.push_back({ static_cast<int>(i) });
         }
-        // m_jobManager = AZStd::make_unique<AZ::JobManager>(jobDesc);
-        m_jobManager = AZStd::shared_ptr<AZ::JobManager>(aznew AZ::JobManager(jobDesc));
-        // m_jobContext = AZStd::make_unique<AZ::JobContext>(*m_jobManager);
-        m_jobContext = AZStd::shared_ptr<AZ::JobContext>(aznew AZ::JobContext(*m_jobManager));
+        m_jobManager = AZStd::make_unique<AZ::JobManager>(jobDesc);
+        // m_jobManager = AZStd::shared_ptr<AZ::JobManager>(aznew AZ::JobManager(jobDesc));
+        m_jobContext = AZStd::make_unique<AZ::JobContext>(*m_jobManager);
+        // m_jobContext = AZStd::shared_ptr<AZ::JobContext>(aznew AZ::JobContext(*m_jobManager));
     }
 
     JPH::JobHandle JoltJobSystemThreaded::CreateJob(const char* inName, JPH::ColorArg inColor, const JobFunction& inJobFunction, JPH::uint32 inNumDependencies)
