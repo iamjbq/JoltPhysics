@@ -89,6 +89,16 @@ namespace JoltPhysics
             m_collisionGroupMasks.push_back(preset.m_group.GetMask());
         }
 
+        JPH::RegisterDefaultAllocator();
+        // Placing these for reference for future
+        // JPH::Trace = ; // TODO: Trace Impl
+        // JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = JoltAssertFailed);
+        // JPH::Allocate = ;
+        // JPH::Free = ;
+        // JPH::Reallocate = ;
+        // JPH::AlignedAllocate = ;
+        // JPH::AlignedFree = ;
+
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();
 
