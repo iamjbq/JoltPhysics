@@ -14,6 +14,8 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/PhysicsSettings.h>
+#include <Jolt/Core/Factory.h>
+#include <Jolt/RegisterTypes.h>
 
 #include <System/JoltSystem.h>
 #include <Scene/JoltScene.h>
@@ -86,6 +88,9 @@ namespace JoltPhysics
         {
             m_collisionGroupMasks.push_back(preset.m_group.GetMask());
         }
+
+        JPH::Factory::sInstance = new JPH::Factory();
+        JPH::RegisterTypes();
 
         m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(cAllocationArenaSize);
         m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
