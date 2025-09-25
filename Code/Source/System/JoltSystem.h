@@ -65,6 +65,14 @@ namespace JoltPhysics
         AZ::u32 GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id & groupId) const;
 
         AZ::u64 GetCollisionMask(AZ::u32 index) const;
+        AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* GetCollisionMasks();
+
+        // Jolt Physics System Init helpers
+        JPH::TempAllocatorImpl* GetJoltAllocator();
+        JoltJobSystemThreaded* GetJoltJobSystem();
+        BroadPhaseLayerInterfaceImpl& GetBroadPhaseLayerInterface();
+        ObjectVsBroadPhaseLayerFilterImpl& GetObjectVsBroadPhaseLayerFilter();
+        ObjectLayerPairFilterImpl& GetObjectLayerPairFilter();
 
     private:
         AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers> m_collisionGroupMasks;
@@ -93,7 +101,7 @@ namespace JoltPhysics
         AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
 
         // Collision filtering objects shared with all scenes
-        BPLayerInterfaceImpl m_broadPhaseInterface;
+        BroadPhaseLayerInterfaceImpl m_broadPhaseInterface;
         ObjectVsBroadPhaseLayerFilterImpl m_objectVsBroadPhaseLayerFilter;
         ObjectLayerPairFilterImpl m_objectLayerPairFilter;
 

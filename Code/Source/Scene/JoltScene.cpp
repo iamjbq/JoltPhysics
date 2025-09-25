@@ -17,17 +17,17 @@
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
+#include <System/JoltSystem.h>
 #include <Clients/RigidBody.h>
 #include <JoltPhysics/MathConversions.h>
-
 #include "System/CollisionLayerFilters.h"
+#include "System/JoltJobSystemThreaded.h"
 
 namespace JoltPhysics
 {
@@ -136,6 +136,11 @@ namespace JoltPhysics
         })
     {
 
+        if (JoltSystem* system = GetJoltSystem())
+        {
+            m_jobSystem = system->GetJoltJobSystem();
+            m_tempAllocator = system->GetJoltAllocator();
+        }
 
         m_joltSystem = AZStd::make_unique<JPH::PhysicsSystem>();
 
@@ -420,8 +425,13 @@ namespace JoltPhysics
 
     void JoltScene::InitializeJoltSystem()
     {
-        // TODO: Pass references to Scene through config
-        // m_joltSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, m_broadPhaseInterface, m_objectVsBroadPhaseLayerFilter, m_objectLayerPairFilter);
+        if (JoltSystem* system = GetJoltSystem())
+        {
+            m_joltSystem->Init(
+                cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
+                system->GetBroadPhaseLayerInterface(), system->GetObjectVsBroadPhaseLayerFilter(), system->GetObjectLayerPairFilter()
+            );
+        }
     }
 
     // void JoltScene::FlushTransformSync()

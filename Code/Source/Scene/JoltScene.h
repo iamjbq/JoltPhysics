@@ -19,6 +19,8 @@ namespace JPH
 
 namespace JoltPhysics
 {
+    class JoltJobSystemThreaded;
+
     // TODO: These need to be defined in a JoltSpecificConfig
     // This is the max amount of rigid bodies that you can add to the physics system. If you try to add more you'll get an error.
     // Note: This value is low because this is a simple test. For a real project use something in the order of 65536.
@@ -131,7 +133,7 @@ namespace JoltPhysics
         AZStd::unique_ptr<JPH::PhysicsSystem> m_joltSystem; //!< The underlying Jolt System
 
         // Cached variables to save look-up as they are inputs for every physics update loop
-        JPH::JobSystem* m_jobSystem = nullptr;
+        JoltJobSystemThreaded* m_jobSystem = nullptr;
         JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
         int m_collisionSteps = 1; // TODO: Should move to the editor eventually
 

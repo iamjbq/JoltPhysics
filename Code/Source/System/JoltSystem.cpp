@@ -407,6 +407,36 @@ namespace JoltPhysics
         return m_collisionGroupMasks.at(index);
     }
 
+    AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* JoltSystem::GetCollisionMasks()
+    {
+        return &m_collisionGroupMasks;
+    }
+
+    JPH::TempAllocatorImpl* JoltSystem::GetJoltAllocator()
+    {
+        return m_allocator.get();
+    }
+
+    JoltJobSystemThreaded* JoltSystem::GetJoltJobSystem()
+    {
+        return m_jobSystem.get();
+    }
+
+    BroadPhaseLayerInterfaceImpl& JoltSystem::GetBroadPhaseLayerInterface()
+    {
+        return m_broadPhaseInterface;
+    }
+
+    ObjectVsBroadPhaseLayerFilterImpl& JoltSystem::GetObjectVsBroadPhaseLayerFilter()
+    {
+        return m_objectVsBroadPhaseLayerFilter;
+    }
+
+    ObjectLayerPairFilterImpl& JoltSystem::GetObjectLayerPairFilter()
+    {
+        return m_objectLayerPairFilter;
+    }
+
     JoltSystem* GetJoltSystem()
     {
         return azdynamic_cast<JoltSystem*>(AZ::Interface<AzPhysics::SystemInterface>::Get());

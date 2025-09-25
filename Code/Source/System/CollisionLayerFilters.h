@@ -2,10 +2,13 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include "AzCore/std/containers/fixed_vector.h"
+#include "AzFramework/Physics/Collision/CollisionLayers.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+
 
 namespace AZ
 {
@@ -80,15 +83,15 @@ namespace JoltPhysics
         [[nodiscard]] bool ShouldCollide(const JPH::ObjectLayer inObject1, const JPH::ObjectLayer inObject2) const override;
 
     private:
-    	JoltSystem* m_joltSystem = nullptr;
+    	AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* m_collisionGroupMasks;
     };
 
 	// BroadPhaseLayerInterface implementation
 	// This defines a mapping between object and broadPhase layers.
-	class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
+	class BroadPhaseLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
 	{
 	public:
-		BPLayerInterfaceImpl() = default;
+		BroadPhaseLayerInterfaceImpl() = default;
 
 		[[nodiscard]] JPH::uint	GetNumBroadPhaseLayers() const override
 		{
