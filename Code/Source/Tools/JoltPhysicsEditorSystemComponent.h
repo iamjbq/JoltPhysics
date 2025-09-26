@@ -2,6 +2,8 @@
 #pragma once
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Clients/JoltPhysicsSystemComponent.h>
 
@@ -10,7 +12,10 @@ namespace JoltPhysics
     /// System component for JoltPhysics editor
     class JoltPhysicsEditorSystemComponent
         : public JoltPhysicsSystemComponent
+        , public Physics::EditorWorldBus::Handler
+        , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , protected AzToolsFramework::EditorEvents::Bus::Handler
+        , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
         using BaseSystemComponent = JoltPhysicsSystemComponent;
     public:
@@ -18,8 +23,21 @@ namespace JoltPhysics
 
         static void Reflect(AZ::ReflectContext* context);
 
-        JoltPhysicsEditorSystemComponent();
-        ~JoltPhysicsEditorSystemComponent();
+        JoltPhysicsEditorSystemComponent() = default;
+        JoltPhysicsEditorSystemComponent(const JoltPhysicsEditorSystemComponent&) = delete;
+        JoltPhysicsEditorSystemComponent& operator=(const JoltPhysicsEditorSystemComponent&) = delete;
+
+        // Physics::EditorWorldBus overrides...
+        AzPhysics::SceneHandle GetEditorSceneHandle() const override;
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionRegistrationHook() override;
+        void OnActionContextModeBindingHook() override;
+        void OnMenuBindingHook() override;
+
+    protected:
+        // AztoolsFramework::EditorEvents overrides...
+        void NotifyRegisterViews() override;
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -30,5 +48,11 @@ namespace JoltPhysics
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
+
+        // AzToolsFramework::EditorEntityContextNotificationBus overrides...
+        void OnStartPlayInEditorBegin() override;
+        void OnStopPlayInEditor() override;
+
+        AzPhysics::SceneHandle m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 } // namespace JoltPhysics

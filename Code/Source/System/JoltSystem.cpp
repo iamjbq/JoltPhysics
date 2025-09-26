@@ -75,6 +75,8 @@ namespace JoltPhysics
             return;
         }
 
+        AZ_Printf("JoltSystem", "Beginning of Initialize")
+
         if (const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(config))
         {
             m_systemConfig = *joltConfig;
@@ -107,6 +109,8 @@ namespace JoltPhysics
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
+
+        AZ_Printf("JoltSystem", "End of Initialize")
     }
 
     void JoltSystem::Reinitialize()
@@ -121,7 +125,16 @@ namespace JoltPhysics
             return;
         }
 
+        AZ_Printf("JoltSystem", "Shutting down")
+
         RemoveAllScenes();
+
+        // Unregisters all types with the factory and cleans up the default material
+        JPH::UnregisterTypes();
+
+        // Destroy the factory
+        delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
 
         m_accumulatedTime = 0.0f;
         m_state = State::Shutdown;
@@ -136,6 +149,8 @@ namespace JoltPhysics
             AZ_Warning("JoltSystem", false, "Called Simulate when Jolt system is not initialized");
             return;
         }
+
+        AZ_Printf("JoltSystem", "Simulate called")
 
         auto simulateScenes = [this](float timeStep)
         {

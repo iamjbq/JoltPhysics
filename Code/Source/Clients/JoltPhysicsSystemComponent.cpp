@@ -55,7 +55,7 @@ namespace JoltPhysics
                 EnableAutoManagedPhysicsTick(config->m_autoManageSimulationUpdate);
             })
     {
-
+        AZ_Printf("JoltSystemComponent", "Constructed")
     }
 
     JoltPhysicsSystemComponent::~JoltPhysicsSystemComponent()
@@ -129,8 +129,19 @@ namespace JoltPhysics
 
         if (m_joltSystem)
         {
-            // TODO: How to pass config in?
-            // m_joltSystem->Initialize();
+            // Basic default config for testing
+            // TODO: implement settings registry manager
+            m_joltSystem->RegisterSystemInitializedEvent(m_onSystemInitializedHandler);
+            m_joltSystem->RegisterSystemConfigurationChangedEvent(m_onSystemConfigChangedHandler);
+
+            const JoltSystemConfiguration defaultConfig = JoltSystemConfiguration::CreateDefault();
+            m_joltSystem->Initialize(&defaultConfig);
+
+            // Default scene configuration for testing without settings
+            const AzPhysics::SceneConfiguration defaultSceneConfig = AzPhysics::SceneConfiguration::CreateDefault();
+            m_joltSystem->UpdateDefaultSceneConfiguration(defaultSceneConfig);
+
+            AZ_Printf("JoltSystemComponent", "Jolt simulation activated")
         }
     }
 } // namespace JoltPhysics
