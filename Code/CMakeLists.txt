@@ -21,16 +21,16 @@ endif()
 # section.  That installer section is the ONLY part of the file that is shipped in the installer
 # (SDK) version of the package, the rest of this file is not, so it must be duplicated there.
 set(JOLTPHYSICS_GIT_REPO "https://github.com/jrouwe/JoltPhysics")
-set(JOLTPHYSICS_GIT_TAG "v5.3.0")
+set(JOLTPHYSICS_GIT_TAG "v5.4.0")
 
 
 include(FetchContent)
 FetchContent_Declare(
         JoltPhysics
         GIT_REPOSITORY ${JOLTPHYSICS_GIT_REPO}
-        GIT_TAG ${JOLTPHYSICS_GIT_TAG} # main branch as of March 15, 2025
+        GIT_TAG ${JOLTPHYSICS_GIT_TAG} # main branch as of Sept 27, 2025
         UPDATE_DISCONNECTED TRUE
-        SOURCE_SUBDIR "Jolt"
+#        SOURCE_SUBDIR "Jolt"
 )
 # Number of bits to use in ObjectLayer. Can be 16 or 32.
 set(OBJECT_LAYER_BITS 32)
@@ -40,7 +40,7 @@ set(CROSS_PLATFORM_DETERMINISTIC OFF)
 
 
 # please always be really clear about what third parties your gem uses.
-message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 0373ec0 (License: MIT)")
+message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 036ea7b (License: MIT)")
 
 #set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 #get_property(
@@ -110,6 +110,8 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
             Jolt
+        PRIVATE
+            Gem::LmbrCentral.API
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -127,8 +129,11 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::${gem_name}.API
+            Gem::LmbrCentral.API
         PRIVATE
             Gem::${gem_name}.Private.Object
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral
 )
 
 # Include the gem name into the Client Module source file
@@ -194,8 +199,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
         BUILD_DEPENDENCIES
             PUBLIC
+                AZ::AzCore
+                AZ::AzFramework
                 AZ::AzToolsFramework
+                AZ::AssetBuilderSDK
+                AZ::SceneCore
+                AZ::SceneData
+                Gem::LmbrCentral.Editor
                 ${gem_name}.Private.Object
+                Gem::CommonFeaturesAtom.Static
+		Jolt
+        RUNTIME_DEPENDENCIES
+            AZ::SceneCore
     )
 
     ly_add_target(
