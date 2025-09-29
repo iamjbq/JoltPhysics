@@ -3,8 +3,8 @@ set(FILES
     Source/Tools/JoltPhysicsEditorSystemComponent.cpp
     Source/Tools/JoltPhysicsEditorSystemComponent.h
 
-    Source/Clients/EditorRigidBodyComponent.cpp
-    Source/Clients/EditorRigidBodyComponent.h
+#    Source/Clients/EditorRigidBodyComponent.cpp
+#    Source/Clients/EditorRigidBodyComponent.h
     
 #    Source/Editor/EditorWindow.cpp
 #    Source/Editor/EditorWindow.h

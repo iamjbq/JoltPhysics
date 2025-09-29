@@ -4,6 +4,8 @@
 #include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
+#include <System/JoltSystem.h>
+
 namespace JoltPhysics
 {
     class JoltPhysicsModuleInterface
@@ -15,10 +17,14 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR_DECL
 
         JoltPhysicsModuleInterface();
+        virtual ~JoltPhysicsModuleInterface();
 
         /**
          * Add required SystemComponents to the SystemEntity.
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+
+    private:
+        JoltSystem m_joltSystem;
     };
 }// namespace JoltPhysics

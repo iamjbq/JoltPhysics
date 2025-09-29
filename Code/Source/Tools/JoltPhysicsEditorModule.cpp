@@ -1,11 +1,14 @@
 
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <JoltPhysicsModuleInterface.h>
-#include "JoltPhysicsEditorSystemComponent.h"
-#include "Clients/EditorRigidBodyComponent.h"
+#include <Clients/JoltPhysicsSystemComponent.h>
+#include <Tools/JoltPhysicsEditorSystemComponent.h>
+// #include "Clients/EditorRigidBodyComponent.h"
 
 namespace JoltPhysics
 {
+    class JoltSystem;
+    
     class JoltPhysicsEditorModule
         : public JoltPhysicsModuleInterface
     {
@@ -15,14 +18,25 @@ namespace JoltPhysics
 
         JoltPhysicsEditorModule()
         {
+            static_assert(alignof(JoltPhysics::JoltSystemConfiguration) == 16);
+            static_assert(alignof(JoltPhysics::JoltSystem) == 16);
+            
+            AZ_TracePrintf("JoltPhysicsEditorModule", "Constructed\n")
+            
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
+                JoltPhysicsSystemComponent::CreateDescriptor(),
                 JoltPhysicsEditorSystemComponent::CreateDescriptor(),
-                EditorRigidBodyComponent::CreateDescriptor(),
+                // EditorRigidBodyComponent::CreateDescriptor(),
             });
+        }
+
+        ~JoltPhysicsEditorModule()
+        {
+            m_joltSystem.Shutdown();
         }
 
         /**
@@ -32,9 +46,13 @@ namespace JoltPhysics
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {
+                azrtti_typeid<JoltPhysicsSystemComponent>(),
                 azrtti_typeid<JoltPhysicsEditorSystemComponent>(),
             };
         }
+
+    private:
+        JoltSystem m_joltSystem;
     };
 }// namespace JoltPhysics
 

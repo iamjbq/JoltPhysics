@@ -94,7 +94,7 @@ namespace JoltPhysics
 
         // 10 MB is given in HelloWorld example, but this is ~268 MB
         // TODO: Move to editor eventually
-        const unsigned int cAllocationArenaSize = 256 * 1024 * 1024;
+        const unsigned int cAllocationArenaSize = 10 * 1024 * 1024;
 
         // All systems can share these as long as they are updated consecutively.
         AZStd::unique_ptr<JPH::TempAllocatorImpl> m_allocator;

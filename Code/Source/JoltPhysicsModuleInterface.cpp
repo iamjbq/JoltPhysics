@@ -1,10 +1,10 @@
 
-#include "JoltPhysicsModuleInterface.h"
+#include <JoltPhysicsModuleInterface.h>
 #include <AzCore/Memory/Memory.h>
 
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <Clients/JoltPhysicsSystemComponent.h>
-#include "Clients/RigidBodyComponent.h"
+// #include "Clients/RigidBodyComponent.h"
 
 namespace JoltPhysics
 {
@@ -15,6 +15,8 @@ namespace JoltPhysics
 
     JoltPhysicsModuleInterface::JoltPhysicsModuleInterface()
     {
+        AZ_TracePrintf("PhysicsModuleInterface", "Constructed\n")
+        
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         // Add ALL components descriptors associated with this gem to m_descriptors.
         // This will associate the AzTypeInfo information for the components with the SerializeContext, BehaviorContext and EditContext.
@@ -23,6 +25,11 @@ namespace JoltPhysics
             JoltPhysicsSystemComponent::CreateDescriptor(),
             // RigidBodyComponent::CreateDescriptor(),
             });
+    }
+
+    JoltPhysicsModuleInterface::~JoltPhysicsModuleInterface()
+    {
+        m_joltSystem.Shutdown();
     }
 
     AZ::ComponentTypeList JoltPhysicsModuleInterface::GetRequiredSystemComponents() const

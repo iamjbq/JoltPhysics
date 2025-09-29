@@ -38,6 +38,9 @@ set(OBJECT_LAYER_BITS 32)
 # When turning this option on, the library will be compiled in such a way to attempt to keep the simulation deterministic across platforms
 set(CROSS_PLATFORM_DETERMINISTIC OFF)
 
+# When turning this option on, the library will be compiled using assertions. By default asserts are enabled in Debug build.
+set(USE_ASSERTS ON)
+
 
 # please always be really clear about what third parties your gem uses.
 message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 036ea7b (License: MIT)")
@@ -62,6 +65,7 @@ set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 #        APPEND
 #        PROPERTY COMPILE_DEFINITIONS DT_POLYREF64
 #)
+
 FetchContent_MakeAvailable(JoltPhysics)
 
 set(PHYSICS_REPO_ROOT ${joltphysics_SOURCE_DIR})
@@ -98,6 +102,9 @@ ly_add_target(
     FILES_CMAKE
         joltphysics_private_files.cmake
         ${pal_dir}/joltphysics_private_files.cmake
+    COMPILE_DEFINITIONS
+        PUBLIC
+            $<$<NOT:$<CONFIG:release>>:AZ_PHYSICS_DEBUG_ENABLED>
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
@@ -191,6 +198,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         FILES_CMAKE
             joltphysics_editor_private_files.cmake
+        COMPILE_DEFINITIONS
+            PUBLIC
+                JOLT_EDITOR
         TARGET_PROPERTIES
             O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES

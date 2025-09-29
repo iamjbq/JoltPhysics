@@ -7,7 +7,7 @@
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
-#include "JoltPhysicsEditorSystemComponent.h"
+#include <Tools/JoltPhysicsEditorSystemComponent.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <System/JoltSystem.h>
 
@@ -20,8 +20,10 @@ namespace JoltPhysics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<JoltPhysicsEditorSystemComponent, JoltPhysicsSystemComponent>()
-                ->Version(1);
+            serializeContext->Class<JoltPhysicsEditorSystemComponent, AZ::Component>()
+                ->Version(1)
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
+                ;
         }
     }
 
@@ -48,24 +50,23 @@ namespace JoltPhysics
 
     void JoltPhysicsEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        BaseSystemComponent::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC_CE("JoltPhysicsEditorService"));
+        provided.push_back(AZ_CRC_CE("PhysicsEditorService"));
     }
 
     void JoltPhysicsEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        BaseSystemComponent::GetIncompatibleServices(incompatible);
-        incompatible.push_back(AZ_CRC_CE("JoltPhysicsEditorService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsEditorService"));
     }
 
     void JoltPhysicsEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        BaseSystemComponent::GetRequiredServices(required);
+        required.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void JoltPhysicsEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        BaseSystemComponent::GetDependentServices(dependent);
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     void JoltPhysicsEditorSystemComponent::Activate()
@@ -77,7 +78,7 @@ namespace JoltPhysics
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
         }
 
-        // JoltPhysicsSystemComponent::Activate();
+        AZ_TracePrintf("EditorSystemComponent", "Editor system component activated\n")
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
@@ -96,8 +97,6 @@ namespace JoltPhysics
             physicsSystem->RemoveScene(m_editorWorldSceneHandle);
         }
         m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
-
-        // JoltPhysicsSystemComponent::Deactivate();
     }
 
     void JoltPhysicsEditorSystemComponent::OnStartPlayInEditorBegin()

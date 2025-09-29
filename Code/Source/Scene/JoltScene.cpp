@@ -187,8 +187,7 @@ namespace JoltPhysics
         }
 
         m_currentDeltaTime = deltaTime;
-
-        m_joltSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem);
+        // m_joltSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem); // TODO: Find out why this is crashing
     }
 
     void JoltScene::FinishSimulation()

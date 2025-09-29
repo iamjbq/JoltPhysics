@@ -75,8 +75,6 @@ namespace JoltPhysics
             return;
         }
 
-        AZ_Printf("JoltSystem", "Beginning of Initialize")
-
         if (const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(config))
         {
             m_systemConfig = *joltConfig;
@@ -93,8 +91,8 @@ namespace JoltPhysics
 
         JPH::RegisterDefaultAllocator();
         // Placing these for reference for future
-        // JPH::Trace = ; // TODO: Trace Impl
-        // JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = JoltAssertFailed);
+        JPH::Trace = JoltTraceImpl;
+        JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = JoltPhysics::JoltAssertFailedImpl);
         // JPH::Allocate = ;
         // JPH::Free = ;
         // JPH::Reallocate = ;
@@ -109,8 +107,6 @@ namespace JoltPhysics
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
-
-        AZ_Printf("JoltSystem", "End of Initialize")
     }
 
     void JoltSystem::Reinitialize()
@@ -125,7 +121,7 @@ namespace JoltPhysics
             return;
         }
 
-        AZ_Printf("JoltSystem", "Shutting down")
+        AZ_Printf("JoltSystem", "Shutting down\n")
 
         RemoveAllScenes();
 
@@ -150,8 +146,6 @@ namespace JoltPhysics
             return;
         }
 
-        AZ_Printf("JoltSystem", "Simulate called")
-
         auto simulateScenes = [this](float timeStep)
         {
             for (auto& scenePtr : m_sceneList)
@@ -167,7 +161,7 @@ namespace JoltPhysics
 
         deltaTime = AZ::GetClamp(deltaTime, 0.0f, m_systemConfig.m_maxTimestep);
 
-        AZ_Assert(m_systemConfig.m_fixedTimestep >= 0.0f, "JoltSystem - fixed timestep is negitive.");
+        AZ_Assert(m_systemConfig.m_fixedTimestep >= 0.0f, "JoltSystem - fixed timestep is negative.");
         float tickTime = deltaTime;
         if (m_systemConfig.m_fixedTimestep > 0.0f) //use the fixed timestep
         {
