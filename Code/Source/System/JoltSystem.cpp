@@ -16,6 +16,7 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
 
 #include <System/JoltSystem.h>
 #include <Scene/JoltScene.h>
@@ -104,6 +105,7 @@ namespace JoltPhysics
 
         m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(cAllocationArenaSize);
         m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
+        // m_tempJobSystem = AZStd::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -120,8 +122,6 @@ namespace JoltPhysics
         {
             return;
         }
-
-        AZ_Printf("JoltSystem", "Shutting down\n")
 
         RemoveAllScenes();
 
@@ -445,6 +445,11 @@ namespace JoltPhysics
     {
         return m_jobSystem.get();
     }
+
+    // JPH::JobSystemThreadPool* JoltSystem::GetTempJobSystem()
+    // {
+    //     return m_tempJobSystem.get();
+    // }
 
     BroadPhaseLayerInterfaceImpl& JoltSystem::GetBroadPhaseLayerInterface()
     {

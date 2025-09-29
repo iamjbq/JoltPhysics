@@ -22,6 +22,7 @@
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
 
 #include <System/JoltSystem.h>
 #include <Clients/RigidBody.h>
@@ -147,6 +148,8 @@ namespace JoltPhysics
         AZ_Assert(m_joltSystem != nullptr, "JPH::PhysicsSystem creation failed.");
 
         m_gravity = m_config.m_gravity;
+
+        InitializeJoltSystem();
     }
 
     JoltScene::~JoltScene()
@@ -185,9 +188,9 @@ namespace JoltPhysics
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationStartEvent::Signaled");
             m_sceneSimulationStartEvent.Signal(m_sceneHandle, deltaTime);
         }
-
+        
         m_currentDeltaTime = deltaTime;
-        // m_joltSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem); // TODO: Find out why this is crashing
+        m_joltSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem); // TODO: Find out why this is crashing
     }
 
     void JoltScene::FinishSimulation()
@@ -430,6 +433,7 @@ namespace JoltPhysics
                 cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
                 system->GetBroadPhaseLayerInterface(), system->GetObjectVsBroadPhaseLayerFilter(), system->GetObjectLayerPairFilter()
             );
+            m_joltSystem->OptimizeBroadPhase();
         }
     }
 

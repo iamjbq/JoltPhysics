@@ -19,6 +19,7 @@ namespace AZ::Debug
 namespace JPH
 {
     class TempAllocatorImpl;
+    class JobSystemThreadPool;
 }
 
 namespace JoltPhysics
@@ -70,6 +71,7 @@ namespace JoltPhysics
         // Jolt Physics System Init helpers
         JPH::TempAllocatorImpl* GetJoltAllocator();
         JoltJobSystemThreaded* GetJoltJobSystem();
+        // JPH::JobSystemThreadPool* GetTempJobSystem();
         BroadPhaseLayerInterfaceImpl& GetBroadPhaseLayerInterface();
         ObjectVsBroadPhaseLayerFilterImpl& GetObjectVsBroadPhaseLayerFilter();
         ObjectLayerPairFilterImpl& GetObjectLayerPairFilter();
@@ -99,6 +101,7 @@ namespace JoltPhysics
         // All systems can share these as long as they are updated consecutively.
         AZStd::unique_ptr<JPH::TempAllocatorImpl> m_allocator;
         AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
+        // AZStd::unique_ptr<JPH::JobSystemThreadPool> m_tempJobSystem;
 
         // Collision filtering objects shared with all scenes
         BroadPhaseLayerInterfaceImpl m_broadPhaseInterface;

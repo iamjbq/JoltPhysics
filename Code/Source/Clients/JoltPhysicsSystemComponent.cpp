@@ -1,6 +1,7 @@
 
 #include "JoltPhysicsSystemComponent.h"
 
+#include <iostream>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -38,8 +39,8 @@ namespace JoltPhysics
     static bool JoltAssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, JPH::uint inLine)
     {
         // Print to the TTY
-        // cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << endl;
-        AZ_Assert(true, inFile, inLine, inExpression, inMessage)
+        std::cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << std::endl;
+        // AZ_Error(inFile, inLine, inExpression, inMessage)
 
         // Breakpoint
         return true;
@@ -105,7 +106,6 @@ namespace JoltPhysics
                 EnableAutoManagedPhysicsTick(config->m_autoManageSimulationUpdate);
             })
     {
-        AZ_Printf("JoltSystemComponent", "Constructed\n")
     }
 
     JoltPhysicsSystemComponent::~JoltPhysicsSystemComponent()
@@ -138,12 +138,9 @@ namespace JoltPhysics
     {
         if (!m_enabled)
         {
-            AZ_Printf("JoltSystemComponent", "Not enabled\n")
             return;
         }
         // JoltPhysicsRequestBus::Handler::BusConnect();
-        
-        AZ_Printf("SystemComponent", "System component activated\n")
 
         ActivateSimulation();
     }
@@ -204,7 +201,7 @@ namespace JoltPhysics
             const AzPhysics::SceneConfiguration defaultSceneConfig = AzPhysics::SceneConfiguration::CreateDefault();
             m_joltSystem->UpdateDefaultSceneConfiguration(defaultSceneConfig);
 
-            AZ_Printf("JoltSystemComponent", "Jolt simulation activated\n")
+            AZ_Info("JoltSystemComponent", "Simulation activated")
         }
     }
 } // namespace JoltPhysics
