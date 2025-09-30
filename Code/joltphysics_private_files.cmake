@@ -18,12 +18,6 @@ set(FILES
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h
 
-        Source/System/BodyInterface.cpp
-        Source/System/BodyInterface.h
-
-        Source/System/JoltBodyInterface.cpp
-        Source/System/JoltBodyInterface.h
-
         Source/Scene/JoltScene.cpp
         Source/Scene/JoltScene.h
 
@@ -39,5 +33,10 @@ set(FILES
 
         Source/System/CollisionLayerFilters.cpp
         Source/System/CollisionLayerFilters.h
-
+		
+		Source/System/ContactListener.cpp
+		Source/System/ContactListener.h
+		
+		Source/System/BodyActivationListener.cpp
+		Source/System/BodyActivationListener.h
 )
