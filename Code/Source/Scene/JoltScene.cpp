@@ -143,9 +143,9 @@ namespace JoltPhysics
             m_tempAllocator = system->GetJoltAllocator();
         }
 
-        m_joltSystem = AZStd::make_unique<JPH::PhysicsSystem>();
+        m_physicsSystem = AZStd::make_unique<JPH::PhysicsSystem>();
 
-        AZ_Assert(m_joltSystem != nullptr, "JPH::PhysicsSystem creation failed.");
+        AZ_Assert(m_physicsSystem != nullptr, "JPH::PhysicsSystem creation failed.");
 
         m_gravity = m_config.m_gravity;
 
@@ -169,9 +169,9 @@ namespace JoltPhysics
         }
         m_simulatedBodies.clear();
 
-        if (m_joltSystem)
+        if (m_physicsSystem)
         {
-            m_joltSystem = nullptr;
+            m_physicsSystem = nullptr;
         }
     }
 
@@ -190,7 +190,7 @@ namespace JoltPhysics
         }
         
         m_currentDeltaTime = deltaTime;
-        m_joltSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem); // TODO: Find out why this is crashing
+        m_physicsSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem); // TODO: Find out why this is crashing
     }
 
     void JoltScene::FinishSimulation()
@@ -404,12 +404,12 @@ namespace JoltPhysics
 
     void JoltScene::SetGravity(const AZ::Vector3& gravity)
     {
-        if (m_joltSystem && !m_gravity.IsClose(gravity))
+        if (m_physicsSystem && !m_gravity.IsClose(gravity))
         {
             m_gravity = gravity;
             {
                 // TODO: Need to make sure this is safe. It may already be handled internally by Jolt
-                m_joltSystem->SetGravity(JoltMathConvert(gravity));
+                m_physicsSystem->SetGravity(JoltMathConvert(gravity));
             }
             m_sceneGravityChangedEvent.Signal(m_sceneHandle, m_gravity);
         }
@@ -422,18 +422,21 @@ namespace JoltPhysics
 
     void* JoltScene::GetNativePointer() const
     {
-        return m_joltSystem.get();
+        return m_physicsSystem.get();
     }
 
     void JoltScene::InitializeJoltSystem()
     {
-        if (JoltSystem* system = GetJoltSystem())
+        if (JoltSystem* system = GetJoltSystem()) // TODO: maybe change the nomenclature here to be less ambiguous
         {
-            m_joltSystem->Init(
+            m_physicsSystem->Init(
                 cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
                 system->GetBroadPhaseLayerInterface(), system->GetObjectVsBroadPhaseLayerFilter(), system->GetObjectLayerPairFilter()
             );
-            m_joltSystem->OptimizeBroadPhase();
+
+            m_bodyInterface = &m_physicsSystem->GetBodyInterface();
+            
+            m_physicsSystem->OptimizeBroadPhase();
         }
     }
 

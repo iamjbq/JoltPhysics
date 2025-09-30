@@ -131,11 +131,12 @@ namespace JoltPhysics
         AZ::u32 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
         AZ::u32 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
 
-        AZStd::unique_ptr<JPH::PhysicsSystem> m_joltSystem; //!< The underlying Jolt System
+        AZStd::unique_ptr<JPH::PhysicsSystem> m_physicsSystem; //!< The underlying Jolt System
+        JPH::BodyInterface* m_bodyInterface;
 
         // Cached variables to save look-up as they are inputs for every physics update loop
         JoltJobSystemThreaded* m_jobSystem = nullptr;
-        JPH::JobSystemThreadPool* m_tempJobSystem; // TODO: check if this works
+        // JPH::JobSystemThreadPool* m_tempJobSystem; // TODO: check if this works
         JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
         int m_collisionSteps = 1; // TODO: Should move to the editor eventually
 
