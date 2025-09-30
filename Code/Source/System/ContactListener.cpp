@@ -5,8 +5,8 @@
 
 namespace JoltPhysics
 {
-    JPH::ValidateResult JoltContactListener::OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2,
-        JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult& inCollisionResult)
+    JPH::ValidateResult JoltContactListener::OnContactValidate([[maybe_unused]] const JPH::Body& inBody1, [[maybe_unused]] const JPH::Body& inBody2,
+        [[maybe_unused]] JPH::RVec3Arg inBaseOffset, [[maybe_unused]] const JPH::CollideShapeResult& inCollisionResult)
     {
         AZ_Info("JoltContactListener", "Contact validate callback")
 
@@ -14,19 +14,19 @@ namespace JoltPhysics
         return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
     }
 
-    void JoltContactListener::OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2,
-        const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
+    void JoltContactListener::OnContactAdded([[maybe_unused]] const JPH::Body& inBody1, [[maybe_unused]] const JPH::Body& inBody2,
+        [[maybe_unused]] const JPH::ContactManifold& inManifold, [[maybe_unused]] JPH::ContactSettings& ioSettings)
     {
         AZ_Info("JoltContactListener", "A contact was added")
     }
 
-    void JoltContactListener::OnContactPersisted(const JPH::Body& inBody1, const JPH::Body& inBody2,
-        const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
+    void JoltContactListener::OnContactPersisted([[maybe_unused]] const JPH::Body& inBody1, [[maybe_unused]] const JPH::Body& inBody2,
+        [[maybe_unused]] const JPH::ContactManifold& inManifold, [[maybe_unused]] JPH::ContactSettings& ioSettings)
     {
         AZ_Info("JoltContactListener", "A contact was persisted")
     }
 
-    void JoltContactListener::OnContactRemoved(const JPH::SubShapeIDPair& inSubShapePair)
+    void JoltContactListener::OnContactRemoved([[maybe_unused]] const JPH::SubShapeIDPair& inSubShapePair)
     {
         AZ_Info("JoltContactListener", "A contact was removed")
     }

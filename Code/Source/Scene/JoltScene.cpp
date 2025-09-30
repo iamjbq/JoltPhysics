@@ -27,8 +27,10 @@
 #include <System/JoltSystem.h>
 #include <Clients/RigidBody.h>
 #include <JoltPhysics/MathConversions.h>
-#include "System/CollisionLayerFilters.h"
-#include "System/JoltJobSystemThreaded.h"
+#include <System/CollisionLayerFilters.h>
+#include <System/JoltJobSystemThreaded.h>
+#include <System/ContactListener.h>
+#include <System/BodyActivationListener.h>
 
 namespace JoltPhysics
 {
