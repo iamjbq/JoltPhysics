@@ -1,10 +1,12 @@
 ﻿
-#include <System/ContactListener.h>
-
 #include <AzCore/Debug/Trace.h>
+
+#include <Scene/PhysicsSystemCallbacks.h>
 
 namespace JoltPhysics
 {
+    // JoltContactListener
+    
     JPH::ValidateResult JoltContactListener::OnContactValidate([[maybe_unused]] const JPH::Body& inBody1, [[maybe_unused]] const JPH::Body& inBody2,
         [[maybe_unused]] JPH::RVec3Arg inBaseOffset, [[maybe_unused]] const JPH::CollideShapeResult& inCollisionResult)
     {
@@ -29,5 +31,17 @@ namespace JoltPhysics
     void JoltContactListener::OnContactRemoved([[maybe_unused]] const JPH::SubShapeIDPair& inSubShapePair)
     {
         AZ_Info("JoltContactListener", "A contact was removed")
+    }
+
+    // JoltBodyActivationListener
+
+    void JoltBodyActivationListener::OnBodyActivated([[maybe_unused]] const JPH::BodyID& inBodyID, [[maybe_unused]] JPH::uint64 inBodyUserData)
+    {
+        AZ_Info("JoltBodyActivationListener", "A body got activated")
+    }
+
+    void JoltBodyActivationListener::OnBodyDeactivated([[maybe_unused]] const JPH::BodyID& inBodyID, [[maybe_unused]] JPH::uint64 inBodyUserData)
+    {
+        AZ_Info("JoltBodyActivationListener", "A body went to sleep")
     }
 }

@@ -34,9 +34,6 @@ set(FILES
         Source/System/CollisionLayerFilters.cpp
         Source/System/CollisionLayerFilters.h
 		
-		Source/System/ContactListener.cpp
-		Source/System/ContactListener.h
-		
-		Source/System/BodyActivationListener.cpp
-		Source/System/BodyActivationListener.h
+		Source/Scene/PhysicsSystemCallbacks.cpp
+		Source/Scene/PhysicsSystemCallbacks.h
 )

@@ -7,7 +7,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 
-#include <System/CollisionLayerFilters.h>
+#include <Scene/PhysicsSystemCallbacks.h>
 
 namespace JPH
 {
@@ -133,6 +133,9 @@ namespace JoltPhysics
 
         AZStd::unique_ptr<JPH::PhysicsSystem> m_physicsSystem; //!< The underlying Jolt System
         JPH::BodyInterface* m_bodyInterface;
+
+        JoltContactListener m_contactListener;
+        JoltBodyActivationListener m_activationListener;
 
         // Cached variables to save look-up as they are inputs for every physics update loop
         JoltJobSystemThreaded* m_jobSystem = nullptr;

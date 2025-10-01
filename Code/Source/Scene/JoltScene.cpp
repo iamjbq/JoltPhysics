@@ -29,8 +29,7 @@
 #include <JoltPhysics/MathConversions.h>
 #include <System/CollisionLayerFilters.h>
 #include <System/JoltJobSystemThreaded.h>
-#include <System/ContactListener.h>
-#include <System/BodyActivationListener.h>
+#include <Scene/PhysicsSystemCallbacks.h>
 
 namespace JoltPhysics
 {
@@ -436,6 +435,9 @@ namespace JoltPhysics
                 system->GetBroadPhaseLayerInterface(), system->GetObjectVsBroadPhaseLayerFilter(), system->GetObjectLayerPairFilter()
             );
 
+            m_physicsSystem->SetContactListener(&m_contactListener);
+            m_physicsSystem->SetBodyActivationListener(&m_activationListener);
+            
             m_bodyInterface = &m_physicsSystem->GetBodyInterface();
             
             m_physicsSystem->OptimizeBroadPhase();
