@@ -1,7 +1,6 @@
 
-#include "JoltPhysicsSystemComponent.h"
+#include <Clients/JoltPhysicsSystemComponent.h>
 
-#include <iostream>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -13,41 +12,6 @@
 
 namespace JoltPhysics
 {
-    // Disable common warnings triggered by Jolt, you can use JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store and restore the warning state
-    JPH_SUPPRESS_WARNINGS
-
-    // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
-    using namespace JPH::literals;
-    
-    // Callback for traces, connect this to your own trace function if you have one
-    static void JoltTraceImpl(const char *inFMT, ...)
-    {
-        // Format the message
-        va_list list;
-        va_start(list, inFMT);
-        // char buffer[1024];
-        // vsnprintf(buffer, sizeof(buffer), inFMT, list);
-        va_end(list);
-
-        // Print to the console
-        AZ_Trace("Jolt", inFMT, list)
-    }
-    
-#ifdef JPH_ENABLE_ASSERTS
-    
-    // Callback for asserts, connect this to your own assert handler if you have one
-    static bool JoltAssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, JPH::uint inLine)
-    {
-        // Print to the TTY
-        std::cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << std::endl;
-        // AZ_Error(inFile, inLine, inExpression, inMessage)
-
-        // Breakpoint
-        return true;
-    };
-    
-#endif // JPH_ENABLE_ASSERTS
-    
     AZ_COMPONENT_IMPL(JoltPhysicsSystemComponent, "JoltPhysicsSystemComponent", JoltPhysicsSystemComponentTypeId);
 
     void JoltPhysicsSystemComponent::Reflect(AZ::ReflectContext* context)

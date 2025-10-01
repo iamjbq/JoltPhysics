@@ -16,7 +16,7 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
-#include <Jolt/Core/JobSystemThreadPool.h>
+// #include <Jolt/Core/JobSystemThreadPool.h>
 
 #include <System/JoltSystem.h>
 #include <Scene/JoltScene.h>
@@ -31,6 +31,31 @@
 namespace JoltPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(JoltSystem, AZ::SystemAllocator)
+
+    // Disable common warnings triggered by Jolt, you can use JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store and restore the warning state
+    JPH_SUPPRESS_WARNINGS
+
+    // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
+    using namespace JPH::literals;
+    
+    // Callback for traces, connect this to your own trace function if you have one
+    static void JoltTraceImpl(const char *inFMT, ...)
+    {
+        AZ_Trace("Jolt", inFMT)
+    }
+    
+#ifdef JPH_ENABLE_ASSERTS
+    
+    // Callback for asserts, connect this to your own assert handler if you have one
+    static bool JoltAssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, JPH::uint inLine)
+    {
+        AZ_Assert(false, "Jolt - %s:%i: (%s) %s", inFile, inLine, inExpression, (inMessage != nullptr? inMessage : ""))
+
+        // Breakpoint
+        return true;
+    };
+    
+#endif // JPH_ENABLE_ASSERTS
 
     // I don't know what the implementation of this looks like yet
 #ifdef ENABLE_JOLT_TIMESTEP_WARNING
@@ -91,9 +116,11 @@ namespace JoltPhysics
         }
 
         JPH::RegisterDefaultAllocator();
-        // Placing these for reference for future
+        
         JPH::Trace = JoltTraceImpl;
         JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = JoltPhysics::JoltAssertFailedImpl);
+        
+        // TODO: Eventually create a JoltAllocator class in O3DE
         // JPH::Allocate = ;
         // JPH::Free = ;
         // JPH::Reallocate = ;
