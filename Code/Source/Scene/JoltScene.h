@@ -134,8 +134,8 @@ namespace JoltPhysics
         AZStd::unique_ptr<JPH::PhysicsSystem> m_physicsSystem; //!< The underlying Jolt System
         JPH::BodyInterface* m_bodyInterface;
 
-        JoltContactListener m_contactListener;
-        JoltBodyActivationListener m_activationListener;
+        JoltContactListener m_contactListener; //!< Callback class for collision event notification.
+        JoltBodyActivationListener m_activationListener; //!< Callback class for body sleep/wake notification.
 
         // Cached variables to save look-up as they are inputs for every physics update loop
         JoltJobSystemThreaded* m_jobSystem = nullptr;

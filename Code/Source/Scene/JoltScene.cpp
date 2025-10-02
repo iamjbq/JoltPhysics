@@ -409,7 +409,7 @@ namespace JoltPhysics
         {
             m_gravity = gravity;
             {
-                // TODO: Need to make sure this is safe. It may already be handled internally by Jolt
+                // Unsure if this is threadsafe
                 m_physicsSystem->SetGravity(JoltMathConvert(gravity));
             }
             m_sceneGravityChangedEvent.Signal(m_sceneHandle, m_gravity);
@@ -437,6 +437,7 @@ namespace JoltPhysics
 
             m_physicsSystem->SetContactListener(&m_contactListener);
             m_physicsSystem->SetBodyActivationListener(&m_activationListener);
+            m_physicsSystem->SetGravity(JoltMathConvert(m_gravity));
             
             m_bodyInterface = &m_physicsSystem->GetBodyInterface();
             
