@@ -8,6 +8,7 @@
 
 #include <Jolt/Jolt.h>
 // #include <Jolt/Math/Vec3.h>
+#include <Jolt/Geometry/AABox.h>
 
 inline JPH::Vec3 JoltMathConvert(const AZ::Vector3& inVec)
 {
