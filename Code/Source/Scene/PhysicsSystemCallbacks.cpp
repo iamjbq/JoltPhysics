@@ -59,10 +59,10 @@ namespace JoltPhysics
                                             mFrictionImpulse2 * estimate.mTangent2;
             
             AzPhysics::Contact& contact = collision.m_contacts[i];
-            contact.m_position = JoltMathConvert(point1);
+            contact.m_position = JoltMathConvert(point1 + point2) * 0.5f;
             contact.m_normal = JoltMathConvert(inManifold.mWorldSpaceNormal);
             contact.m_impulse = JoltMathConvert(impulseVector);
-            contact.m_separation = inManifold.mPenetrationDepth; // TODO: Probably should take distance between the two points
+            contact.m_separation = (point1 - point2).Length(); // TODO: double check this
             // contact.m_internalFaceIndex01 = ;
             // contact.m_internalFaceIndex02 = ;
         }
