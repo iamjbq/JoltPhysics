@@ -90,6 +90,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             AZ::AzCore
+            AZ::AzFramework
             AZ::AzToolsFramework
             Jolt
 )

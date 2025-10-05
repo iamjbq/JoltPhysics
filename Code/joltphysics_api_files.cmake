@@ -7,4 +7,6 @@ set(FILES
     Include/JoltPhysics/MathConversions.h
     Include/JoltPhysics/Configuration/JoltConfiguration.h
     Include/JoltPhysics/Material/JoltMaterial.h
+    Include/JoltPhysics/BodyData.h
+    Include/JoltPhysics/BodyData.inl
 )
