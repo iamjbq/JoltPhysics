@@ -3,6 +3,7 @@
 
 #include <Scene/PhysicsSystemCallbacks.h>
 #include <JoltPhysics/MathConversions.h>
+#include <JoltPhysics/BodyData.h>
 
 #include "Jolt/Physics/Body/Body.h"
 #include "Jolt/Physics/Collision/EstimateCollisionResponse.h"
@@ -26,13 +27,16 @@ namespace JoltPhysics
     void JoltContactListener::OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2,
         const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
     {
+        auto bodyData1 = reinterpret_cast<BodyData*>(inBody1.GetUserData());
+        auto bodyData2 = reinterpret_cast<BodyData*>(inBody2.GetUserData());
+        
         // Collision Event
         AzPhysics::CollisionEvent collision;
         collision.m_type = AzPhysics::CollisionEvent::Type::Begin;
-        // collision.m_bodyHandle1 = inBody1.GetUserData();
-        // collision.m_body1 = ;
-        // collision.m_bodyHandle2 = inBody2.GetUserData();
-        // collision.m_body2 = ;
+        collision.m_bodyHandle1 = bodyData1->GetBodyHandle();
+        collision.m_body1 = bodyData1->GetSimulatedBody();
+        collision.m_bodyHandle2 = bodyData2->GetBodyHandle();
+        collision.m_body2 = bodyData2->GetSimulatedBody();
         // collision.m_shape1 = ;
         // collision.m_shape2 = ;
         

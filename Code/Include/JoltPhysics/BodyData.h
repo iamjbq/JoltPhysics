@@ -6,11 +6,7 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
-
-namespace JPH
-{
-    class Body;
-}
+#include <Jolt/Physics/Body/Body.h>
 
 namespace AzPhysics
 {
@@ -25,6 +21,7 @@ namespace JoltPhysics
     {
     public:
         BodyData() = default;
+        BodyData(JPH::Body* inBody);
         BodyData(BodyData&& bodyData);
         BodyData& operator=(BodyData&& bodyData);
 

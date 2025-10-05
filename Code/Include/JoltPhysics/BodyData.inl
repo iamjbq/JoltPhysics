@@ -12,22 +12,22 @@ namespace JoltPhysics
         };
 
         m_body = JoltBodyUniquePtr(inBody, nullUserData);
-        inBody->SetUserData(0); // TODO: Cast this from ptr to uint64
+        inBody->SetUserData(reinterpret_cast<const uint64_t>(this));
     }
     
     inline BodyData::BodyData(BodyData&& other)
         : m_sanity(other.m_sanity)
-        , m_actor(AZStd::move(other.m_actor))
+        , m_body(AZStd::move(other.m_body))
         , m_payload(AZStd::move(other.m_payload))
     {
-        m_actor->userData = this;
+        m_body->SetUserData(other.m_body->GetUserData());
     }
 
     inline BodyData& BodyData::operator=(BodyData&& other)
     {
         m_sanity = other.m_sanity;
-        m_actor = AZStd::move(other.m_actor);
-        m_actor->userData = this;
+        m_body = AZStd::move(other.m_body);
+        m_body->SetUserData(other.m_body->GetUserData());
         m_payload = AZStd::move(other.m_payload);
         return *this;
     }
@@ -39,7 +39,7 @@ namespace JoltPhysics
 
     inline void BodyData::Invalidate()
     {
-        m_actor = nullptr;
+        m_body = nullptr;
         m_payload = Payload();
     }
 
