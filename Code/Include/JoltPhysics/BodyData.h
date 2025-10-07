@@ -22,8 +22,8 @@ namespace JoltPhysics
     public:
         BodyData() = default;
         BodyData(JPH::Body* inBody);
-        BodyData(BodyData&& bodyData);
-        BodyData& operator=(BodyData&& bodyData);
+        BodyData(BodyData&& inBodyData);
+        BodyData& operator=(BodyData&& inBodyData);
 
         void Invalidate();
         AZ::EntityId GetEntityId() const;
