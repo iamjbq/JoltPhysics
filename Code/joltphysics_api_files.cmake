@@ -9,4 +9,6 @@ set(FILES
     Include/JoltPhysics/Material/JoltMaterial.h
     Include/JoltPhysics/BodyData.h
     Include/JoltPhysics/BodyData.inl
+    Include/JoltPhysics/Utils.h
+    Include/JoltPhysics/Utils.inl
 )
