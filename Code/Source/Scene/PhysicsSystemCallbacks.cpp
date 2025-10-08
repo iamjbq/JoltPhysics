@@ -143,7 +143,7 @@ namespace JoltPhysics
     void JoltSoftBodyContactListener::OnSoftBodyContactAdded([[maybe_unused]] const JPH::Body& inSoftBody,
         [[maybe_unused]] const JPH::SoftBodyManifold& inManifold)
     {
-        
+        // TODO: Figure out what needs to be done here
     }
 
     // JoltBodyActivationListener
