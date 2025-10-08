@@ -62,18 +62,40 @@ namespace JoltPhysics
         const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings,
         AzPhysics::CollisionEvent::Type inType)
     {
-        auto bodyData1 = Utils::GetUserData(inBody1);
-        auto bodyData2 = Utils::GetUserData(inBody2);
+        BodyData* bodyData1 = Utils::GetUserData(inBody1);
+        BodyData* bodyData2 = Utils::GetUserData(inBody2);
+
+        // Missing user data, or user data was invalid
+        if (!bodyData1 || !bodyData2)
+        {
+            AZ_Warning("Jolt", false, "Invalid user data set for objects Obj0:%p Obj1:%p", bodyData1, bodyData2)
+        }
+
+        AzPhysics::SimulatedBody* body1 = bodyData1->GetSimulatedBody();
+        AzPhysics::SimulatedBody* body2 = bodyData2->GetSimulatedBody();
+
+        if (!body1 || !body2)
+        {
+            AZ_Warning("Jolt", false, "Invalid body data set for objects Obj0:%p Obj1:%p", body1, body2)
+        }
+
+        Physics::Shape* shape1 = Utils::GetUserData(inBody1.GetShape());
+        Physics::Shape* shape2 = Utils::GetUserData(inBody2.GetShape());
+
+        if (!shape1 || !shape2)
+        {
+            AZ_Warning("Jolt", false, "Invalid shape user data set for objects Obj0:%p Obj1:%p", shape1, shape2)
+        }
         
         // Collision Event
         AzPhysics::CollisionEvent collision;
         collision.m_type = inType;
         collision.m_bodyHandle1 = bodyData1->GetBodyHandle();
-        collision.m_body1 = bodyData1->GetSimulatedBody();
+        collision.m_body1 = body1;
         collision.m_bodyHandle2 = bodyData2->GetBodyHandle();
-        collision.m_body2 = bodyData2->GetSimulatedBody();
-        // collision.m_shape1 = ; // TODO
-        // collision.m_shape2 = ;
+        collision.m_body2 = body2;
+        collision.m_shape1 = shape1;
+        collision.m_shape2 = shape2;
         
         /// When contacts are added, the constraint solver has not run yet, so the collision impulse is unknown at that point.
         /// The velocities of inBody1 and inBody2 are the velocities before the contact has been resolved, so you can use this to
@@ -83,12 +105,12 @@ namespace JoltPhysics
         JPH::EstimateCollisionResponse(inBody1, inBody2, inManifold, estimate, ioSettings.mCombinedFriction, ioSettings.mCombinedRestitution, 1.0f, 4);
 
         // Extract contacts for collision event
-        // TODO: Need to sort out penetration depth != 0 where contact points on 1 != 2
         JPH::uint contactPointCount = AZStd::GetMax(inManifold.mRelativeContactPointsOn1.size(), inManifold.mRelativeContactPointsOn2.size()) ;
         JPH::uint pointsToReport = contactPointCount <= MaxPointsToReport ? contactPointCount : MaxPointsToReport;
         collision.m_contacts.resize(pointsToReport);
         for (JPH::uint i = 0; i < pointsToReport; ++i)
         {
+            // If there is no penetration, these will be the same, but if so, they will be different
             const JPH::Vec3 point1 = inManifold.GetWorldSpaceContactPointOn1(i);
             const JPH::Vec3 point2 = inManifold.GetWorldSpaceContactPointOn2(i);
 
@@ -102,7 +124,9 @@ namespace JoltPhysics
             contact.m_position = JoltMathConvert(point1 + point2) * 0.5f;
             contact.m_normal = JoltMathConvert(inManifold.mWorldSpaceNormal);
             contact.m_impulse = JoltMathConvert(impulseVector);
-            contact.m_separation = inManifold.mPenetrationDepth; // TODO: double check this
+            contact.m_separation = inManifold.mPenetrationDepth; // Negative values are speculative and may not result in velocity change
+            contact.m_internalFaceIndex01 = inManifold.mSubShapeID1.GetValue();
+            contact.m_internalFaceIndex02 = inManifold.mSubShapeID2.GetValue();
         }
 
         m_queuedCollisionEvents.emplace_back(AZStd::move(collision));

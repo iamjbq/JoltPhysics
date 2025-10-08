@@ -6,7 +6,11 @@ namespace JoltPhysics
 {
     ObjectLayerPairFilterImpl::ObjectLayerPairFilterImpl()
     {
-        m_collisionGroupMasks = GetJoltSystem()->GetCollisionMasks(); // this does compile
+        if (JoltSystem* system = GetJoltSystem())
+        {
+            m_collisionGroupMasks = system->GetCollisionMasks();
+        }
+        AZ_Error("ObjectLayerPairFilterImpl", false, "Failed to set collision masks")
     }
 
     bool ObjectLayerPairFilterImpl::ShouldCollide(const JPH::ObjectLayer inObject1, const JPH::ObjectLayer inObject2) const
