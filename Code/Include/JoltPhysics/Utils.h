@@ -4,6 +4,7 @@
 #include <JoltPhysics/BodyData.h>
 
 #include "Jolt/Physics/Body/Body.h"
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 
 namespace AzPhysics
 {
@@ -14,7 +15,6 @@ namespace AzPhysics
 
 namespace Physics
 {
-    class Material;
     class Shape;
 }
 
@@ -23,6 +23,7 @@ namespace JoltPhysics
     namespace Utils
     {
         BodyData* GetUserData(const JPH::Body& body);
+        Physics::Shape* GetUserData(const JPH::Shape* shape);
     }
 }
 

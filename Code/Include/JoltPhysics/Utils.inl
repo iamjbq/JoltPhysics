@@ -17,4 +17,9 @@ namespace JoltPhysics
 
         return bodyData;
     }
+
+    inline Physics::Shape* Utils::GetUserData(const JPH::Shape* shape)
+    {
+        return (shape == nullptr) ? nullptr : reinterpret_cast<Physics::Shape*>(shape->GetUserData());
+    }
 }
