@@ -120,7 +120,7 @@ namespace JoltPhysics
         const AZ::Color& GetDebugColor() const;
         void SetDebugColor(const AZ::Color& debugColor);
 
-        const JPH::PhysicsMaterial* GetJoltMaterial() const;
+        const JPH::PhysicsMaterial* GetJoltMaterial() const; // TODO: implement own material class
 
     protected:
         // AssetBus overrides...
@@ -131,7 +131,7 @@ namespace JoltPhysics
             const Physics::MaterialId& id,
             const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
 
-        // TODO: Not 100% sure that PhysicsMaterial is used directly like this
+        // TODO: Make PhysicsMaterialImpl class with m_userData void*
         using JoltMaterialUniquePtr = AZStd::unique_ptr<JPH::PhysicsMaterial, AZStd::function<void(JPH::PhysicsMaterial*)>>;
 
         JoltMaterialUniquePtr m_joltMaterial;

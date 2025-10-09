@@ -30,6 +30,8 @@ set(FILES
         Source/Scene/JoltSceneInterface.h
 
         Source/Material/JoltMaterial.cpp
+		Source/Material/JoltPhysicsMaterial.cpp
+		Source/Material/JoltPhysicsMaterial.h
 
         Source/System/CollisionLayerFilters.cpp
         Source/System/CollisionLayerFilters.h
