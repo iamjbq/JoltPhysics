@@ -8,11 +8,6 @@
 #include <AzFramework/Physics/Material/PhysicsMaterial.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
-namespace JPH
-{
-    class PhysicsMaterial;
-}
-
 namespace Physics
 {
     class MaterialSlots;
@@ -24,7 +19,7 @@ namespace JoltPhysics
     
     //! Enumeration that determines how two materials properties are combined when
     //! processing collisions.
-    enum class JoltCombineMode : AZ::u8
+    enum class CombineMode : AZ::u8
     {
         Average,
         Minimum,
@@ -39,7 +34,7 @@ namespace JoltPhysics
         inline constexpr AZStd::string_view MaterialAssetType = "Jolt";
         inline constexpr AZ::u32 MaterialAssetVersion = 1;
 
-        inline constexpr AZStd::string_view DynamicFrictionName = "Friction";
+        inline constexpr AZStd::string_view FrictionName = "Friction";
         inline constexpr AZStd::string_view RestitutionName = "Restitution";
         inline constexpr AZStd::string_view DensityName = "Density";
         inline constexpr AZStd::string_view RestitutionCombineModeName = "RestitutionCombineMode";
@@ -99,11 +94,11 @@ namespace JoltPhysics
         float GetDensity() const;
         void SetDensity(float density);
         
-        JoltCombineMode GetFrictionCombineMode() const;
-        void SetFrictionCombineMode(JoltCombineMode mode);
+        CombineMode GetFrictionCombineMode() const;
+        void SetFrictionCombineMode(CombineMode mode);
         
-        JoltCombineMode GetRestitutionCombineMode() const;
-        void SetRestitutionCombineMode(JoltCombineMode mode);
+        CombineMode GetRestitutionCombineMode() const;
+        void SetRestitutionCombineMode(CombineMode mode);
 
         const AZ::Color& GetDebugColor() const;
         void SetDebugColor(const AZ::Color& debugColor);
@@ -114,6 +109,9 @@ namespace JoltPhysics
         // AssetBus overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+    private:
+        friend class MaterialManager;
 
         Material(
             const Physics::MaterialId& id,
