@@ -3,9 +3,9 @@
 
 namespace JoltPhysics
 {
-    JoltPhysicsMaterial::JoltPhysicsMaterial()
+     JoltPhysicsMaterial::JoltPhysicsMaterial(const std::string_view& inName, JPH::ColorArg inColor, float inFriction, float inRestitution)
+         : m_debugName(inName), m_debugColor(inColor), m_friction(inFriction), m_restitution(inRestitution)
     {
-
     }
 
     JoltPhysicsMaterial::~JoltPhysicsMaterial()
@@ -13,14 +13,34 @@ namespace JoltPhysics
 
     }
 
-    void JoltPhysicsMaterial::SetRestitution(float restitution)
+    void JoltPhysicsMaterial::SetRestitution(const float restitution)
     {
         m_restitution = restitution;
     }
 
-    float JoltPhysicsMaterial::GetRestitution()
+    float JoltPhysicsMaterial::GetRestitution() const
     {
         return m_restitution;
+    }
+
+    void JoltPhysicsMaterial::SetFriction(const float friction)
+    {
+        m_friction = friction;
+    }
+
+    float JoltPhysicsMaterial::GetFriction() const
+    {
+        return m_friction;
+    }
+
+    void JoltPhysicsMaterial::SetDensity(float density)
+    {
+        m_density = density;
+    }
+
+    float JoltPhysicsMaterial::GetDensity() const
+    {
+        return m_density;
     }
 
     template<typename T>
@@ -29,8 +49,28 @@ namespace JoltPhysics
         m_userData = static_cast<void*>(userData);
     }
 
-    void* JoltPhysicsMaterial::GetUserData()
+    void* JoltPhysicsMaterial::GetUserData() const
     {
         return m_userData;
+    }
+
+    void JoltPhysicsMaterial::SetRestitutionCombineMode(JoltCombineMode::Enum mode)
+    {
+        m_restitutionCombineMode = mode;
+    }
+
+    JoltCombineMode::Enum JoltPhysicsMaterial::GetRestitutionCombineMode() const
+    {
+        return m_restitutionCombineMode;
+    }
+
+    void JoltPhysicsMaterial::SetFrictionCombineMode(JoltCombineMode::Enum mode)
+    {
+        m_frictionCombineMode = mode;
+    }
+
+    JoltCombineMode::Enum JoltPhysicsMaterial::GetFrictionCombineMode() const
+    {
+        return m_frictionCombineMode;
     }
 } // JoltPhysics

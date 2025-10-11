@@ -20,14 +20,18 @@ namespace Physics
 
 namespace JoltPhysics
 {
+    class JoltPhysicsMaterial;
+    
     //! Enumeration that determines how two materials properties are combined when
     //! processing collisions.
-    enum class CombineMode : AZ::u8
+    enum class JoltCombineMode : AZ::u8
     {
         Average,
         Minimum,
         Maximum,
-        Multiply
+        Multiply,
+
+        ENUM_COUNT
     };
 
     namespace MaterialConstants
@@ -35,15 +39,11 @@ namespace JoltPhysics
         inline constexpr AZStd::string_view MaterialAssetType = "Jolt";
         inline constexpr AZ::u32 MaterialAssetVersion = 1;
 
-        inline constexpr AZStd::string_view DynamicFrictionName = "DynamicFriction";
-        inline constexpr AZStd::string_view StaticFrictionName = "StaticFriction";
+        inline constexpr AZStd::string_view DynamicFrictionName = "Friction";
         inline constexpr AZStd::string_view RestitutionName = "Restitution";
         inline constexpr AZStd::string_view DensityName = "Density";
         inline constexpr AZStd::string_view RestitutionCombineModeName = "RestitutionCombineMode";
         inline constexpr AZStd::string_view FrictionCombineModeName = "FrictionCombineMode";
-        inline constexpr AZStd::string_view CompliantContactModeEnabledName = "CompliantContactModeEnabled";
-        inline constexpr AZStd::string_view CompliantContactModeDampingName = "CompliantContactModeDamping";
-        inline constexpr AZStd::string_view CompliantContactModeStiffnessName = "CompliantContactModeStiffness";
         inline constexpr AZStd::string_view DebugColorName = "DebugColor";
 
         inline constexpr float MinDensityLimit = 0.01f; //!< Minimum possible value of density.
@@ -90,37 +90,25 @@ namespace JoltPhysics
         Physics::MaterialPropertyValue GetProperty(AZStd::string_view propertyName) const override;
         void SetProperty(AZStd::string_view propertyName, Physics::MaterialPropertyValue value) override;
 
-        float GetDynamicFriction() const;
-        void SetDynamicFriction(float dynamicFriction);
-
-        float GetStaticFriction() const;
-        void SetStaticFriction(float staticFriction);
+        float GetFriction() const;
+        void SetFriction(float friction);
 
         float GetRestitution() const;
         void SetRestitution(float restitution);
 
-        CombineMode GetFrictionCombineMode() const;
-        void SetFrictionCombineMode(CombineMode mode);
-
-        CombineMode GetRestitutionCombineMode() const;
-        void SetRestitutionCombineMode(CombineMode mode);
-
         float GetDensity() const;
         void SetDensity(float density);
-
-        bool IsCompliantContactModeEnabled() const;
-        void EnableCompliantContactMode(bool enabled);
-
-        float GetCompliantContactModeDamping() const;
-        void SetCompliantContactModeDamping(float damping);
-
-        float GetCompliantContactModeStiffness() const;
-        void SetCompliantContactModeStiffness(float stiffness);
+        
+        JoltCombineMode GetFrictionCombineMode() const;
+        void SetFrictionCombineMode(JoltCombineMode mode);
+        
+        JoltCombineMode GetRestitutionCombineMode() const;
+        void SetRestitutionCombineMode(JoltCombineMode mode);
 
         const AZ::Color& GetDebugColor() const;
         void SetDebugColor(const AZ::Color& debugColor);
 
-        const JPH::PhysicsMaterial* GetJoltMaterial() const; // TODO: implement own material class
+        const JoltPhysicsMaterial* GetJoltMaterial() const; // TODO: implement own material class
 
     protected:
         // AssetBus overrides...
@@ -130,14 +118,12 @@ namespace JoltPhysics
         Material(
             const Physics::MaterialId& id,
             const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
-
-        // TODO: Make PhysicsMaterialImpl class with m_userData void*
-        using JoltMaterialUniquePtr = AZStd::unique_ptr<JPH::PhysicsMaterial, AZStd::function<void(JPH::PhysicsMaterial*)>>;
+        
+        using JoltMaterialUniquePtr = AZStd::unique_ptr<JoltPhysicsMaterial, AZStd::function<void(JoltPhysicsMaterial*)>>;
 
         JoltMaterialUniquePtr m_joltMaterial;
+        float m_friction = 0.5;
         float m_restitution = 0.5f;
-        float m_compliantContactModeDamping = 1.0f;
-        float m_compliantContactModeStiffness = 1.0f;
         float m_density = 1000.0f;
         AZ::Color m_debugColor = AZ::Colors::White;
     };
