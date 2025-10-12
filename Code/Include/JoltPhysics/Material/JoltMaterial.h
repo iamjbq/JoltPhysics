@@ -16,6 +16,7 @@ namespace Physics
 namespace JoltPhysics
 {
     class JoltPhysicsMaterial;
+    class MaterialManager;
     
     //! Enumeration that determines how two materials properties are combined when
     //! processing collisions.

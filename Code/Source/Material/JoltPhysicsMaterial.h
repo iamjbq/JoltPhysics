@@ -22,8 +22,8 @@ namespace JoltPhysics
     {
     public:
         JoltPhysicsMaterial() = default;
-        JoltPhysicsMaterial(const std::string_view &inName, JPH::ColorArg inColor, float inFriction, float inRestitution);
-        ~JoltPhysicsMaterial();
+        JoltPhysicsMaterial(const std::string_view &inName, JPH::ColorArg inColor, float inFriction, float inRestitution, float inDensity);
+        ~JoltPhysicsMaterial() override;
 
         void SetRestitution(float restitution);
         float GetRestitution() const;
@@ -50,7 +50,6 @@ namespace JoltPhysics
         JPH::String m_debugName;
         JPH::Color m_debugColor = JPH::Color::sWhite;
 
-        // TODO: create JoltMaterialConfiguration to populate these values at construction
         float m_restitution;
         float m_friction;
         float m_density;

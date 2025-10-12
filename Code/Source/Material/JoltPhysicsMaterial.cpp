@@ -3,8 +3,8 @@
 
 namespace JoltPhysics
 {
-     JoltPhysicsMaterial::JoltPhysicsMaterial(const std::string_view& inName, JPH::ColorArg inColor, float inFriction, float inRestitution)
-         : m_debugName(inName), m_debugColor(inColor), m_friction(inFriction), m_restitution(inRestitution)
+     JoltPhysicsMaterial::JoltPhysicsMaterial(const std::string_view& inName, JPH::ColorArg inColor, float inFriction, float inRestitution, float inDensity)
+         : m_debugName(inName), m_debugColor(inColor), m_friction(inFriction), m_restitution(inRestitution), m_density(inDensity)
     {
     }
 
