@@ -23,6 +23,7 @@ namespace JoltPhysics
     namespace Utils
     {
         BodyData* GetUserData(const JPH::Body& body);
+        Physics::Material* GetUserData(const JoltPhysics::JoltPhysicsMaterial* material);
         Physics::Shape* GetUserData(const JPH::Shape* shape);
     }
 }

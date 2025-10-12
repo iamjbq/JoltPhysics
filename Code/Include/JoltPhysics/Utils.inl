@@ -18,6 +18,11 @@ namespace JoltPhysics
         return bodyData;
     }
 
+    inline Physics::Material* Utils::GetUserData(const JoltPhysics::JoltPhysicsMaterial* material)
+    {
+        return (material == nullptr) ? nullptr : static_cast<Physics::Material*>(material->m_userData);
+    }
+
     inline Physics::Shape* Utils::GetUserData(const JPH::Shape* shape)
     {
         return (shape == nullptr) ? nullptr : reinterpret_cast<Physics::Shape*>(shape->GetUserData());
