@@ -3,15 +3,132 @@
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
+#include <Jolt/Jolt.h>
+
 #include <JoltPhysics/Material/JoltMaterial.h>
 #include <JoltPhysics/Material/JoltMaterialConfiguration.h>
 #include <Material/JoltPhysicsMaterial.h>
 
+
 namespace JoltPhysics
 {
+    static CombineMode FromJoltCombineMode(JoltPhysics::JoltCombineMode::Enum joltMode)
+    {
+        switch (joltMode)
+        {
+        case JoltCombineMode::Average:
+            return CombineMode::Average;
+        case JoltCombineMode::Multiply:
+            return CombineMode::Multiply;
+        case JoltCombineMode::Maximum:
+            return CombineMode::Maximum;
+        case JoltCombineMode::Minimum:
+            return CombineMode::Minimum;
+        default:
+            return CombineMode::Average;
+        }
+    }
+
+    static JoltPhysics::JoltCombineMode::Enum ToJoltCombineMode(CombineMode mode)
+    {
+        switch (mode)
+        {
+        case CombineMode::Average:
+            return JoltCombineMode::Average;
+        case CombineMode::Multiply:
+            return JoltCombineMode::Multiply;
+        case CombineMode::Maximum:
+            return JoltCombineMode::Maximum;
+        case CombineMode::Minimum:
+            return JoltCombineMode::Minimum;
+        default:
+            return JoltCombineMode::Maximum;
+        }
+    }
+
+    AZStd::shared_ptr<Material> Material::FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    {
+        return AZStd::rtti_pointer_cast<Material>(
+            AZ::Interface<Physics::MaterialManager>::Get()->FindOrCreateMaterial(
+                Physics::MaterialId::CreateFromAssetId(materialAsset.GetId()),
+                materialAsset));
+    }
+
+    AZStd::vector<AZStd::shared_ptr<Material>> Material::FindOrCreateMaterials(const Physics::MaterialSlots& materialSlots)
+    {
+        AZStd::shared_ptr<Material> defaultMaterial =
+            AZStd::rtti_pointer_cast<Material>(
+                AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial());
+
+        const size_t slotsCount = materialSlots.GetSlotsCount();
+
+        AZStd::vector<AZStd::shared_ptr<Material>> materials;
+        materials.reserve(slotsCount);
+
+        for (size_t slotIndex = 0; slotIndex < slotsCount; ++slotIndex)
+        {
+            if (const auto materialAsset = materialSlots.GetMaterialAsset(slotIndex);
+                materialAsset.GetId().IsValid())
+            {
+                auto material = Material::FindOrCreateMaterial(materialAsset);
+                if (material)
+                {
+                    materials.push_back(material);
+                }
+                else
+                {
+                    materials.push_back(defaultMaterial);
+                }
+            }
+            else
+            {
+                materials.push_back(defaultMaterial);
+            }
+        }
+
+        return materials;
+    }
+
+    AZStd::shared_ptr<Material> Material::CreateMaterialWithRandomId(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    {
+        return AZStd::rtti_pointer_cast<Material>(
+            AZ::Interface<Physics::MaterialManager>::Get()->FindOrCreateMaterial(
+                Physics::MaterialId::CreateRandom(),
+                materialAsset));
+    }
+    
     Material::~Material()
     {
         AZ::Data::AssetBus::Handler::BusDisconnect();
+    }
+
+    Material::Material(const Physics::MaterialId& id, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+    {
+        const MaterialConfiguration defaultMaterialConfiguration;
+
+        // Create the JoltPhysicsMaterial with default values
+        m_joltMaterial = JoltMaterialUniquePtr(
+            new JoltPhysicsMaterial(
+                "Default",
+                JPH::Color::sWhite,
+                defaultMaterialConfiguration.m_Friction, defaultMaterialConfiguration.m_restitution, defaultMaterialConfiguration.m_density
+            ),
+            [](JoltPhysics::JoltPhysicsMaterial* joltPhysicsMaterial)
+            {
+                // Nothing to do here yet
+            });
+        
+        AZ_Assert(m_joltMaterial, "Failed to create Jolt material")
+        m_joltMaterial->m_userData = this;
+            
+        // Assign default values to members
+        m_friction = defaultMaterialConfiguration.m_Friction;
+        m_restitution = defaultMaterialConfiguration.m_restitution;
+        m_density = defaultMaterialConfiguration.m_density;
+        m_debugColor = defaultMaterialConfiguration.m_debugColor;
+
+        // When OnAssetReady is called, it will set all the properties from the material asset
+        AZ::Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
     }
 
     Physics::MaterialPropertyValue Material::GetProperty(AZStd::string_view propertyName) const
@@ -124,20 +241,22 @@ namespace JoltPhysics
 
     CombineMode Material::GetFrictionCombineMode() const
     {
-        return CombineMode::Average; // TODO: Temporary cause I'm tired
+        return FromJoltCombineMode(m_joltMaterial->GetFrictionCombineMode());
     }
 
-    void Material::SetFrictionCombineMode([[maybe_unused]] CombineMode mode)
+    void Material::SetFrictionCombineMode(CombineMode mode)
     {
+        m_joltMaterial->SetFrictionCombineMode(ToJoltCombineMode(mode));
     }
 
     CombineMode Material::GetRestitutionCombineMode() const
     {
-        return CombineMode::Maximum; // Temp
+        return FromJoltCombineMode(m_joltMaterial->GetRestitutionCombineMode());
     }
 
-    void Material::SetRestitutionCombineMode([[maybe_unused]] CombineMode mode)
+    void Material::SetRestitutionCombineMode(CombineMode mode)
     {
+        m_joltMaterial->SetRestitutionCombineMode(ToJoltCombineMode(mode));
     }
 
     const AZ::Color& Material::GetDebugColor() const
@@ -169,34 +288,5 @@ namespace JoltPhysics
     void Material::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         OnAssetReady(asset);
-    }
-
-    Material::Material(const Physics::MaterialId& id, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
-    {
-        const MaterialConfiguration defaultMaterialConfiguration;
-
-        // Create the JoltPhysicsMaterial with default values
-        m_joltMaterial = JoltMaterialUniquePtr(
-            new JoltPhysicsMaterial(
-                "Default",
-                JPH::Color::sWhite,
-                defaultMaterialConfiguration.m_Friction, defaultMaterialConfiguration.m_restitution, defaultMaterialConfiguration.m_density
-            ),
-            [](JoltPhysics::JoltPhysicsMaterial* joltPhysicsMaterial)
-            {
-                // Nothing to do here yet
-            });
-        
-            AZ_Assert(m_joltMaterial, "Failed to create Jolt material")
-            // m_joltMaterial->SetUserData(this); // TODO: figure out why this is an unresolved symbol
-
-        // Assign default values to members
-        m_friction = defaultMaterialConfiguration.m_Friction;
-        m_restitution = defaultMaterialConfiguration.m_restitution;
-        m_density = defaultMaterialConfiguration.m_density;
-        m_debugColor = defaultMaterialConfiguration.m_debugColor;
-
-        // When OnAssetReady is called, it will set all the properties from the material asset
-        AZ::Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
     }
 }

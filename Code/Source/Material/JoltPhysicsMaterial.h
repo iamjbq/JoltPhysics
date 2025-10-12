@@ -7,7 +7,7 @@ namespace JoltPhysics
 {
     struct JoltCombineMode
     {
-        enum class Enum : JPH::uint8
+        enum Enum : JPH::uint8
         {
             Average,
             Minimum,
@@ -34,18 +34,15 @@ namespace JoltPhysics
         void SetDensity(float density);
         float GetDensity() const;
 
-        template<typename T>
-        void SetUserData(T* userData);
-        void* GetUserData() const;
-
         void SetRestitutionCombineMode(JoltCombineMode::Enum mode);
         JoltCombineMode::Enum GetRestitutionCombineMode() const;
 
         void SetFrictionCombineMode(JoltCombineMode::Enum mode);
         JoltCombineMode::Enum GetFrictionCombineMode() const;
 
-    private:
         void* m_userData = nullptr;
+        
+    private:
 
         JPH::String m_debugName;
         JPH::Color m_debugColor = JPH::Color::sWhite;
@@ -54,7 +51,7 @@ namespace JoltPhysics
         float m_friction;
         float m_density;
         
-        JoltCombineMode::Enum m_frictionCombineMode = JoltCombineMode::Enum::Average;
-        JoltCombineMode::Enum m_restitutionCombineMode = JoltCombineMode::Enum::Maximum;
+        JoltCombineMode::Enum m_frictionCombineMode = JoltCombineMode::Average;
+        JoltCombineMode::Enum m_restitutionCombineMode = JoltCombineMode::Maximum;
     };
 } // JoltPhysics

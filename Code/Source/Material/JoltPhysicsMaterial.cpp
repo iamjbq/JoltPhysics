@@ -43,17 +43,6 @@ namespace JoltPhysics
         return m_density;
     }
 
-    template<typename T>
-    void JoltPhysicsMaterial::SetUserData(T* userData)
-    {
-        m_userData = static_cast<void*>(userData);
-    }
-
-    void* JoltPhysicsMaterial::GetUserData() const
-    {
-        return m_userData;
-    }
-
     void JoltPhysicsMaterial::SetRestitutionCombineMode(JoltCombineMode::Enum mode)
     {
         m_restitutionCombineMode = mode;
