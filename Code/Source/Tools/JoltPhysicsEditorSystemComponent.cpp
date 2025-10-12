@@ -8,6 +8,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 #include <Tools/JoltPhysicsEditorSystemComponent.h>
+#include <Editor/JoltEditorMaterialAsset.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <System/JoltSystem.h>
 
@@ -18,6 +19,8 @@ namespace JoltPhysics
 
     void JoltPhysicsEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorMaterialAsset::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JoltPhysicsEditorSystemComponent, AZ::Component>()
@@ -67,10 +70,30 @@ namespace JoltPhysics
     {
         dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
         dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+        dependent.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void JoltPhysicsEditorSystemComponent::Activate()
     {
+        Physics::EditorWorldBus::Handler::BusConnect();
+
+        // Register Jolt Material Asset Builder
+        AssetBuilderSDK::AssetBuilderDesc materialAssetBuilderDescriptor;
+        materialAssetBuilderDescriptor.m_name = "Jolt Material Asset Builder";
+        materialAssetBuilderDescriptor.m_version = 1; // bump this to rebuild all joltmaterial files
+        materialAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", EditorMaterialAsset::FileExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+        materialAssetBuilderDescriptor.m_busId = azrtti_typeid<EditorMaterialAssetBuilder>();
+        materialAssetBuilderDescriptor.m_createJobFunction = [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+        {
+            m_materialAssetBuilder.CreateJobs(request, response);
+        };
+        materialAssetBuilderDescriptor.m_processJobFunction = [this](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+        {
+            m_materialAssetBuilder.ProcessJob(request, response);
+        };
+        m_materialAssetBuilder.BusConnect(materialAssetBuilderDescriptor.m_busId);
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, materialAssetBuilderDescriptor);
+
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
@@ -78,7 +101,6 @@ namespace JoltPhysics
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
         }
 
-        AZ_TracePrintf("EditorSystemComponent", "Editor system component activated\n")
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
@@ -97,6 +119,18 @@ namespace JoltPhysics
             physicsSystem->RemoveScene(m_editorWorldSceneHandle);
         }
         m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+
+        m_materialAssetBuilder.BusDisconnect();
+
+        for (auto& assetHandler : m_assetHandlers)
+        {
+            if (auto editorMaterialAssetHandler = azrtti_cast<AzFramework::GenericAssetHandler<JoltPhysics::EditorMaterialAsset>*>(assetHandler.get());
+                editorMaterialAssetHandler != nullptr)
+            {
+                editorMaterialAssetHandler->Unregister();
+            }
+        }
+        m_assetHandlers.clear();
     }
 
     void JoltPhysicsEditorSystemComponent::OnStartPlayInEditorBegin()

@@ -1,10 +1,17 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
+#include <Editor/JoltEditorMaterialAssetBuilder.h>
 #include <Clients/JoltPhysicsSystemComponent.h>
 
 namespace JoltPhysics
@@ -54,5 +61,11 @@ namespace JoltPhysics
         void OnStopPlayInEditor() override;
 
         AzPhysics::SceneHandle m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+
+        // Assets related data
+        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
+
+        // Asset builder for Jolt material asset
+        EditorMaterialAssetBuilder m_materialAssetBuilder;
     };
 } // namespace JoltPhysics
