@@ -11,6 +11,7 @@ namespace JoltPhysics
     class EditorMaterialAsset
         : public AZ::Data::AssetData
     {
+    public:
         AZ_CLASS_ALLOCATOR(JoltPhysics::EditorMaterialAsset, AZ::SystemAllocator);
         AZ_RTTI(JoltPhysics::EditorMaterialAsset, "{0A3F0A31-3271-42FE-A0F7-627C5E36A023}", AZ::Data::AssetData);
 
