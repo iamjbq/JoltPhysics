@@ -104,7 +104,7 @@ namespace JoltPhysics
         const AZ::Color& GetDebugColor() const;
         void SetDebugColor(const AZ::Color& debugColor);
 
-        const JoltPhysicsMaterial* GetJoltMaterial() const; // TODO: implement own material class
+        const JoltPhysicsMaterial* GetJoltMaterial() const;
 
     protected:
         // AssetBus overrides...
