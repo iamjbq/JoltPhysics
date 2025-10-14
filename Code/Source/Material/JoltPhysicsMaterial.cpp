@@ -42,24 +42,4 @@ namespace JoltPhysics
     {
         return m_density;
     }
-
-    void JoltPhysicsMaterial::SetRestitutionCombineMode(JoltCombineMode::Enum mode)
-    {
-        m_restitutionCombineMode = mode;
-    }
-
-    JoltCombineMode::Enum JoltPhysicsMaterial::GetRestitutionCombineMode() const
-    {
-        return m_restitutionCombineMode;
-    }
-
-    void JoltPhysicsMaterial::SetFrictionCombineMode(JoltCombineMode::Enum mode)
-    {
-        m_frictionCombineMode = mode;
-    }
-
-    JoltCombineMode::Enum JoltPhysicsMaterial::GetFrictionCombineMode() const
-    {
-        return m_frictionCombineMode;
-    }
 } // JoltPhysics

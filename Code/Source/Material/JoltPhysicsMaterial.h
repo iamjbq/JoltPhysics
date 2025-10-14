@@ -5,19 +5,6 @@
 
 namespace JoltPhysics
 {
-    struct JoltCombineMode
-    {
-        enum Enum : JPH::uint8
-        {
-            Average,
-            Minimum,
-            Maximum,
-            Multiply,
-
-            ENUM_COUNT
-        };
-    };
-    
     class JoltPhysicsMaterial : public JPH::PhysicsMaterial
     {
     public:
@@ -34,24 +21,15 @@ namespace JoltPhysics
         void SetDensity(float density);
         float GetDensity() const;
 
-        void SetRestitutionCombineMode(JoltCombineMode::Enum mode);
-        JoltCombineMode::Enum GetRestitutionCombineMode() const;
-
-        void SetFrictionCombineMode(JoltCombineMode::Enum mode);
-        JoltCombineMode::Enum GetFrictionCombineMode() const;
-
         void* m_userData = nullptr;
         
     private:
-
         JPH::String m_debugName;
         JPH::Color m_debugColor = JPH::Color::sWhite;
 
         float m_restitution;
         float m_friction;
         float m_density;
-        
-        JoltCombineMode::Enum m_frictionCombineMode = JoltCombineMode::Average;
-        JoltCombineMode::Enum m_restitutionCombineMode = JoltCombineMode::Maximum;
+
     };
 } // JoltPhysics

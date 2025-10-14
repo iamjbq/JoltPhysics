@@ -12,40 +12,6 @@
 
 namespace JoltPhysics
 {
-    static CombineMode FromJoltCombineMode(JoltPhysics::JoltCombineMode::Enum joltMode)
-    {
-        switch (joltMode)
-        {
-        case JoltCombineMode::Average:
-            return CombineMode::Average;
-        case JoltCombineMode::Multiply:
-            return CombineMode::Multiply;
-        case JoltCombineMode::Maximum:
-            return CombineMode::Maximum;
-        case JoltCombineMode::Minimum:
-            return CombineMode::Minimum;
-        default:
-            return CombineMode::Average;
-        }
-    }
-
-    static JoltPhysics::JoltCombineMode::Enum ToJoltCombineMode(CombineMode mode)
-    {
-        switch (mode)
-        {
-        case CombineMode::Average:
-            return JoltCombineMode::Average;
-        case CombineMode::Multiply:
-            return JoltCombineMode::Multiply;
-        case CombineMode::Maximum:
-            return JoltCombineMode::Maximum;
-        case CombineMode::Minimum:
-            return JoltCombineMode::Minimum;
-        default:
-            return JoltCombineMode::Maximum;
-        }
-    }
-
     AZStd::shared_ptr<Material> Material::FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
     {
         return AZStd::rtti_pointer_cast<Material>(
@@ -103,6 +69,7 @@ namespace JoltPhysics
     }
 
     Material::Material(const Physics::MaterialId& id, const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+        : Physics::Material(id, materialAsset)
     {
         const MaterialConfiguration defaultMaterialConfiguration;
 
@@ -113,7 +80,7 @@ namespace JoltPhysics
                 JPH::Color::sWhite,
                 defaultMaterialConfiguration.m_Friction, defaultMaterialConfiguration.m_restitution, defaultMaterialConfiguration.m_density
             ),
-            [](JoltPhysics::JoltPhysicsMaterial* joltPhysicsMaterial)
+            []([[maybe_unused]] JoltPhysics::JoltPhysicsMaterial* joltPhysicsMaterial)
             {
                 // Nothing to do here yet
             });
@@ -198,13 +165,16 @@ namespace JoltPhysics
 
     float Material::GetFriction() const
     {
-        return m_density;
+        return m_friction;
     }
 
     void Material::SetFriction(float friction)
     {
         AZ_Warning("Jolt Material", friction >= 0.0f, "Friction value %f is out of range, 0 will be used.", friction)
-        m_joltMaterial->SetFriction(AZ::GetMax(0.0f, friction));
+
+        m_friction = friction;
+        
+        m_joltMaterial->SetFriction(AZ::GetMax(0.0f, m_friction));
     }
 
     float Material::GetRestitution() const
@@ -241,22 +211,22 @@ namespace JoltPhysics
 
     CombineMode Material::GetFrictionCombineMode() const
     {
-        return FromJoltCombineMode(m_joltMaterial->GetFrictionCombineMode());
+        return m_frictionCombineMode;
     }
 
     void Material::SetFrictionCombineMode(CombineMode mode)
     {
-        m_joltMaterial->SetFrictionCombineMode(ToJoltCombineMode(mode));
+        m_frictionCombineMode = mode;
     }
 
     CombineMode Material::GetRestitutionCombineMode() const
     {
-        return FromJoltCombineMode(m_joltMaterial->GetRestitutionCombineMode());
+        return m_restitutionCombineMode;
     }
 
     void Material::SetRestitutionCombineMode(CombineMode mode)
     {
-        m_joltMaterial->SetRestitutionCombineMode(ToJoltCombineMode(mode));
+        m_restitutionCombineMode = mode;
     }
 
     const AZ::Color& Material::GetDebugColor() const
@@ -264,8 +234,9 @@ namespace JoltPhysics
         return m_debugColor;
     }
 
-    void Material::SetDebugColor([[maybe_unused]] const AZ::Color& debugColor)
+    void Material::SetDebugColor(const AZ::Color& debugColor)
     {
+        m_debugColor = debugColor;
     }
 
     const JoltPhysicsMaterial* Material::GetJoltMaterial() const
