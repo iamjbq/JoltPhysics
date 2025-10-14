@@ -14,7 +14,7 @@ namespace JoltPhysics
         {
             serializeContext->Class<JoltPhysics::MaterialConfiguration>()
                 ->Version(1)
-                ->Field("DynamicFriction", &MaterialConfiguration::m_Friction)
+                ->Field("Friction", &MaterialConfiguration::m_Friction)
                 ->Field("Restitution", &MaterialConfiguration::m_restitution)
                 ->Field("FrictionCombine", &MaterialConfiguration::m_frictionCombine)
                 ->Field("RestitutionCombine", &MaterialConfiguration::m_restitutionCombine)
@@ -24,7 +24,6 @@ namespace JoltPhysics
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-
                 editContext->Class<JoltPhysics::MaterialConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Jolt Material")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
