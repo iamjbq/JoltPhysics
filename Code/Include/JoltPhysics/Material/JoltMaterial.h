@@ -125,5 +125,8 @@ namespace JoltPhysics
         float m_restitution = 0.5f;
         float m_density = 1000.0f;
         AZ::Color m_debugColor = AZ::Colors::White;
+
+        CombineMode m_frictionCombineMode = CombineMode::Average;
+        CombineMode m_restitutionCombineMode = CombineMode::Maximum;
     };
 }

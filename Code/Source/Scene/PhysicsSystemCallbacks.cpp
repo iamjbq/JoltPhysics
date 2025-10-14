@@ -13,11 +13,48 @@ namespace JoltPhysics
 {
     // PhysX set to 10, Jolt provides up to 64 points
     static constexpr const JPH::uint32 MaxPointsToReport = 10;
-    
-    // JoltContactListener TODO: Complete these functions
-    
+
+    void GetFrictionAndRestitution(const JPH::Body& inBody, const JPH::SubShapeID& inSubShapeID, float& outFriction,
+        float& outRestitution, CombineMode& outFrictionCombine, CombineMode& outRestitutionCombine)
+    {
+        // Get the material that corresponds to the sub shape ID
+        const JPH::PhysicsMaterial* material = inBody.GetShape()->GetMaterial(inSubShapeID);
+        if (material == JPH::PhysicsMaterial::sDefault)
+        {
+            // This is the default material, use the settings from the body (no material was set)
+            outFriction = inBody.GetFriction();
+            outRestitution = inBody.GetRestitution();
+        }
+        else
+        {
+            // If it's not the default material we know it's a material that we created so we can cast it and get the values
+            const JoltPhysicsMaterial *userMat = static_cast<const JoltPhysicsMaterial *>(material);
+            outFriction = userMat->GetFriction();
+            outFrictionCombine = azdynamic_cast<JoltPhysics::Material*>(Utils::GetUserData(userMat))->GetFrictionCombineMode();
+            outRestitution = userMat->GetRestitution();
+            outRestitutionCombine = azdynamic_cast<JoltPhysics::Material*>(Utils::GetUserData(userMat))->GetRestitutionCombineMode();
+        }
+    }
+
+    void OverrideContactSettings(const JPH::Body& inBody1, const JPH::Body& inBody2,
+        const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
+    {
+        // Get the custom friction and restitution for both bodies
+        float friction1, friction2, restitution1, restitution2;
+        CombineMode outFrictionCombine1, outFrictionCombine2, outRestitutionCombine1, outRestitutionCombine2;
+        
+        GetFrictionAndRestitution(inBody1, inManifold.mSubShapeID1, friction1, restitution1,
+            outFrictionCombine1, outRestitutionCombine1);
+        GetFrictionAndRestitution(inBody2, inManifold.mSubShapeID2, friction2, restitution2,
+            outFrictionCombine2, outRestitutionCombine2);
+
+        // Return the effective friction or restitution using max(mode1, mode2)
+        ioSettings.mCombinedFriction = Utils::GetCombinedMaterialProperty(friction1, friction2, AZStd::max(outFrictionCombine1, outFrictionCombine2));
+        ioSettings.mCombinedRestitution = Utils::GetCombinedMaterialProperty(restitution1, restitution2, AZStd::max(outRestitutionCombine1, outRestitutionCombine2));
+    }
+
     JPH::ValidateResult JoltContactListener::OnContactValidate([[maybe_unused]] const JPH::Body& inBody1, [[maybe_unused]] const JPH::Body& inBody2,
-        [[maybe_unused]] JPH::RVec3Arg inBaseOffset, [[maybe_unused]] const JPH::CollideShapeResult& inCollisionResult)
+                                                               [[maybe_unused]] JPH::RVec3Arg inBaseOffset, [[maybe_unused]] const JPH::CollideShapeResult& inCollisionResult)
     {
         AZ_Info("JoltContactListener", "Contact validate callback")
 
@@ -62,6 +99,9 @@ namespace JoltPhysics
         const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings,
         AzPhysics::CollisionEvent::Type inType)
     {
+        // Override friction and restitution values before setting anything else
+        OverrideContactSettings(inBody1, inBody2, inManifold, ioSettings);
+        
         BodyData* bodyData1 = Utils::GetUserData(inBody1);
         BodyData* bodyData2 = Utils::GetUserData(inBody2);
 

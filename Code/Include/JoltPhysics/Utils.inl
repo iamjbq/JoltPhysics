@@ -1,4 +1,7 @@
 ﻿
+#include "Material/JoltMaterial.h"
+#include "Material/JoltPhysicsMaterial.h"
+
 namespace JoltPhysics
 {
     inline BodyData* Utils::GetUserData(const JPH::Body& body)
@@ -26,5 +29,22 @@ namespace JoltPhysics
     inline Physics::Shape* Utils::GetUserData(const JPH::Shape* shape)
     {
         return (shape == nullptr) ? nullptr : reinterpret_cast<Physics::Shape*>(shape->GetUserData());
+    }
+
+    inline float Utils::GetCombinedMaterialProperty(const float& inValue1, const float& inValue2, const CombineMode& inMode)
+    {
+        switch (inMode)
+        {
+            case CombineMode::Average:
+                return AZ::Sqrt(inValue1 * inValue2); // Jolt uses the geometric mean
+            case CombineMode::Minimum:
+                return AZStd::min(inValue1, inValue2);
+            case CombineMode::Maximum:
+                return AZStd::max(inValue1, inValue2);
+            case CombineMode::Multiply:
+                return inValue1 * inValue2;
+            default:
+                return AZ::Sqrt(inValue1 * inValue2);
+        }
     }
 }
