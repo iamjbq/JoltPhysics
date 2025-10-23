@@ -117,6 +117,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
+            Legacy::CryCommon
             Jolt
         PRIVATE
             Gem::LmbrCentral.API
@@ -217,9 +218,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 Gem::LmbrCentral.Editor
+                Legacy::Editor.Headers
                 ${gem_name}.Private.Object
                 Gem::CommonFeaturesAtom.Static
-		Jolt
+		        Jolt
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
     )
