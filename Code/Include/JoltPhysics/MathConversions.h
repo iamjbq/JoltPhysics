@@ -7,7 +7,7 @@
 #include <AzCore/Math/Transform.h>
 
 #include <Jolt/Jolt.h>
-// #include <Jolt/Math/Vec3.h>
+#include <Jolt/Math/Vec3.h>
 #include <Jolt/Geometry/AABox.h>
 
 AZ_FORCE_INLINE JPH::Vec3 JoltMathConvert(const AZ::Vector3& inVec)
