@@ -12,8 +12,8 @@ set(FILES
 #        Source/Clients/RigidBody.cpp
 #        Source/Clients/RigidBody.h
 #
-#        Source/Clients/Shape.cpp
-#        Source/Clients/Shape.h
+        Source/Clients/Shape.cpp
+        Source/Clients/Shape.h
 
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h
@@ -42,4 +42,7 @@ set(FILES
 		
 		Source/Scene/PhysicsSystemCallbacks.cpp
 		Source/Scene/PhysicsSystemCallbacks.h
+
+		Source/Utils.cpp
+		Source/Utils.h
 )
