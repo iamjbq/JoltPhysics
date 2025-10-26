@@ -40,7 +40,10 @@ namespace JoltPhysics
 {
     namespace Utils
     {
-        bool ComputeJoltShapeFromConfig(const Physics::ShapeConfiguration& shapeConfiguration, JPH::Shape* outShape)
+        bool ComputeJoltShapeFromConfig(
+            const Physics::ShapeConfiguration& shapeConfiguration,
+            JPH::Shape::ShapeResult& outResult,
+            AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
         {
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
@@ -60,7 +63,8 @@ namespace JoltPhysics
                         return false;
                     }
                     
-                    outShape = new JPH::SphereShape(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement());
+                    JPH::SphereShapeSettings settings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), inMaterials.front());
+                    outResult = settings.Create();
                     break;
                 }
             case Physics::ShapeType::Box:
@@ -73,7 +77,11 @@ namespace JoltPhysics
                         return false;
                     }
                     
-                    outShape = new JPH::BoxShape(JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale));
+                    JPH::BoxShapeSettings settings(
+                        JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale),
+                        JPH::cDefaultConvexRadius,
+                        inMaterials.front());
+                    outResult = settings.Create();
                     break;
                 }
             case Physics::ShapeType::Capsule:
@@ -97,7 +105,8 @@ namespace JoltPhysics
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
                     
-                    outShape = new JPH::CapsuleShape(halfHeight, radius);
+                    JPH::CapsuleShapeSettings settings(halfHeight, radius, inMaterials.front());
+                    outResult = settings.Create();
                     break;
                 }
             case Physics::ShapeType::PhysicsAsset:
@@ -109,15 +118,13 @@ namespace JoltPhysics
                 }
             case Physics::ShapeType::Heightfield:
                 {
-                    const auto& constHeightfieldConfig =
-                        dynamic_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+                    const auto& constHeightfieldConfig = dynamic_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
 
                     // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
                     // native heightfield pointer that gets stored in the configuration.
-                    auto& heightfieldConfig =
-                        const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+                    auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
 
-                    CreateJoltShapeResultFromHeightField(heightfieldConfig, outShape);
+                    CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult, inMaterials);
                     break;
                 }
             default:
@@ -128,7 +135,10 @@ namespace JoltPhysics
             return true;
         }
 
-        void CreateJoltShapeResultFromHeightField(Physics::HeightfieldShapeConfiguration& heightfieldConfig, JPH::Shape* outShape)
+        void CreateJoltShapeResultFromHeightField(
+            Physics::HeightfieldShapeConfiguration& heightfieldConfig,
+            JPH::Shape::ShapeResult& outResult,
+            AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
         {
             // Most of this is borrowed from PhysX gem
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
@@ -139,8 +149,10 @@ namespace JoltPhysics
             const float rowScale = gridSpacing.GetX();
             const float colScale = gridSpacing.GetY();
 
+            // Temp
             AZ_UNUSED(rowScale)
             AZ_UNUSED(colScale)
+            // Temp
 
             const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
             const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
@@ -158,21 +170,23 @@ namespace JoltPhysics
             // Jolt quantizes float height values into uin16 internally, so we only need to worry about converting floats
 
             if (auto cachedHeightField = static_cast<JPH::HeightFieldShape*>(heightfieldConfig.GetCachedNativeHeightfield()))
-            {                
-                outShape = cachedHeightField;
+            {
+                outResult.Clear();
+                outResult.Set(cachedHeightField);
+                outResult.SetError("Failed to assign existing cached HeightField to new ShapeResult");
                 return;
             }
 
             AZStd::vector<float> joltHeightSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
  
             // TODO: Determine how or if we can set HeightField offset or scale in O3DE
+            // TODO: Add material indices and material list
             JPH::HeightFieldShapeSettings settings(
                 joltHeightSamples.data(),
                 JPH::Vec3::sZero(),
                 JPH::Vec3::sOne(),
                 static_cast<JPH::uint32>(joltHeightSamples.size()));
-            JPH::Shape::ShapeResult result = settings.Create();
-            outShape = result.Get().GetPtr(); // Not sure if this pointer is valid after scope end
+            outResult = settings.Create();
         }
 
         AZStd::vector<float> ConvertHeightfieldSamples(const Physics::HeightfieldShapeConfiguration& heightfield,
@@ -246,12 +260,6 @@ namespace JoltPhysics
                                               const Physics::ShapeConfiguration& shapeConfiguration,
                                               AzPhysics::CollisionGroup& assignedCollisionGroup)
         {
-            JPH::Shape* outShape = nullptr;
-            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outShape))
-            {
-                return outShape;
-            }
-            
             // We get the materials from the collider config here and extract them to set on a shape
             // We can't set Jolt materials on base shapes because we need to know the type
             // We know the type when getting the shape result, but we can't set density there until Create() is called and IsValid()
@@ -263,48 +271,18 @@ namespace JoltPhysics
                 joltMaterials[materialIndex] = materials[materialIndex]->GetJoltMaterial();
             }
 
-            switch (auto shapeType = outShape->GetType())
+            JPH::Shape::ShapeResult outResult;
+            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outResult, joltMaterials))
             {
-            case JPH::EShapeType::Convex:
-                {
-                    dynamic_cast<JPH::ConvexShape*>(outShape)->SetMaterial(joltMaterials.front());
-                    dynamic_cast<JPH::ConvexShape*>(outShape)->SetDensity(joltMaterials.front()->GetDensity());
-                }
-            case JPH::EShapeType::Plane:
-                {
-                    dynamic_cast<JPH::PlaneShape*>(outShape)->SetMaterial(joltMaterials.front());
-                }
-            case JPH::EShapeType::Mesh:
-                {
-                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
-                    // Materials are per subshape on a Mesh
-                }
-            case JPH::EShapeType::HeightField:
-                {
-                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
-                    // dynamic_cast<JPH::HeightFieldShape*>(outShape)->SetMaterials();
-                }
-            case JPH::EShapeType::SoftBody:
-                {
-                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
-                    // Materials are per subshape on a SoftBody
-                }
-            case JPH::EShapeType::Empty:
-                {
-                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
-                }
-            default:
-                {
-                    AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType)
-                }
+                return nullptr;
             }
-
-            if (outShape == nullptr)
+            
+            if (outResult.HasError())
             {
                 AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
-                return outShape;
+                return nullptr;
             }
-             
+            
             AzPhysics::CollisionGroup collisionGroup;
             Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
 
@@ -312,8 +290,9 @@ namespace JoltPhysics
             
             assignedCollisionGroup = collisionGroup;
 
-            outShape->AddRef();
-            return outShape;
+            JPH::Shape* newShape = outResult.Get();
+            newShape->AddRef();
+            return newShape;
         }
     }
 }
