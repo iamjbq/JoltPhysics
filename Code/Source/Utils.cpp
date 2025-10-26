@@ -30,6 +30,8 @@
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
 #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
+#include "Jolt/Physics/Collision/Shape/MeshShape.h"
+#include "Jolt/Physics/Collision/Shape/PlaneShape.h"
 #include "Jolt/Physics/Collision/Shape/Shape.h"
 #include "Jolt/Physics/Collision/Shape/Shape.h"
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
@@ -38,30 +40,27 @@ namespace JoltPhysics
 {
     namespace Utils
     {
-        bool CreateJoltShapeResultFromConfig(const Physics::ShapeConfiguration& shapeConfiguration,
-            JPH::Shape::ShapeResult& outResult)
+        bool ComputeJoltShapeFromConfig(const Physics::ShapeConfiguration& shapeConfiguration, JPH::Shape* outShape)
         {
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
                 AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
-                    AZStd::to_string(shapeConfiguration.m_scale).c_str());
+                    AZStd::to_string(shapeConfiguration.m_scale).c_str())
                 return false;
             }
 
-            auto shapeType = shapeConfiguration.GetShapeType();
-
-            switch (shapeType)
+            switch (auto shapeType = shapeConfiguration.GetShapeType())
             {
             case Physics::ShapeType::Sphere:
                 {
                     const auto& sphereConfig = dynamic_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
                     if (sphereConfig.m_radius <= 0.0f)
                     {
-                        AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius);
+                        AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius)
                         return false;
                     }
-                    JPH::SphereShapeSettings settings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement());
-                    outResult = settings.Create();
+                    
+                    outShape = new JPH::SphereShape(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement());
                     break;
                 }
             case Physics::ShapeType::Box:
@@ -70,11 +69,11 @@ namespace JoltPhysics
                     if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
                     {
                         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for box dimensions %s",
-                            AZStd::to_string(boxConfig.m_dimensions).c_str());
+                            AZStd::to_string(boxConfig.m_dimensions).c_str())
                         return false;
                     }
-                    JPH::BoxShapeSettings settings(JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale));
-                    outResult = settings.Create();
+                    
+                    outShape = new JPH::BoxShape(JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale));
                     break;
                 }
             case Physics::ShapeType::Capsule:
@@ -86,7 +85,7 @@ namespace JoltPhysics
                     if (height <= 0.0f || radius <= 0.0f)
                     {
                         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
-                            capsuleConfig.m_height, capsuleConfig.m_radius);
+                            capsuleConfig.m_height, capsuleConfig.m_radius)
                         return false;
                     }
 
@@ -94,18 +93,18 @@ namespace JoltPhysics
                     if (halfHeight <= 0.0f)
                     {
                         AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in capsule configuration (height: %f, radius: %f)",
-                            capsuleConfig.m_height, capsuleConfig.m_radius);
+                            capsuleConfig.m_height, capsuleConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
-                    JPH::CapsuleShapeSettings settings(halfHeight, radius);
-                    outResult = settings.Create();
+                    
+                    outShape = new JPH::CapsuleShape(halfHeight, radius);
                     break;
                 }
             case Physics::ShapeType::PhysicsAsset:
                 {
                     AZ_Assert(false,
                         "CreateJoltShapeFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
-                        "Please iterate over m_colliderShapes in the asset and call this function for each of them.");
+                        "Please iterate over m_colliderShapes in the asset and call this function for each of them.")
                     return false;
                 }
             case Physics::ShapeType::Heightfield:
@@ -118,28 +117,30 @@ namespace JoltPhysics
                     auto& heightfieldConfig =
                         const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
 
-                    CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult);
+                    CreateJoltShapeResultFromHeightField(heightfieldConfig, outShape);
                     break;
                 }
             default:
-                AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType);
+                AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType)
                 return false;
             }
 
             return true;
         }
 
-        void CreateJoltShapeResultFromHeightField(Physics::HeightfieldShapeConfiguration& heightfieldConfig,
-            JPH::Shape::ShapeResult& outResult)
+        void CreateJoltShapeResultFromHeightField(Physics::HeightfieldShapeConfiguration& heightfieldConfig, JPH::Shape* outShape)
         {
             // Most of this is borrowed from PhysX gem
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const size_t numCols = heightfieldConfig.GetNumColumnVertices();
             const size_t numRows = heightfieldConfig.GetNumRowVertices();
-
+            
             const float rowScale = gridSpacing.GetX();
             const float colScale = gridSpacing.GetY();
+
+            AZ_UNUSED(rowScale)
+            AZ_UNUSED(colScale)
 
             const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
             const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
@@ -148,25 +149,30 @@ namespace JoltPhysics
             // We're making the assumption right now that the min/max bounds are centered around 0.
             AZ_Assert(
                 AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
-                "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.");
+                "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.")
 
             AZ_Assert(
                 maxHeightBounds >= minHeightBounds,
-                "Max height bounds is less than min height bounds, the height conversions below will be incorrect.");
+                "Max height bounds is less than min height bounds, the height conversions below will be incorrect.")
 
             // Jolt quantizes float height values into uin16 internally, so we only need to worry about converting floats
 
-            if (JPH::HeightFieldShape* cachedHeightField = static_cast<JPH::HeightFieldShape*>(heightfieldConfig.GetCachedNativeHeightfield()))
+            if (auto cachedHeightField = static_cast<JPH::HeightFieldShape*>(heightfieldConfig.GetCachedNativeHeightfield()))
             {                
-                outResult.Set(static_cast<JPH::HeightFieldShape*>(cachedHeightField->Clone()));
+                outShape = cachedHeightField;
                 return;
             }
 
             AZStd::vector<float> joltHeightSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
  
             // TODO: Determine how or if we can set HeightField offset or scale in O3DE
-            JPH::HeightFieldShapeSettings settings(joltHeightSamples.data(), JPH::Vec3::sZero(), JPH::Vec3::sOne(), joltHeightSamples.size());
-            outResult = settings.Create();
+            JPH::HeightFieldShapeSettings settings(
+                joltHeightSamples.data(),
+                JPH::Vec3::sZero(),
+                JPH::Vec3::sOne(),
+                static_cast<JPH::uint32>(joltHeightSamples.size()));
+            JPH::Shape::ShapeResult result = settings.Create();
+            outShape = result.Get().GetPtr(); // Not sure if this pointer is valid after scope end
         }
 
         AZStd::vector<float> ConvertHeightfieldSamples(const Physics::HeightfieldShapeConfiguration& heightfield,
@@ -175,14 +181,14 @@ namespace JoltPhysics
             const size_t numCols = heightfield.GetNumColumnVertices();
             const size_t numRows = heightfield.GetNumRowVertices();
 
-            AZ_Assert(startRow < numRows, "Invalid starting row (%d vs %d total rows)", startRow, numRows);
-            AZ_Assert(startCol < numCols, "Invalid starting columm (%d vs %d total columns)", startCol, numCols);
-            AZ_Assert((startRow + numRowsToUpdate) <= numRows, "Invalid row selection");
-            AZ_Assert((startCol + numColsToUpdate) <= numCols, "Invalid column selection");
+            AZ_Assert(startRow < numRows, "Invalid starting row (%d vs %d total rows)", startRow, numRows)
+            AZ_Assert(startCol < numCols, "Invalid starting column (%d vs %d total columns)", startCol, numCols)
+            AZ_Assert((startRow + numRowsToUpdate) <= numRows, "Invalid row selection")
+            AZ_Assert((startCol + numColsToUpdate) <= numCols, "Invalid column selection")
 
             // Vector of O3DE format samples
             const AZStd::vector<Physics::HeightMaterialPoint>& samples = heightfield.GetSamples();
-            AZ_Assert(samples.size() == numRows * numCols, "Heightfield configuration has invalid heightfield sample size.");
+            AZ_Assert(samples.size() == numRows * numCols, "Heightfield configuration has invalid heightfield sample size.")
 
             if (samples.empty() || (numRowsToUpdate == 0) || (numColsToUpdate == 0))
             {
@@ -196,11 +202,11 @@ namespace JoltPhysics
             // We're making the assumption that the min/max bounds are centered around 0
             AZ_Assert(
                 AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
-                "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.");
+                "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.")
 
             AZ_Assert(
                 maxHeightBounds >= minHeightBounds,
-                "Max height bounds is less than min height bounds, the height conversions below will be incorrect.");
+                "Max height bounds is less than min height bounds, the height conversions below will be incorrect.")
 
             // Vector of Jolt format samples
             AZStd::vector<float> heightSamples(numRowsToUpdate * numColsToUpdate);
@@ -236,24 +242,78 @@ namespace JoltPhysics
             return heightSamples;
         }
 
-        JPH::Shape::ShapeResult CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
-                                                          const Physics::ShapeConfiguration& shapeConfiguration, AzPhysics::CollisionGroup& assignedCollisionGroup)
+        JPH::Shape* CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
+                                              const Physics::ShapeConfiguration& shapeConfiguration,
+                                              AzPhysics::CollisionGroup& assignedCollisionGroup)
         {
-            // Shape result container to be returned. Result is validated inside the engine Shape class constructor
-            JPH::Shape::ShapeResult shapeResult;
-            if (!Utils::CreateJoltShapeResultFromConfig(shapeConfiguration, shapeResult))
+            JPH::Shape* outShape = nullptr;
+            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outShape))
             {
-                return shapeResult;
+                return outShape;
+            }
+            
+            // We get the materials from the collider config here and extract them to set on a shape
+            // We can't set Jolt materials on base shapes because we need to know the type
+            // We know the type when getting the shape result, but we can't set density there until Create() is called and IsValid()
+            // One option is to pass in the joltMaterials vector above and return a fully baked shape that has material and density set
+            AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
+            AZStd::vector<const JoltPhysicsMaterial*> joltMaterials(materials.size(), nullptr);
+            for (size_t materialIndex = 0; materialIndex < materials.size(); ++materialIndex)
+            {
+                joltMaterials[materialIndex] = materials[materialIndex]->GetJoltMaterial();
             }
 
-            AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
+            switch (auto shapeType = outShape->GetType())
+            {
+            case JPH::EShapeType::Convex:
+                {
+                    dynamic_cast<JPH::ConvexShape*>(outShape)->SetMaterial(joltMaterials.front());
+                    dynamic_cast<JPH::ConvexShape*>(outShape)->SetDensity(joltMaterials.front()->GetDensity());
+                }
+            case JPH::EShapeType::Plane:
+                {
+                    dynamic_cast<JPH::PlaneShape*>(outShape)->SetMaterial(joltMaterials.front());
+                }
+            case JPH::EShapeType::Mesh:
+                {
+                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
+                    // Materials are per subshape on a Mesh
+                }
+            case JPH::EShapeType::HeightField:
+                {
+                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
+                    // dynamic_cast<JPH::HeightFieldShape*>(outShape)->SetMaterials();
+                }
+            case JPH::EShapeType::SoftBody:
+                {
+                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
+                    // Materials are per subshape on a SoftBody
+                }
+            case JPH::EShapeType::Empty:
+                {
+                    AZ_Warning("Jolt Rigid Body", false, "Shape not yet supported in Jolt. Shape Type: %d", shapeType)
+                }
+            default:
+                {
+                    AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType)
+                }
+            }
 
-
-
+            if (outShape == nullptr)
+            {
+                AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
+                return outShape;
+            }
+             
             AzPhysics::CollisionGroup collisionGroup;
             Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
 
+            // TODO: Set the ObjectLayer bitmask here (Group, layer, BroadPhaseLayer)
+            
             assignedCollisionGroup = collisionGroup;
+
+            outShape->AddRef();
+            return outShape;
         }
     }
 }

@@ -14,7 +14,6 @@
 
 #include <Scene/JoltScene.h>
 
-
 namespace JPH
 {
     class ShapeSettings;
@@ -38,7 +37,7 @@ namespace JoltPhysics
         AZ_RTTI(Shape, "{92AC6CAF-4C88-4BFF-B2EF-D2C1F740918D}", Physics::Shape)
 
         Shape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration);
-        Shape(JPH::ShapeSettings* nativeShape);
+        Shape(JPH::Shape* nativeShape);
         virtual ~Shape();
 
         Shape(Shape&& shape);
@@ -70,20 +69,28 @@ namespace JoltPhysics
         AzPhysics::SceneQueryHit RayCastLocal(const AzPhysics::RayCastRequest& localSpaceRequest) override;
         AZ::Aabb GetAabb(const AZ::Transform& worldTransform) const override;
         AZ::Aabb GetAabbLocal() const override;
-        // AZStd::shared_ptr<Physics::ShapeConfiguration> GetShapeConfiguration() const override;
+        AZStd::shared_ptr<Physics::ShapeConfiguration> GetShapeConfiguration() const override;
         void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
         const AZ::Aabb* optionalBounds = nullptr) const override;
 
         JPH::Shape* GetJoltShape();
 
     private:
+        void BindMaterialsWithJoltShape();
+        void ExtractMaterialsFromJoltShape();
         JoltPhysics::JoltScene* GetScene();
+        void ReleaseJoltShape(JPH::Shape* shape);
+        
+        using JoltShapeUniquePtr = AZStd::unique_ptr<JPH::Shape, AZStd::function<void(JPH::Shape*)>>;
 
+        Shape() = default;
+
+        JoltShapeUniquePtr m_joltShape;
+        AZStd::vector<AZStd::shared_ptr<JoltPhysics::Material>> m_materials;
         AzPhysics::CollisionLayer m_collisionLayer;
         AzPhysics::CollisionGroup m_collisionGroup;
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         AZ::Crc32 m_tag;
-
-        Shape() = default;
+        JPH::Body* m_attachedBody = nullptr;
     };
 } // JoltPhysics

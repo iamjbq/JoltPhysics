@@ -40,14 +40,16 @@ namespace JoltPhysics
 
     namespace Utils
     {
-        bool CreateJoltShapeResultFromConfig(const Physics::ShapeConfiguration& shapeConfiguration, JPH::Shape::ShapeResult& outResult);
-        void CreateJoltShapeResultFromHeightField(Physics::HeightfieldShapeConfiguration& heightfieldConfig, JPH::Shape::ShapeResult& outResult);
+        bool ComputeJoltShapeFromConfig(const Physics::ShapeConfiguration& shapeConfiguration, JPH::Shape* outShape);
+
+        void CreateJoltShapeResultFromHeightField(Physics::HeightfieldShapeConfiguration& heightfieldConfig, JPH::Shape* outShape);
+
         AZStd::vector<float> ConvertHeightfieldSamples(
             const Physics::HeightfieldShapeConfiguration& heightfield,
             const size_t startCol, const size_t startRow,
             const size_t numColsToUpdate, const size_t numRowsToUpdate);
 
-        JPH::Shape::ShapeResult CreateJoltShapeFromConfig(
+        JPH::Shape* CreateJoltShapeFromConfig(
             const Physics::ColliderConfiguration& colliderConfiguration,
             const Physics::ShapeConfiguration& shapeConfiguration,
             AzPhysics::CollisionGroup& assignedCollisionGroup
