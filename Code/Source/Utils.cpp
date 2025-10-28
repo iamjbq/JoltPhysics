@@ -19,6 +19,7 @@
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+#include <AzFramework/Physics/CollisionBus.h>
 
 #include <JoltPhysics/Utils.h>
 #include "Utils.h"
@@ -29,12 +30,14 @@
 
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
 #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
 #include "Jolt/Physics/Collision/Shape/MeshShape.h"
 #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
 #include "Jolt/Physics/Collision/Shape/Shape.h"
 #include "Jolt/Physics/Collision/Shape/Shape.h"
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
+#include "Jolt/Physics/SoftBody/SoftBodyShape.h"
 
 namespace JoltPhysics
 {
@@ -138,7 +141,7 @@ namespace JoltPhysics
         void CreateJoltShapeResultFromHeightField(
             Physics::HeightfieldShapeConfiguration& heightfieldConfig,
             JPH::Shape::ShapeResult& outResult,
-            AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
+            [[maybe_unused]] AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
         {
             // Most of this is borrowed from PhysX gem
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
@@ -173,7 +176,6 @@ namespace JoltPhysics
             {
                 outResult.Clear();
                 outResult.Set(cachedHeightField);
-                outResult.SetError("Failed to assign existing cached HeightField to new ShapeResult");
                 return;
             }
 
@@ -277,22 +279,45 @@ namespace JoltPhysics
                 return nullptr;
             }
             
-            if (outResult.HasError())
+            if (outResult.HasError()) // This should never be true if the above condition passes
             {
                 AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
                 return nullptr;
             }
             
+            JPH::Shape* newShape = outResult.Get();
+            auto shapeType = newShape->GetType(); // Shapes can only have density set after the shape is created/cooked.
+            if (shapeType == JPH::EShapeType::Convex)
+            {
+                dynamic_cast<JPH::ConvexShape*>(newShape)->SetDensity(joltMaterials.front()->GetDensity());
+            }
+            newShape->AddRef();
+            
             AzPhysics::CollisionGroup collisionGroup;
             Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
-
-            // TODO: Set the ObjectLayer bitmask here (Group, layer, BroadPhaseLayer)
             
             assignedCollisionGroup = collisionGroup;
-
-            JPH::Shape* newShape = outResult.Get();
-            newShape->AddRef();
+            
             return newShape;
+        }
+
+        JPH::ObjectLayer ConstructObjectLayer(
+            const Physics::ColliderConfiguration& colliderConfiguration,
+            const AzPhysics::CollisionGroup& assignedCollisionGroup,
+            const JPH::BroadPhaseLayer& broadPhaseLayer)
+        {
+            if (JoltSystem* system = GetJoltSystem())
+            {
+                AZ::u32 newBPLayer = 1 << static_cast<AZ::u8>(broadPhaseLayer);
+                AZ::u32 newCollisionLayer = colliderConfiguration.m_collisionLayer.GetIndex() << 8;
+                
+                AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
+                AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
+
+                return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
+            }
+            AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")
+            return 0;
         }
     }
 }

@@ -32,6 +32,7 @@ namespace JoltPhysics
 {
     class Shape;
     class BodyData;
+    class JoltPhysicsMaterial;
 
     namespace Pipeline
     {
@@ -60,5 +61,10 @@ namespace JoltPhysics
             const Physics::ShapeConfiguration& shapeConfiguration,
             AzPhysics::CollisionGroup& assignedCollisionGroup
         );
+
+        JPH::ObjectLayer ConstructObjectLayer(
+            const Physics::ColliderConfiguration& colliderConfiguration,
+            const AzPhysics::CollisionGroup& assignedCollisionGroup,
+            const JPH::BroadPhaseLayer& broadPhaseLayer);
     } // namespace Utils
 }
