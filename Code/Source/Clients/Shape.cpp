@@ -7,6 +7,8 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/Body.h>
 
+#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+
 namespace JoltPhysics
 {
     Shape::Shape(const Physics::ColliderConfiguration& colliderConfiguration,
@@ -18,9 +20,8 @@ namespace JoltPhysics
         if (JPH::Shape* newShape = Utils::CreateJoltShapeFromConfig(colliderConfiguration, configuration, m_collisionGroup))
         {
             m_joltShape = JoltShapeUniquePtr(newShape, AZStd::bind(&Shape::ReleaseJoltShape, this, newShape));
-            
             m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
-
+            
             m_tag = AZ::Crc32(colliderConfiguration.m_tag);
         }
 
@@ -101,9 +102,23 @@ namespace JoltPhysics
         return {};
     }
 
+    void Shape::SetCollisionLayer(const AzPhysics::CollisionLayer& layer)
+    {
+        m_collisionLayer = layer;
+        
+        AZ_Warning("Shape", false, "SetCollisionLayer currently not implemented on native shape")
+    }
+
     AzPhysics::CollisionLayer Shape::GetCollisionLayer() const
     {
         return m_collisionLayer;
+    }
+
+    void Shape::SetCollisionGroup(const AzPhysics::CollisionGroup& group)
+    {
+        m_collisionGroup = group;
+
+        AZ_Warning("JoltPhysics::Shape", false, "SetCollisionGroup currently not implemented on native shape")
     }
 
     AzPhysics::CollisionGroup Shape::GetCollisionGroup() const
@@ -113,8 +128,48 @@ namespace JoltPhysics
 
     void Shape::SetName(const char* name)
     {
-        AZ_Warning("Jolt Shape", false, "Jolt Shapes cannot have names set.")
+        AZ_Warning("JoltPhysics::Shape", false, "Jolt Shapes cannot have names set.")
         AZ_UNUSED(name)
+    }
+
+    void Shape::SetLocalPose([[maybe_unused]] const AZ::Vector3& offset, [[maybe_unused]] const AZ::Quaternion& rotation)
+    {
+        AZ_Warning("JoltPhysics::Shape", false, "SetLocalPose not currently implemented")
+    }
+
+    AZStd::pair<AZ::Vector3, AZ::Quaternion> Shape::GetLocalPose() const
+    {
+        AZ_Warning("JoltPhysics::Shape", false, "GetLocalPose not currently implemented")
+        return AZStd::pair(AZ::Vector3::CreateZero(), AZ::Quaternion::CreateZero());
+    }
+
+    float Shape::GetRestOffset() const
+    {
+        AZ_Warning("JoltPhysics::Shape", false, "GetRestOffset not currently implemented")
+        return 0.f;
+    }
+
+    float Shape::GetContactOffset() const
+    {
+        return m_joltShape->GetInnerRadius(); // not sure if this is correct though
+    }
+
+    void Shape::SetRestOffset([[maybe_unused]] float restOffset)
+    {
+    }
+
+    void Shape::SetContactOffset([[maybe_unused]] float contactOffset)
+    {
+    }
+
+    void* Shape::GetNativePointer()
+    {
+        return m_joltShape.get();
+    }
+
+    const void* Shape::GetNativePointer() const
+    {
+        return m_joltShape.get();
     }
 
     AZ::Crc32 Shape::GetTag() const
@@ -122,18 +177,54 @@ namespace JoltPhysics
         return m_tag;
     }
 
+    void Shape::AttachedToActor(void* actor)
+    {
+        JPH::Body* joltBody = static_cast<JPH::Body*>(actor);
+        if (joltBody != nullptr)
+        {
+            m_attachedBody = joltBody;
+        }
+    }
+
+    void Shape::DetachedFromActor()
+    {
+        m_attachedBody = nullptr;
+    }
+
+    AzPhysics::SceneQueryHit Shape::RayCast([[maybe_unused]] const AzPhysics::RayCastRequest& worldSpaceRequest,
+        [[maybe_unused]] const AZ::Transform& worldTransform)
+    {
+        AZ_Warning("JoltPhysics::Shape", false, "RayCast not currently implemented")
+        return AzPhysics::SceneQueryHit();
+    }
+
+    AzPhysics::SceneQueryHit Shape::RayCastLocal([[maybe_unused]] const AzPhysics::RayCastRequest& localSpaceRequest)
+    {
+        AZ_Warning("JoltPhysics::Shape", false, "RayCastLocal not currently implemented")
+        return AzPhysics::SceneQueryHit();
+    }
+
+    AZ::Aabb Shape::GetAabb([[maybe_unused]] const AZ::Transform& worldTransform) const
+    {
+        AZ_Warning("JoltPhysics::Shape", false, "GetAabb not currently implemented")
+        return AZ::Aabb::CreateNull();
+    }
+
+    AZ::Aabb Shape::GetAabbLocal() const
+    {
+        AZ_Warning("JoltPhysics::Shape", false, "GetAabbLocal not currently implemented")
+        return AZ::Aabb::CreateNull();
+    }
+
     AZStd::shared_ptr<Physics::ShapeConfiguration> Shape::GetShapeConfiguration() const
     {
         return m_shapeConfiguration;
     }
 
-    JPH::Shape* Shape::GetJoltShape()
+    void Shape::GetGeometry([[maybe_unused]] AZStd::vector<AZ::Vector3>& vertices, [[maybe_unused]] AZStd::vector<AZ::u32>& indices,
+        [[maybe_unused]] const AZ::Aabb* optionalBounds) const
     {
-        if (m_joltShape)
-        {
-            return m_joltShape.get();
-        }
-        return nullptr;
+        AZ_Warning("JoltPhysics::Shape", false, "GetGeometry not currently implemented")
     }
 
     void Shape::BindMaterialsWithJoltShape()
@@ -161,7 +252,14 @@ namespace JoltPhysics
 
     void Shape::ExtractMaterialsFromJoltShape()
     {
-        
+        if (m_joltShape == nullptr)
+        {
+            return;
+        }
+
+        // const int BufferSize = 100;
+        // TODO: Store Geometry on Shape and loop through to get all materials as below
+        // AZ_Warning("Jolt Shape", m_joltShape->GetMaterial() < BufferSize, "Shape has too many materials, consider increasing the buffer");
     }
 
     JoltPhysics::JoltScene* Shape::GetScene()

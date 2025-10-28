@@ -73,8 +73,6 @@ namespace JoltPhysics
         void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
         const AZ::Aabb* optionalBounds = nullptr) const override;
 
-        JPH::Shape* GetJoltShape();
-
     private:
         void BindMaterialsWithJoltShape();
         void ExtractMaterialsFromJoltShape();
