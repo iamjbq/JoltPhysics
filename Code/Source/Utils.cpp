@@ -43,6 +43,22 @@ namespace JoltPhysics
 {
     namespace Utils
     {
+        AzPhysics::Scene* GetDefaultScene()
+        {
+            AzPhysics::SceneHandle sceneHandle;
+            Physics::DefaultWorldBus::BroadcastResult(sceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                if (auto* scene = physicsSystem->GetScene(sceneHandle))
+                {
+                    return scene;
+                }
+            }
+
+            return nullptr;
+        }
+
         bool ComputeJoltShapeFromConfig(
             const Physics::ShapeConfiguration& shapeConfiguration,
             JPH::Shape::ShapeResult& outResult,
@@ -67,6 +83,7 @@ namespace JoltPhysics
                     }
                     
                     JPH::SphereShapeSettings settings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), inMaterials.front());
+                    settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
                     break;
                 }
@@ -84,6 +101,7 @@ namespace JoltPhysics
                         JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale),
                         JPH::cDefaultConvexRadius,
                         inMaterials.front());
+                    settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
                     break;
                 }
@@ -109,6 +127,7 @@ namespace JoltPhysics
                     }
                     
                     JPH::CapsuleShapeSettings settings(halfHeight, radius, inMaterials.front());
+                    settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
                     break;
                 }
@@ -286,11 +305,6 @@ namespace JoltPhysics
             }
             
             JPH::Shape* newShape = outResult.Get();
-            auto shapeType = newShape->GetType(); // Shapes can only have density set after the shape is created/cooked.
-            if (shapeType == JPH::EShapeType::Convex)
-            {
-                dynamic_cast<JPH::ConvexShape*>(newShape)->SetDensity(joltMaterials.front()->GetDensity());
-            }
             newShape->AddRef();
             
             AzPhysics::CollisionGroup collisionGroup;

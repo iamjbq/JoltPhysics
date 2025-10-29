@@ -41,6 +41,8 @@ namespace JoltPhysics
 
     namespace Utils
     {
+        AzPhysics::Scene* GetDefaultScene();
+
         bool ComputeJoltShapeFromConfig(
             const Physics::ShapeConfiguration& shapeConfiguration,
             JPH::Shape::ShapeResult& outResult,
