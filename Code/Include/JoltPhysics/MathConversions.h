@@ -51,16 +51,7 @@ AZ_FORCE_INLINE AZ::Aabb JoltMathConvert(const JPH::AABox& bounds)
     return AZ::Aabb::CreateNull();
 }
 
-// AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Transform& lyTransform)
-// {
-//     AZ::Quaternion quat = lyTransform.GetRotation();
-//     AZ::Vector3 vec3 = lyTransform.GetTranslation();
-//
-//     return JPH::Mat44(JoltMathConvert(vec3),
-//         JoltMathConvert(quat).getNormalized());
-// }
-//
-// AZ_FORCE_INLINE AZ::Transform JoltMathConvert(const physx::PxTransform& pxTransform)
-// {
-//     return AZ::Transform::CreateFromQuaternionAndTranslation(JoltMathConvert(pxTransform.q), JoltMathConvert(pxTransform.p));
-// }
+AZ_FORCE_INLINE AZ::Transform JoltMathConvert(const JPH::Vec3& position, const JPH::Quat& rotation)
+{
+    return AZ::Transform::CreateFromQuaternionAndTranslation(JoltMathConvert(rotation), JoltMathConvert(position));
+}
