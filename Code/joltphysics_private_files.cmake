@@ -15,6 +15,9 @@ set(FILES
         Source/Clients/Shape.cpp
         Source/Clients/Shape.h
 
+		Source/Clients/BaseColliderComponent.cpp
+		Source/Clients/BaseColliderComponent.h
+
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h
 

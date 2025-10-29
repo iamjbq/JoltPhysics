@@ -12,5 +12,7 @@ set(FILES
     Include/JoltPhysics/BodyData.inl
     Include/JoltPhysics/Utils.h
     Include/JoltPhysics/Utils.inl
-    
+    Include/JoltPhysics/ColliderComponentBus.h
+    Include/JoltPhysics/ColliderShapeBus.h
+    Include/JoltPhysics/EditorColliderComponentRequestBus.h
 )
