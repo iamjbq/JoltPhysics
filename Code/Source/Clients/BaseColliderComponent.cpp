@@ -62,25 +62,30 @@ namespace JoltPhysics
             {
                 return;
             }
+            // These may not be needed
+            // auto* joltScene = static_cast<JoltPhysics::JoltScene*>(scene->GetNativePointer());
+            // auto* physicsSystem = static_cast<JPH::PhysicsSystem*>(joltScene->GetNativePointer());
+            
+            // Get the first shape in the vector to get world bounds, seemingly
+            auto* Shape = static_cast<JoltPhysics::Shape*>(shapes[0]->GetNativePointer());
+            auto* joltshape = static_cast<JPH::Shape*>(Shape->GetNativePointer());
+            
+            
+            JPH::AABox shapeBounds = joltshape->GetLocalBounds();
+            shapeBounds.Translate(joltshape->GetCenterOfMass());
 
-            auto* joltScene = static_cast<JoltPhysics::JoltScene*>(scene->GetNativePointer());
-
-            auto pxShape = static_cast<JoltPhysics::Shape*>(shapes[0]->GetNativePointer());
-            physx::PxTransform joltWorldTransform = JoltMathConvert(m_worldTransform);
-
-            const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry();
-
-            physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
-                joltWorldTransform * pxShape->getLocalPose(), 1.0f);
-
+            // And then iterate through remaining shapes and grow AABB to contain all shapes
             for (size_t shapeIndex = 1; shapeIndex < numShapes; ++shapeIndex)
             {
-                pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
-                bounds.include(physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
-                    joltWorldTransform * pxShape->getLocalPose(), 1.0f));
+                auto* iterShape = static_cast<JoltPhysics::Shape*>(shapes[shapeIndex]->GetNativePointer());
+                auto* iterJoltShape = static_cast<JPH::Shape*>(iterShape->GetNativePointer());
+                
+                JPH::AABox bounds = iterJoltShape->GetLocalBounds();
+                bounds.Translate(iterJoltShape->GetCenterOfMass());
+                shapeBounds.Encapsulate(bounds);
             }
 
-            m_aabb = PxMathConvert(bounds);
+            m_aabb = JoltMathConvert(shapeBounds);
         }
 
         else
@@ -96,7 +101,7 @@ namespace JoltPhysics
         if (GetEntity()->GetState() == AZ::Entity::State::Active)
         {
             AZ_Warning("Jolt", false, "Trying to call SetShapeConfigurationList for entity \"%s\" while entity is active.",
-                GetEntity()->GetName().c_str());
+                GetEntity()->GetName().c_str())
             return;
         }
         m_shapeConfigList = shapeConfigList;
@@ -133,7 +138,7 @@ namespace JoltPhysics
     bool BaseColliderComponent::IsTrigger()
     {
         AZ_Error("Jolt", !m_shapes.empty(), "Tried to call IsTrigger before any shapes were initialized for entity %s.",
-            GetEntity()->GetName().c_str());
+            GetEntity()->GetName().c_str())
 
         // Colliders now support multiple shapes. This will return true if any of the shapes is a trigger.
         for (const auto& shapeConfigPair : m_shapeConfigList)
@@ -143,7 +148,7 @@ namespace JoltPhysics
                 return true;
             }
         }
-
+        
         return false;
     }
 
