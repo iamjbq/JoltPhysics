@@ -72,7 +72,7 @@ namespace JoltPhysics
         AZStd::shared_ptr<Physics::ShapeConfiguration> GetShapeConfiguration() const override;
         void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds = nullptr) const override;
 
-        static void SetInternalPhysicsSystem(JPH::PhysicsSystem* inSystem);
+        void SetInternalPhysicsSystem(JPH::PhysicsSystem* inSystem);
 
     private:
         void BindMaterialsWithJoltShape();
