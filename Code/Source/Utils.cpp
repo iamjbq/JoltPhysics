@@ -327,7 +327,7 @@ namespace JoltPhysics
                 
                 AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
                 AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
-
+        
                 return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
             }
             AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")

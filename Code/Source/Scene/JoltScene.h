@@ -50,8 +50,8 @@ namespace JoltPhysics
         : public AzPhysics::Scene
     {
     public:
-        AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(JoltScene, "{5F024E70-F590-4C6B-A150-996998F98D50}", AzPhysics::Scene);
+        AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(JoltScene, "{5F024E70-F590-4C6B-A150-996998F98D50}", AzPhysics::Scene)
 
         explicit JoltScene(const AzPhysics::SceneConfiguration& config, const AzPhysics::SceneHandle& sceneHandle);
         ~JoltScene();
