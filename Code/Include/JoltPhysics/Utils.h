@@ -17,6 +17,12 @@ namespace Physics
     class Shape;
 }
 
+namespace JPH
+{
+    class Body;
+    class Shape;
+}
+
 namespace JoltPhysics
 {
     class JoltPhysicsMaterial;
