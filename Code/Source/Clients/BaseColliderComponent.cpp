@@ -13,6 +13,10 @@
 #include <JoltPhysics/MathConversions.h>
 #include <Scene/JoltScene.h>
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
+#include <Jolt/Geometry/AABox.h>
+
 namespace JoltPhysics
 {
     // ShapeInfoCache
@@ -67,18 +71,18 @@ namespace JoltPhysics
             // auto* physicsSystem = static_cast<JPH::PhysicsSystem*>(joltScene->GetNativePointer());
             
             // Get the first shape in the vector to get world bounds, seemingly
-            auto* Shape = static_cast<JoltPhysics::Shape*>(shapes[0]->GetNativePointer());
-            auto* joltshape = static_cast<JPH::Shape*>(Shape->GetNativePointer());
+            auto* shape = static_cast<JoltPhysics::Shape*>(shapes[0]->GetNativePointer());
+            const auto* joltShape = static_cast<JPH::Shape*>(shape->GetNativePointer());
             
             
-            JPH::AABox shapeBounds = joltshape->GetLocalBounds();
-            shapeBounds.Translate(joltshape->GetCenterOfMass());
+            JPH::AABox shapeBounds = joltShape->GetLocalBounds();
+            shapeBounds.Translate(joltShape->GetCenterOfMass());
 
             // And then iterate through remaining shapes and grow AABB to contain all shapes
             for (size_t shapeIndex = 1; shapeIndex < numShapes; ++shapeIndex)
             {
                 auto* iterShape = static_cast<JoltPhysics::Shape*>(shapes[shapeIndex]->GetNativePointer());
-                auto* iterJoltShape = static_cast<JPH::Shape*>(iterShape->GetNativePointer());
+                const auto* iterJoltShape = static_cast<JPH::Shape*>(iterShape->GetNativePointer());
                 
                 JPH::AABox bounds = iterJoltShape->GetLocalBounds();
                 bounds.Translate(iterJoltShape->GetCenterOfMass());
@@ -278,7 +282,7 @@ namespace JoltPhysics
                 if (!shapeConfiguration)
                 {
                     AZ_Error("Jolt", false, "Unable to create a physics shape because shape configuration is null. Entity: %s",
-                        GetEntity()->GetName().c_str());
+                        GetEntity()->GetName().c_str())
                     return false;
                 }
 
@@ -290,7 +294,7 @@ namespace JoltPhysics
 
                 if (!shape)
                 {
-                    AZ_Error("Jolt", false, "Failed to create a Jolt shape. Entity: %s", GetEntity()->GetName().c_str());
+                    AZ_Error("Jolt", false, "Failed to create a Jolt shape. Entity: %s", GetEntity()->GetName().c_str())
                     return false;
                 }
 
@@ -312,7 +316,7 @@ namespace JoltPhysics
         AZ_Assert(IsMeshCollider(), "InitMeshCollider called for a non-mesh collider.");
 
         const AzPhysics::ShapeColliderPair& shapeConfigurationPair = *(m_shapeConfigList.begin());
-        const Physics::ColliderConfiguration& componentColliderConfiguration = *(shapeConfigurationPair.first.get());
+        const Physics::ColliderConfiguration& componentColliderConfiguration = *shapeConfigurationPair.first;
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration =
             *(static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfigurationPair.second.get()));
 
