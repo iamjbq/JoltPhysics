@@ -3,11 +3,14 @@
 #include <Utils.h>
 
 #include <JoltPhysics/Material/JoltMaterial.h>
+#include "JoltPhysics/MathConversions.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/Body.h>
-
+#include "Jolt/Physics/PhysicsSystem.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
 
 namespace JoltPhysics
 {
@@ -79,7 +82,7 @@ namespace JoltPhysics
         }
         else
         {
-            AZ_Warning("Jolt Shape", false, "Trying to assign material of unknown type");
+            AZ_Warning("Jolt Shape", false, "Trying to assign material of unknown type")
         }
     }
 
@@ -126,21 +129,32 @@ namespace JoltPhysics
         return m_collisionGroup;
     }
 
-    void Shape::SetName(const char* name)
+    void Shape::SetName([[maybe_unused]] const char* name)
     {
         AZ_Warning("JoltPhysics::Shape", false, "Jolt Shapes cannot have names set.")
-        AZ_UNUSED(name)
     }
 
     void Shape::SetLocalPose([[maybe_unused]] const AZ::Vector3& offset, [[maybe_unused]] const AZ::Quaternion& rotation)
     {
+        if (m_joltShape)
+        {
+            // TODO: Figure out how TransformedShapeCollector works
+            // m_joltShape->TransformShape();
+        }
+        
         AZ_Warning("JoltPhysics::Shape", false, "SetLocalPose not currently implemented")
     }
 
     AZStd::pair<AZ::Vector3, AZ::Quaternion> Shape::GetLocalPose() const
     {
-        AZ_Warning("JoltPhysics::Shape", false, "GetLocalPose not currently implemented")
-        return AZStd::pair(AZ::Vector3::CreateZero(), AZ::Quaternion::CreateZero());
+        // Local pose of the shape is equivalent to the center of mass transform
+        if (!m_attachedBody->IsInvalid() && m_attachedSystem != nullptr)
+        {
+            const JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(*m_attachedBody);
+            const JPH::Mat44 comTransform = transformedShape.GetCenterOfMassTransform();
+            return { JoltMathConvert(comTransform.GetTranslation()), JoltMathConvert(comTransform.GetQuaternion()) };
+        }
+        return { AZ::Vector3::CreateZero(), AZ::Quaternion::CreateZero() };
     }
 
     float Shape::GetRestOffset() const
@@ -151,15 +165,18 @@ namespace JoltPhysics
 
     float Shape::GetContactOffset() const
     {
-        return m_joltShape->GetInnerRadius(); // not sure if this is correct though
+        AZ_Warning("JoltPhysics::Shape", false, "GetContactOffset not currently implemented")
+        return 0.f;
     }
 
     void Shape::SetRestOffset([[maybe_unused]] float restOffset)
     {
+        AZ_Warning("JoltPhysics::Shape", false, "SetRestOffset not currently implemented")
     }
 
     void Shape::SetContactOffset([[maybe_unused]] float contactOffset)
     {
+        AZ_Warning("JoltPhysics::Shape", false, "SetContactOffset not currently implemented")
     }
 
     void* Shape::GetNativePointer()
@@ -179,7 +196,7 @@ namespace JoltPhysics
 
     void Shape::AttachedToActor(void* actor)
     {
-        JPH::Body* joltBody = static_cast<JPH::Body*>(actor);
+        JPH::BodyID* joltBody = static_cast<JPH::BodyID*>(actor);
         if (joltBody != nullptr)
         {
             m_attachedBody = joltBody;
@@ -189,11 +206,27 @@ namespace JoltPhysics
     void Shape::DetachedFromActor()
     {
         m_attachedBody = nullptr;
+        m_attachedSystem = nullptr;
     }
 
     AzPhysics::SceneQueryHit Shape::RayCast([[maybe_unused]] const AzPhysics::RayCastRequest& worldSpaceRequest,
         [[maybe_unused]] const AZ::Transform& worldTransform)
     {
+        if (m_joltShape)
+        {
+            JPH::RayCast inRay;
+            JPH::RayCastResult hit;
+            bool hadHit = m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), hit);
+            
+            // Convert the ray to center of mass space for the shape
+            inRay.mOrigin -= m_joltShape->GetCenterOfMass();
+
+            if (hadHit)
+            {
+                return AzPhysics::SceneQueryHit();
+            }
+        }
+        
         AZ_Warning("JoltPhysics::Shape", false, "RayCast not currently implemented")
         return AzPhysics::SceneQueryHit();
     }
@@ -206,13 +239,22 @@ namespace JoltPhysics
 
     AZ::Aabb Shape::GetAabb([[maybe_unused]] const AZ::Transform& worldTransform) const
     {
-        AZ_Warning("JoltPhysics::Shape", false, "GetAabb not currently implemented")
+        if (!m_attachedBody->IsInvalid() && m_attachedSystem != nullptr)
+        {
+            const JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(*m_attachedBody);
+            return JoltMathConvert(transformedShape.GetWorldSpaceBounds());
+        }
+        AZ_Warning("Shape::GetAabb", false, "Jolt Shape is null")
         return AZ::Aabb::CreateNull();
     }
 
     AZ::Aabb Shape::GetAabbLocal() const
     {
-        AZ_Warning("JoltPhysics::Shape", false, "GetAabbLocal not currently implemented")
+        if (m_joltShape)
+        {
+            return JoltMathConvert(m_joltShape->GetLocalBounds());
+        }
+        AZ_Warning("Shape::GetAabbLocal", false, "Jolt Shape is null")
         return AZ::Aabb::CreateNull();
     }
 
@@ -225,6 +267,11 @@ namespace JoltPhysics
         [[maybe_unused]] const AZ::Aabb* optionalBounds) const
     {
         AZ_Warning("JoltPhysics::Shape", false, "GetGeometry not currently implemented")
+    }
+
+    void Shape::SetInternalPhysicsSystem(JPH::PhysicsSystem* inSystem)
+    {
+        m_attachedSystem = inSystem;
     }
 
     void Shape::BindMaterialsWithJoltShape()
@@ -252,7 +299,7 @@ namespace JoltPhysics
 
     void Shape::ExtractMaterialsFromJoltShape()
     {
-        if (m_joltShape == nullptr)
+        if (m_joltShape)
         {
             return;
         }
@@ -264,10 +311,8 @@ namespace JoltPhysics
 
     JoltPhysics::JoltScene* Shape::GetScene()
     {
-        if (m_attachedBody != nullptr)
+        if (!m_attachedBody->IsInvalid())
         {
-            // Bodies aren't in Scenes internally, just in O3DE
-            
             // return m_attachedBody->getScene();
         }
         return nullptr;
