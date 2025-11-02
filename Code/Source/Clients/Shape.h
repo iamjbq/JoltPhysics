@@ -70,8 +70,9 @@ namespace JoltPhysics
         AZ::Aabb GetAabb(const AZ::Transform& worldTransform) const override;
         AZ::Aabb GetAabbLocal() const override;
         AZStd::shared_ptr<Physics::ShapeConfiguration> GetShapeConfiguration() const override;
-        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
-        const AZ::Aabb* optionalBounds = nullptr) const override;
+        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds = nullptr) const override;
+
+        static void SetInternalPhysicsSystem(JPH::PhysicsSystem* inSystem);
 
     private:
         void BindMaterialsWithJoltShape();
@@ -89,6 +90,7 @@ namespace JoltPhysics
         AzPhysics::CollisionGroup m_collisionGroup;
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         AZ::Crc32 m_tag;
-        JPH::Body* m_attachedBody = nullptr;
+        JPH::PhysicsSystem* m_attachedSystem = nullptr;
+        JPH::BodyID* m_attachedBody = nullptr;
     };
 } // JoltPhysics
