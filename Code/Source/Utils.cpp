@@ -22,20 +22,22 @@
 #include <AzFramework/Physics/CollisionBus.h>
 
 #include <JoltPhysics/Utils.h>
-#include "Utils.h"
 #include <JoltPhysics/Material/JoltMaterialConfiguration.h>
 #include <JoltPhysics/MathConversions.h>
+#include <JoltPhysics/EditorColliderComponentRequestBus.h>
+#include <System/JoltSystem.h>
+#include "Utils.h"
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <Clients/Shape.h>
 
+#include <Jolt/Physics/Collision/ObjectLayer.h>
+#include "Jolt/Physics/Collision/Shape/Shape.h"
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
 #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
 #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
 #include "Jolt/Physics/Collision/Shape/MeshShape.h"
 #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
-#include "Jolt/Physics/Collision/Shape/Shape.h"
-#include "Jolt/Physics/Collision/Shape/Shape.h"
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
 
@@ -146,7 +148,8 @@ namespace JoltPhysics
                     // native heightfield pointer that gets stored in the configuration.
                     auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
 
-                    CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult, inMaterials);
+                    // CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult, inMaterials);
+                    
                     break;
                 }
             default:
@@ -315,23 +318,287 @@ namespace JoltPhysics
             return newShape;
         }
 
-        JPH::ObjectLayer ConstructObjectLayer(
-            const Physics::ColliderConfiguration& colliderConfiguration,
-            const AzPhysics::CollisionGroup& assignedCollisionGroup,
-            const JPH::BroadPhaseLayer& broadPhaseLayer)
+        // JPH::ObjectLayer ConstructObjectLayer(
+        //     const Physics::ColliderConfiguration& colliderConfiguration,
+        //     const AzPhysics::CollisionGroup& assignedCollisionGroup,
+        //     const JPH::BroadPhaseLayer& broadPhaseLayer)
+        // {
+        //     if (JoltSystem* system = GetJoltSystem())
+        //     {
+        //         AZ::u32 newBPLayer = 1 << static_cast<const AZ::u8>(broadPhaseLayer);
+        //         AZ::u32 newCollisionLayer = colliderConfiguration.m_collisionLayer.GetIndex() << 8;
+        //         
+        //         AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
+        //         AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
+        //
+        //         return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
+        //     }
+        //     AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")
+        //     return 0;
+        // }
+
+        AZ::Transform GetColliderLocalTransform(const AZ::Vector3& colliderRelativePosition,
+            const AZ::Quaternion& colliderRelativeRotation)
         {
-            if (JoltSystem* system = GetJoltSystem())
+            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation, colliderRelativePosition);
+        }
+
+        AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair)
+        {
+            AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
+            JoltPhysics::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &JoltPhysics::EditorColliderComponentRequests::GetColliderRotation);
+
+            AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
+            JoltPhysics::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &JoltPhysics::EditorColliderComponentRequests::GetColliderOffset);
+
+            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRotation, colliderOffset);
+        }
+
+        AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform,
+            const AZ::Vector3& colliderRelativePosition,
+            const AZ::Quaternion& colliderRelativeRotation)
+        {
+            return worldTransform * GetColliderLocalTransform(colliderRelativePosition, colliderRelativeRotation);
+        }
+
+        void ColliderPointsLocalToWorld(AZStd::vector<AZ::Vector3>& pointsInOut,
+            const AZ::Transform& worldTransform,
+            const AZ::Vector3& colliderRelativePosition,
+            const AZ::Quaternion& colliderRelativeRotation,
+            const AZ::Vector3& nonUniformScale)
+        {
+            for (AZ::Vector3& point : pointsInOut)
             {
-                AZ::u32 newBPLayer = 1 << static_cast<AZ::u8>(broadPhaseLayer);
-                AZ::u32 newCollisionLayer = colliderConfiguration.m_collisionLayer.GetIndex() << 8;
-                
-                AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
-                AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
-        
-                return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
+                point = worldTransform.TransformPoint(nonUniformScale *
+                    GetColliderLocalTransform(colliderRelativePosition, colliderRelativeRotation).TransformPoint(point));
             }
-            AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")
-            return 0;
+        }
+
+        // AZ::Aabb GetPxGeometryAabb(const physx::PxGeometryHolder& geometryHolder,
+        //     const AZ::Transform& worldTransform,
+        //     const ::Physics::ColliderConfiguration& colliderConfiguration
+        // )
+        // {
+        //     const float boundsInflationFactor = 1.0f;
+        //     AZ::Transform overallTransformNoScale = GetColliderWorldTransform(worldTransform,
+        //         colliderConfiguration.m_position, colliderConfiguration.m_rotation);
+        //     overallTransformNoScale.ExtractUniformScale();
+        //     const physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(geometryHolder.any(),
+        //         PxMathConvert(overallTransformNoScale),
+        //         boundsInflationFactor);
+        //     return PxMathConvert(bounds);
+        // }
+
+        // AZ::Aabb GetColliderAabb(const AZ::Transform& worldTransform,
+        //     bool hasNonUniformScale,
+        //     AZ::u8 subdivisionLevel,
+        //     const ::Physics::ShapeConfiguration& shapeConfiguration,
+        //     const ::Physics::ColliderConfiguration& colliderConfiguration)
+        // {
+        //     const AZ::Aabb worldPosAabb = AZ::Aabb::CreateFromPoint(worldTransform.GetTranslation());
+        //     physx::PxGeometryHolder geometryHolder;
+        //     bool isAssetShape = shapeConfiguration.GetShapeType() == Physics::ShapeType::PhysicsAsset;
+        //
+        //     if (!isAssetShape)
+        //     {
+        //         if (!hasNonUniformScale)
+        //         {
+        //             if (CreatePxGeometryFromConfig(shapeConfiguration, geometryHolder))
+        //             {
+        //                 return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfiguration);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             auto convexPrimitive = Utils::CreateConvexFromPrimitive(colliderConfiguration, shapeConfiguration, subdivisionLevel, shapeConfiguration.m_scale);
+        //             if (convexPrimitive.has_value())
+        //             {
+        //                 if (CreatePxGeometryFromConfig(convexPrimitive.value(), geometryHolder))
+        //                 {
+        //                     Physics::ColliderConfiguration colliderConfigurationNoOffset = colliderConfiguration;
+        //                     colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+        //                     colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
+        //                     return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfigurationNoOffset);
+        //                 }
+        //             }
+        //         }
+        //         return worldPosAabb;
+        //     }
+        //     else
+        //     {
+        //         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfig =
+        //             static_cast<const Physics::PhysicsAssetShapeConfiguration&>(shapeConfiguration);
+        //
+        //         if (!physicsAssetConfig.m_asset.IsReady())
+        //         {
+        //             return worldPosAabb;
+        //         }
+        //
+        //         AzPhysics::ShapeColliderPairList colliderShapes;
+        //         GetColliderShapeConfigsFromAsset(physicsAssetConfig,
+        //             colliderConfiguration,
+        //             hasNonUniformScale,
+        //             subdivisionLevel,
+        //             colliderShapes);
+        //
+        //         if (colliderShapes.empty())
+        //         {
+        //             return worldPosAabb;
+        //         }
+        //
+        //         AZ::Aabb aabb = AZ::Aabb::CreateNull();
+        //         for (const auto& colliderShape : colliderShapes)
+        //         {
+        //             if (colliderShape.second &&
+        //                 CreatePxGeometryFromConfig(*colliderShape.second, geometryHolder))
+        //             {
+        //                 aabb.AddAabb(
+        //                     GetPxGeometryAabb(geometryHolder, worldTransform, *colliderShape.first)
+        //                 );
+        //             }
+        //             else
+        //             {
+        //                 return worldPosAabb;
+        //             }
+        //         }
+        //         return aabb;
+        //     }
+        // }
+
+        // bool TriggerColliderExists(AZ::EntityId entityId)
+        // {
+        //     AZ::EBusLogicalResult<bool, AZStd::logical_or<bool>> response(false);
+        //     PhysX::ColliderShapeRequestBus::EventResult(response,
+        //         entityId,
+        //         &PhysX::ColliderShapeRequestBus::Events::IsTrigger);
+        //     return response.value;
+        // }
+        //
+        // void GetColliderShapeConfigsFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
+        //     const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
+        //     AZ::u8 subdivisionLevel, AzPhysics::ShapeColliderPairList& resultingColliderShapes)
+        // {
+        //     if (!assetConfiguration.m_asset.IsReady())
+        //     {
+        //         AZ_Error("PhysX", false, "GetColliderShapesFromAsset: Asset %s is not ready."
+        //             "Please make sure the calling code connects to the AssetBus and "
+        //             "creates the collider shapes only when OnAssetReady or OnAssetReload is invoked.",
+        //             assetConfiguration.m_asset.GetHint().c_str());
+        //         return;
+        //     }
+        //
+        //     const Pipeline::MeshAsset* asset = assetConfiguration.m_asset.GetAs<Pipeline::MeshAsset>();
+        //
+        //     if (!asset)
+        //     {
+        //         AZ_Error("PhysX", false, "GetColliderShapesFromAsset: Mesh Asset %s is null."
+        //             "Please check the file is in the correct format. Try to delete it and get AssetProcessor re-create it. "
+        //             "The data is loaded in Pipeline::MeshAssetHandler::LoadAssetData()",
+        //             assetConfiguration.m_asset.GetHint().c_str());
+        //         return;
+        //     }
+        //
+        //     const Pipeline::MeshAssetData& assetData = asset->m_assetData;
+        //     const Pipeline::MeshAssetData::ShapeConfigurationList& shapeConfigList = assetData.m_colliderShapes;
+        //
+        //     resultingColliderShapes.reserve(resultingColliderShapes.size() + shapeConfigList.size());
+        //
+        //     for (size_t shapeIndex = 0; shapeIndex < shapeConfigList.size(); shapeIndex++)
+        //     {
+        //         const Pipeline::MeshAssetData::ShapeConfigurationPair& shapeConfigPair = shapeConfigList[shapeIndex];
+        //
+        //         AZStd::shared_ptr<Physics::ColliderConfiguration> thisColliderConfiguration =
+        //             AZStd::make_shared<Physics::ColliderConfiguration>(originalColliderConfiguration);
+        //
+        //         AZ::u16 shapeMaterialIndex = assetData.m_materialIndexPerShape[shapeIndex];
+        //
+        //         // Triangle meshes have material indices cooked in the data.
+        //         if (shapeMaterialIndex != Pipeline::MeshAssetData::TriangleMeshMaterialIndex)
+        //         {
+        //             // Clear the materials that came in from the component collider configuration
+        //             thisColliderConfiguration->m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
+        //
+        //             // Set the material that is relevant for this specific shape
+        //             thisColliderConfiguration->m_materialSlots.SetMaterialAsset(
+        //                 0,
+        //                 originalColliderConfiguration.m_materialSlots.GetMaterialAsset(shapeMaterialIndex));
+        //         }
+        //
+        //         // Here we use the collider configuration data saved in the asset to update the one coming from the component
+        //         if (const Pipeline::AssetColliderConfiguration* optionalColliderData = shapeConfigPair.first.get())
+        //         {
+        //             optionalColliderData->UpdateColliderConfiguration(*thisColliderConfiguration);
+        //         }
+        //
+        //         // Update the scale with the data from the asset configuration
+        //         AZStd::shared_ptr<Physics::ShapeConfiguration> thisShapeConfiguration = shapeConfigPair.second;
+        //         thisShapeConfiguration->m_scale = assetConfiguration.m_scale * assetConfiguration.m_assetScale;
+        //
+        //         // If the shape is a primitive and there is non-uniform scale, replace it with a convex approximation
+        //         if (hasNonUniformScale && Utils::IsPrimitiveShape(*thisShapeConfiguration))
+        //         {
+        //             auto scaledPrimitive = Utils::CreateConvexFromPrimitive(*thisColliderConfiguration,
+        //                 *thisShapeConfiguration, subdivisionLevel, thisShapeConfiguration->m_scale);
+        //             if (scaledPrimitive.has_value())
+        //             {
+        //                 thisShapeConfiguration = AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledPrimitive.value());
+        //                 physx::PxGeometryHolder pxGeometryHolder;
+        //                 CreatePxGeometryFromConfig(*thisShapeConfiguration, pxGeometryHolder);
+        //                 thisColliderConfiguration->m_rotation = AZ::Quaternion::CreateIdentity();
+        //                 thisColliderConfiguration->m_position = AZ::Vector3::CreateZero();
+        //                 resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
+        //         }
+        //     }
+        // }
+
+        void CreateShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
+            const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
+            AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes)
+        {
+            AzPhysics::ShapeColliderPairList resultingColliderShapeConfigs;
+            GetColliderShapeConfigsFromAsset(assetConfiguration, originalColliderConfiguration,
+                hasNonUniformScale, subdivisionLevel, resultingColliderShapeConfigs);
+
+            resultingShapes.reserve(resultingShapes.size() + resultingColliderShapeConfigs.size());
+
+            for (const AzPhysics::ShapeColliderPair& shapeConfigPair : resultingColliderShapeConfigs)
+            {
+                // Scale the collider offset
+                shapeConfigPair.first->m_position *= shapeConfigPair.second->m_scale;
+
+                AZStd::shared_ptr<Physics::Shape> shape;
+                Physics::SystemRequestBus::BroadcastResult(shape, &Physics::SystemRequests::CreateShape,
+                    *shapeConfigPair.first, *shapeConfigPair.second);
+
+                if (shape)
+                {
+                    resultingShapes.emplace_back(shape);
+                }
+            }
+        }
+
+        float GetTransformScale(AZ::EntityId entityId)
+        {
+            float transformScale = 1.0f;
+            AZ::TransformBus::EventResult(transformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+            return transformScale;
+        }
+
+        AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
+        {
+            AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
+            return nonUniformScale;
+        }
+
+        AZ::Vector3 GetOverallScale(AZ::EntityId entityId)
+        {
+            return GetTransformScale(entityId) * GetNonUniformScale(entityId);
         }
     }
 }
