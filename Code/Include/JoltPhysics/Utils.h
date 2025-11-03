@@ -25,6 +25,7 @@ namespace JPH
 
 namespace JoltPhysics
 {
+    enum class CombineMode : AZ::u8;
     class JoltPhysicsMaterial;
     
     namespace Utils
@@ -35,7 +36,7 @@ namespace JoltPhysics
 
         //! Returns the effective friction or restitution for two materials in contact.
         //! inMode should be the highest value of CombineMode enum for the pair.
-        float GetCombinedMaterialProperty(const float& inValue1, const float& inValue2, const CombineMode& inMode);
+        float GetCombinedMaterialProperty(const float& inValue1, const float& inValue2, const JoltPhysics::CombineMode& inMode);
     }
 }
 

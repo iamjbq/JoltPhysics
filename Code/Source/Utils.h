@@ -11,7 +11,6 @@
 
 #include <Jolt/Jolt.h>
 
-
 namespace AzPhysics
 {
     class CollisionGroup;
@@ -36,7 +35,6 @@ namespace JPH
 
 namespace JoltPhysics
 {
-    class Shape;
     class BodyData;
     class JoltPhysicsMaterial;
 
@@ -57,7 +55,7 @@ namespace JoltPhysics
         void CreateJoltShapeResultFromHeightField(
             Physics::HeightfieldShapeConfiguration& heightfieldConfig,
             JPH::Shape::ShapeResult& outResult,
-            [[maybe_unused]] AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
+            AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
 
         AZStd::vector<float> ConvertHeightfieldSamples(
             const Physics::HeightfieldShapeConfiguration& heightfield,
