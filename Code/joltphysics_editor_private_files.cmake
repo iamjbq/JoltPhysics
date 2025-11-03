@@ -1,5 +1,7 @@
 
 set(FILES
+    Include/JoltPhysics/EditorColliderComponentRequestBus.h
+
     Source/Tools/JoltPhysicsEditorSystemComponent.cpp
     Source/Tools/JoltPhysicsEditorSystemComponent.h
 

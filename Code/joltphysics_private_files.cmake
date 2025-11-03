@@ -14,7 +14,6 @@ set(FILES
 		Include/JoltPhysics/Utils.inl
 		Include/JoltPhysics/ColliderComponentBus.h
 		Include/JoltPhysics/ColliderShapeBus.h
-		Include/JoltPhysics/EditorColliderComponentRequestBus.h
 
         Source/JoltPhysicsModuleInterface.cpp
         Source/JoltPhysicsModuleInterface.h
@@ -49,7 +48,6 @@ set(FILES
         Source/Scene/JoltSceneInterface.h
 		
         Source/Material/JoltMaterial.cpp
-		Include/JoltPhysics/Material/JoltMaterial.h
         Source/Material/JoltMaterialConfiguration.cpp
 		Source/Material/JoltPhysicsMaterial.cpp
 		Source/Material/JoltPhysicsMaterial.h
