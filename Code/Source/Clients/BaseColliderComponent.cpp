@@ -313,12 +313,12 @@ namespace JoltPhysics
 
     bool BaseColliderComponent::InitMeshCollider()
     {
-        AZ_Assert(IsMeshCollider(), "InitMeshCollider called for a non-mesh collider.");
+        AZ_Assert(IsMeshCollider(), "InitMeshCollider called for a non-mesh collider.")
 
         const AzPhysics::ShapeColliderPair& shapeConfigurationPair = *(m_shapeConfigList.begin());
         const Physics::ColliderConfiguration& componentColliderConfiguration = *shapeConfigurationPair.first;
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration =
-            *(static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfigurationPair.second.get()));
+            *static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfigurationPair.second.get());
 
         if (!physicsAssetConfiguration.m_asset.IsReady())
         {
