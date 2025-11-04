@@ -32,6 +32,9 @@ set(FILES
 
 		Source/Clients/BaseColliderComponent.cpp
 		Source/Clients/BaseColliderComponent.h
+		
+		Source/Clients/ShapeColliderComponent.cpp
+		Source/Clients/ShapeColliderComponent.h
 
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h
