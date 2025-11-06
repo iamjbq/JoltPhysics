@@ -66,16 +66,25 @@ set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 #        PROPERTY COMPILE_DEFINITIONS DT_POLYREF64
 #)
 
+# Save the current CMAKE_CXX_FLAGS
+set(SAVED_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+# Remove /diagnostics:caret from CMAKE_CXX_FLAGS before Jolt processes it
+string(REGEX REPLACE "/diagnostics:[a-z]+" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 FetchContent_MakeAvailable(JoltPhysics)
+
+# Restore CMAKE_CXX_FLAGS for your targets
+set(CMAKE_CXX_FLAGS "${SAVED_CMAKE_CXX_FLAGS}")
 
 #set(PHYSICS_REPO_ROOT ${joltphysics_SOURCE_DIR})
 #include(${joltphysics_SOURCE_DIR}/Jolt/Jolt.cmake)
-#target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
-#target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
-#if (FLOATING_POINT_EXCEPTIONS_ENABLED AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-#    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
-#    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
-#endif()
+target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
+target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
+if (FLOATING_POINT_EXCEPTIONS_ENABLED AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
+    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
+endif()
 
 # Restore compile options
 set_property(
