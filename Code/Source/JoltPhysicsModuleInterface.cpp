@@ -4,6 +4,7 @@
 
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <Clients/JoltPhysicsSystemComponent.h>
+#include <Clients/BaseColliderComponent.h>
 // #include "Clients/RigidBodyComponent.h"
 
 namespace JoltPhysics
@@ -23,6 +24,7 @@ namespace JoltPhysics
         // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(m_descriptors.end(), {
             JoltPhysicsSystemComponent::CreateDescriptor(),
+            BaseColliderComponent::CreateDescriptor(),
             // RigidBodyComponent::CreateDescriptor(),
             });
     }
