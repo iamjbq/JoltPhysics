@@ -147,11 +147,13 @@ namespace JoltPhysics
 
     AZStd::pair<AZ::Vector3, AZ::Quaternion> Shape::GetLocalPose() const
     {
-        // Local pose of the shape is equivalent to the center of mass transform
+        // TODO: confirm if this is correct or should be not transformed, but near origin
+            
         if (!m_attachedBody->IsInvalid() && m_attachedSystem != nullptr)
         {
             const JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(*m_attachedBody);
             const JPH::Mat44 comTransform = transformedShape.GetCenterOfMassTransform();
+            
             return { JoltMathConvert(comTransform.GetTranslation()), JoltMathConvert(comTransform.GetQuaternion()) };
         }
         return { AZ::Vector3::CreateZero(), AZ::Quaternion::CreateZero() };

@@ -9,9 +9,7 @@ namespace JoltPhysics
     }
 
     JoltPhysicsMaterial::~JoltPhysicsMaterial()
-    {
-
-    }
+    = default;
 
     void JoltPhysicsMaterial::SetRestitution(const float restitution)
     {

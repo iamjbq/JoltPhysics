@@ -5,7 +5,7 @@
 
 namespace JoltPhysics
 {
-    class JoltPhysicsMaterial : public JPH::PhysicsMaterial
+    class JoltPhysicsMaterial final : public JPH::PhysicsMaterial
     {
     public:
         JoltPhysicsMaterial() = default;
@@ -27,9 +27,9 @@ namespace JoltPhysics
         JPH::String m_debugName;
         JPH::Color m_debugColor = JPH::Color::sWhite;
 
-        float m_restitution;
-        float m_friction;
-        float m_density;
+        float m_restitution = 0.2f;
+        float m_friction = 0.2f;
+        float m_density = 1.0f;
 
     };
 } // JoltPhysics
