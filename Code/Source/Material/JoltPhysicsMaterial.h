@@ -21,6 +21,8 @@ namespace JoltPhysics
         void SetDensity(float density);
         float GetDensity() const;
 
+        JPH::Color GetColor() const;
+
         void* m_userData = nullptr;
         
     private:

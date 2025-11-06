@@ -40,4 +40,9 @@ namespace JoltPhysics
     {
         return m_density;
     }
+
+    JPH::Color JoltPhysicsMaterial::GetColor() const
+    {
+        return m_debugColor;
+    }
 } // JoltPhysics
