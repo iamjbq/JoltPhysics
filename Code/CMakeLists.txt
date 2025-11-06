@@ -17,43 +17,43 @@ if(NOT PAL_TRAIT_JOLTPHYSICS_SUPPORTED)
     return()
 endif()
 
-# If you change these, please change the copy of them below in the installer
-# section.  That installer section is the ONLY part of the file that is shipped in the installer
-# (SDK) version of the package, the rest of this file is not, so it must be duplicated there.
+# JoltPhysics Release Version
 set(JOLTPHYSICS_GIT_REPO "https://github.com/jrouwe/JoltPhysics")
 set(JOLTPHYSICS_GIT_TAG "v5.4.0")
 
-
+# Add JoltPhysics dependency
 include(FetchContent)
 FetchContent_Declare(
         JoltPhysics
         GIT_REPOSITORY ${JOLTPHYSICS_GIT_REPO}
         GIT_TAG ${JOLTPHYSICS_GIT_TAG} # main branch as of Sept 27, 2025
-        UPDATE_DISCONNECTED TRUE
-#        SOURCE_SUBDIR "Jolt"
+        SOURCE_SUBDIR "Build"
 )
-# Number of bits to use in ObjectLayer. Can be 16 or 32.
-set(OBJECT_LAYER_BITS 32)
-
-# When turning this option on, the library will be compiled in such a way to attempt to keep the simulation deterministic across platforms
-set(CROSS_PLATFORM_DETERMINISTIC OFF)
-
-# When turning this option on, the library will be compiled using assertions. By default asserts are enabled in Debug build.
-set(USE_ASSERTS ON)
-
 
 # please always be really clear about what third parties your gem uses.
 message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 036ea7b (License: MIT)")
 
-#set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-#get_property(
-#        compile_options
-#        DIRECTORY
-#        PROPERTY COMPILE_OPTIONS
-#)
-#include(${pal_dir}/PAL_jolt_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+# Compile flags for Jolt
+set(OBJECT_LAYER_BITS 32) # Number of bits to use in ObjectLayer. Can be 16 or 32.
+# When turning this option on, the library will be compiled in such a way to attempt to keep the simulation deterministic across platforms
+set(CROSS_PLATFORM_DETERMINISTIC OFF)
+# When turning this option on, the library will be compiled using assertions. By default asserts are enabled in Debug build.
+set(USE_ASSERTS ON)
 
-# Temporarily disable CMake deprecation warnings
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
+
+set(INTERPROCEDURAL_OPTIMIZATION OFF)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+get_property(
+        compile_options
+        DIRECTORY
+        PROPERTY COMPILE_OPTIONS
+)
+include(${pal_dir}/PAL_jolt_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+# Temporarily disable CMake deprecation warnings from library with lower CMake version than O3DE
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 
 # Include compiler settings for JoltPhysics libraries
@@ -68,14 +68,24 @@ set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(JoltPhysics)
 
-set(PHYSICS_REPO_ROOT ${joltphysics_SOURCE_DIR})
-include(${joltphysics_SOURCE_DIR}/Jolt/Jolt.cmake)
-target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
-target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
-if (FLOATING_POINT_EXCEPTIONS_ENABLED AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
-    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
-endif()
+#set(PHYSICS_REPO_ROOT ${joltphysics_SOURCE_DIR})
+#include(${joltphysics_SOURCE_DIR}/Jolt/Jolt.cmake)
+#target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
+#target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_PROFILE_ENABLED;JPH_DEBUG_RENDERER>")
+#if (FLOATING_POINT_EXCEPTIONS_ENABLED AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+#    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:RelWithDebInfo>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
+#    target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:JPH_FLOATING_POINT_EXCEPTIONS_ENABLED>")
+#endif()
+
+# Restore compile options
+set_property(
+        DIRECTORY
+        PROPERTY COMPILE_OPTIONS ${compile_options}
+)
+unset(compile_options)
+
+# Enable CMake deprecation warnings
+set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
 
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
@@ -92,7 +102,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            Jolt
+            Jolt::Jolt
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -118,7 +128,7 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
             Legacy::CryCommon
-            Jolt
+            Jolt::Jolt
         PRIVATE
             Gem::LmbrCentral.API
 )
@@ -189,7 +199,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             INTERFACE
                 AZ::AzToolsFramework
-                Jolt
+                Jolt::Jolt
     )
 
     # The ${gem_name}.Editor.Private.Object target is an internal target
@@ -221,7 +231,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 ${gem_name}.Private.Object
                 Gem::CommonFeaturesAtom.Static
-		        Jolt
+		        Jolt::Jolt
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
     )
