@@ -1,3 +1,5 @@
+
+
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
@@ -21,15 +23,7 @@
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Physics/CollisionBus.h>
 
-#include <Clients/JoltPhysicsSystemComponent.h>
-#include <JoltPhysics/Utils.h>
-#include <Utils.h>
-#include <JoltPhysics/Material/JoltMaterialConfiguration.h>
-#include <JoltPhysics/MathConversions.h>
-#include <JoltPhysics/EditorColliderComponentRequestBus.h>
-#include <System/JoltSystem.h>
-#include <Clients/Shape.h>
-
+#include <Jolt/Jolt.h>
 #include "Jolt/Math/Vec3.h"
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include "Jolt/Physics/Collision/Shape/Shape.h"
@@ -41,6 +35,15 @@
 #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
+
+#include <Clients/JoltPhysicsSystemComponent.h>
+#include <JoltPhysics/Utils.h>
+#include <JoltPhysics/Material/JoltMaterialConfiguration.h>
+#include <JoltPhysics/MathConversions.h>
+#include <JoltPhysics/EditorColliderComponentRequestBus.h>
+#include <System/JoltSystem.h>
+#include <Clients/Shape.h>
+#include <Utils.h>
 
 namespace JoltPhysics
 {
@@ -148,7 +151,7 @@ namespace JoltPhysics
                     // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
                     // native heightfield pointer that gets stored in the configuration.
                     auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
-                    
+
                     CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult, inMaterials);
                     
                     break;
@@ -168,42 +171,42 @@ namespace JoltPhysics
         {
             // Most of this is borrowed from PhysX gem
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
-        
+
             const size_t numCols = heightfieldConfig.GetNumColumnVertices();
             const size_t numRows = heightfieldConfig.GetNumRowVertices();
-        
+
             const float rowScale = gridSpacing.GetX();
             const float colScale = gridSpacing.GetY();
-        
+
             // Temp
             AZ_UNUSED(rowScale)
             AZ_UNUSED(colScale)
             // Temp
-        
+
             const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
             const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
             const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
-        
+
             // We're making the assumption right now that the min/max bounds are centered around 0.
             AZ_Assert(
                 AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
                 "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.")
-        
+
             AZ_Assert(
                 maxHeightBounds >= minHeightBounds,
                 "Max height bounds is less than min height bounds, the height conversions below will be incorrect.")
-        
+
             // Jolt quantizes float height values into uin16 internally, so we only need to worry about converting floats
-        
+
             if (auto cachedHeightField = static_cast<JPH::HeightFieldShape*>(heightfieldConfig.GetCachedNativeHeightfield()))
             {
                 outResult.Clear();
                 outResult.Set(cachedHeightField);
                 return;
             }
-        
+
             AZStd::vector<float> joltHeightSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
-        
+
             // TODO: Determine how or if we can set HeightField offset or scale in O3DE
             // TODO: Add material indices and material list
             JPH::HeightFieldShapeSettings settings(
@@ -328,7 +331,7 @@ namespace JoltPhysics
         //     {
         //         AZ::u32 newBPLayer = 1 << static_cast<const AZ::u8>(broadPhaseLayer);
         //         AZ::u32 newCollisionLayer = colliderConfiguration.m_collisionLayer.GetIndex() << 8;
-        //         
+        //
         //         AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
         //         AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
         //

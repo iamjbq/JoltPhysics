@@ -9,8 +9,6 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/optional.h>
 
-#include <Jolt/Jolt.h>
-
 namespace AzPhysics
 {
     class CollisionGroup;
