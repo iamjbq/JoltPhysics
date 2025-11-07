@@ -169,7 +169,6 @@ namespace JoltPhysics
             JPH::Shape::ShapeResult& outResult,
             [[maybe_unused]] AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
         {
-            // Most of this is borrowed from PhysX gem
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const size_t numCols = heightfieldConfig.GetNumColumnVertices();
