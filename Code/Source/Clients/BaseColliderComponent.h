@@ -23,7 +23,7 @@ namespace JoltPhysics
         , protected Physics::CollisionFilteringRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(BaseColliderComponent, "{DE3555C7-B3B3-4FE9-AAB6-EC21619DADC1}");
+        AZ_COMPONENT(BaseColliderComponent, "{29A7A676-E367-4439-82BD-0A7222F8D693}");
         static void Reflect(AZ::ReflectContext* context);
 
         BaseColliderComponent() = default;

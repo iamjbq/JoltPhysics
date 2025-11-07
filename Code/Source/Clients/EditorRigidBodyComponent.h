@@ -22,7 +22,7 @@ namespace JoltPhysics
         : public AzPhysics::RigidBodyConfiguration
     {
         AZ_CLASS_ALLOCATOR(JoltPhysics::EditorRigidBodyConfiguration, AZ::SystemAllocator);
-        AZ_RTTI(JoltPhysics::EditorRigidBodyConfiguration, "{E358E495-201C-4A48-9548-21FB66E649AC}", AzPhysics::RigidBodyConfiguration);
+        AZ_RTTI(JoltPhysics::EditorRigidBodyConfiguration, "{C04C878A-DF78-48B9-8273-916B36007E7D}", AzPhysics::RigidBodyConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);
 
