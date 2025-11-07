@@ -33,7 +33,7 @@ namespace JoltPhysics
         : public BaseColliderComponent
     {
     public:
-        AZ_COMPONENT(ShapeColliderComponent, "{30CC9E77-378C-49DF-9617-6BF191901FE0}", BaseColliderComponent);
+        AZ_COMPONENT(ShapeColliderComponent, "{855215D5-DB80-4359-A1B7-847968105EB4}", BaseColliderComponent);
         static void Reflect(AZ::ReflectContext* context);
 
         ShapeColliderComponent() = default;
