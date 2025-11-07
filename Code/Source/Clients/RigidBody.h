@@ -27,7 +27,7 @@ namespace JoltPhysics
     {
     public:
         AZ_CLASS_ALLOCATOR(RigidBodyConfiguration, AZ::SystemAllocator);
-        AZ_RTTI(JoltPhysics::RigidBodyConfiguration, "{006A06B1-E2E9-47DF-A49D-C60CAB3727C4}");
+        AZ_RTTI(JoltPhysics::RigidBodyConfiguration, "{97F2712A-A132-4E8D-A851-866159551916}");
 
         RigidBodyConfiguration() = default;
         virtual ~RigidBodyConfiguration() = default;

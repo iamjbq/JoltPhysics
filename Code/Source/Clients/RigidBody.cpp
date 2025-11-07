@@ -9,7 +9,9 @@
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 
 #include <JoltPhysics/MathConversions.h>
+#include <JoltPhysics/Utils.h>
 #include <Clients/Shape.h>
+#include <Material/JoltPhysicsMaterial.h>
 
 namespace JoltPhysics
 {
