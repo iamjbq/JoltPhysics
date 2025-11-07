@@ -6,7 +6,11 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
-#include <Jolt/Physics/Body/Body.h>
+
+namespace JPH
+{
+    class Body;
+}
 
 namespace AzPhysics
 {

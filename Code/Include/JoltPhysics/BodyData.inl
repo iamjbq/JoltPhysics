@@ -1,4 +1,6 @@
-﻿
+﻿#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/Body.h>
+
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
 namespace JoltPhysics
