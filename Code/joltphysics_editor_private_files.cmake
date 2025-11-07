@@ -7,12 +7,15 @@ set(FILES
 
     Source/Editor/JoltEditorMaterialAsset.cpp
     Source/Editor/JoltEditorMaterialAsset.h
-
     Source/Editor/JoltEditorMaterialAssetBuilder.cpp
     Source/Editor/JoltEditorMaterialAssetBuilder.h
 
-#    Source/Clients/EditorRigidBodyComponent.cpp
-#    Source/Clients/EditorRigidBodyComponent.h
+    Source/Clients/EditorShapeColliderComponent.cpp
+    Source/Clients/EditorShapeColliderComponent.h
+    Source/Clients/EditorStaticRigidBodyComponent.cpp
+    Source/Clients/EditorStaticRigidBodyComponent.h
+    Source/Clients/EditorRigidBodyComponent.cpp
+    Source/Clients/EditorRigidBodyComponent.h
     
 #    Source/Editor/EditorWindow.cpp
 #    Source/Editor/EditorWindow.h
