@@ -90,14 +90,24 @@ namespace JoltPhysics
         return m_queuedCollisionEvents;
     }
 
+    AzPhysics::TriggerEventList& JoltContactListener::GetQueuedTriggerEvents()
+    {
+        return m_queuedTriggerEvents;
+    }
+
     void JoltContactListener::FlushQueuedCollisionEvents()
     {
         m_queuedCollisionEvents.clear();
     }
 
+    void JoltContactListener::FlushQueuedTriggerEvents()
+    {
+        m_queuedTriggerEvents.clear();
+    }
+
     void JoltContactListener::OnContact(const JPH::Body& inBody1, const JPH::Body& inBody2,
-        const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings,
-        AzPhysics::CollisionEvent::Type inType)
+                                        const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings,
+                                        AzPhysics::CollisionEvent::Type inType)
     {
         // Override friction and restitution values before setting anything else
         OverrideContactSettings(inBody1, inBody2, inManifold, ioSettings);

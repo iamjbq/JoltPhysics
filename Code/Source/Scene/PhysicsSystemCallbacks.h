@@ -30,17 +30,17 @@ namespace JoltPhysics
 
         //! Accessor to the queued Collision / trigger Events.
         AzPhysics::CollisionEventList& GetQueuedCollisionEvents();
-        // AzPhysics::TriggerEventList& GetQueuedTriggerEvents();
+        AzPhysics::TriggerEventList& GetQueuedTriggerEvents();
 
         //! Clear all queued collision / trigger events.
         void FlushQueuedCollisionEvents();
-        // void FlushQueuedTriggerEvents();
+        void FlushQueuedTriggerEvents();
 
     private:
         void OnContact(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings, AzPhysics::CollisionEvent::Type inType);
         
         AzPhysics::CollisionEventList m_queuedCollisionEvents; //!< Holds all the collision events the happened until the next call to FlushCollisionEvents;
-        // AzPhysics::TriggerEventList m_queuedTriggerEvents; //!< Holds all the trigger events the happened until the next call to FlushTriggerEvents;
+        AzPhysics::TriggerEventList m_queuedTriggerEvents; //!< Holds all the trigger events the happened until the next call to FlushTriggerEvents;
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
