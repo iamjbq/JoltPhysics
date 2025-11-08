@@ -104,6 +104,18 @@ namespace JoltPhysics
         void InitializeJoltSystem();
 
     private:
+        void EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
+        void DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
+
+        void FlushQueuedEvents();
+        void ClearDeferredDeletions();
+        void ProcessTriggerEvents();
+        void ProcessCollisionEvents();
+
+        void UpdateAzProfilerDataPoints();
+
+        void SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles);
+
         bool m_isEnabled = true;
 
         // Accumulated delta time over multiple simulation sub-steps.
