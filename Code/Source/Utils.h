@@ -66,10 +66,10 @@ namespace JoltPhysics
             AzPhysics::CollisionGroup& assignedCollisionGroup
         );
 
-        // JPH::ObjectLayer ConstructObjectLayer(
-        //     const Physics::ColliderConfiguration& colliderConfiguration,
-        //     const AzPhysics::CollisionGroup& assignedCollisionGroup,
-        //     const JPH::BroadPhaseLayer& broadPhaseLayer);
+        JPH::ObjectLayer ConstructObjectLayer(
+            const Physics::ColliderConfiguration& colliderConfiguration,
+            const AzPhysics::CollisionGroup& assignedCollisionGroup,
+            const JPH::BroadPhaseLayer& broadPhaseLayer);
 
         //! Converts collider position and orientation offsets to a transform.
         AZ::Transform GetColliderLocalTransform(const AZ::Vector3& colliderRelativePosition
