@@ -14,6 +14,7 @@ set(FILES
 		Include/JoltPhysics/Utils.inl
 		Include/JoltPhysics/ColliderComponentBus.h
 		Include/JoltPhysics/ColliderShapeBus.h
+		Include/JoltPhysics/NativeTypeIdentifiers.h
 
         Source/JoltPhysicsModuleInterface.cpp
         Source/JoltPhysicsModuleInterface.h
