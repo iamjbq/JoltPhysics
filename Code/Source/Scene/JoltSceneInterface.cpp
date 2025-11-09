@@ -24,7 +24,6 @@ namespace JoltPhysics
     JoltSceneInterface::JoltSceneInterface(JoltSystem* inSystem)
         : m_joltSystem(inSystem)
     {
-
     }
 
     // AzPhysics::SceneInterface ...

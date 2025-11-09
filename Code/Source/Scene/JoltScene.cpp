@@ -37,8 +37,6 @@ namespace JoltPhysics
 {
     namespace Internal
     {
-        // TODO: Start implementing bodies - start with rigid body and work up to character controller
-
         bool AddShape(AZStd::variant<AzPhysics::RigidBody*, AzPhysics::StaticRigidBody*> simulatedBody, const AzPhysics::ShapeVariantData& shapeData)
         {
             if (const auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
@@ -101,7 +99,7 @@ namespace JoltPhysics
             auto* newBody = aznew SimulatedBodyType(*configuration);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("JoltScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             crc = AZ::Crc32(newBody, sizeof(*newBody));
@@ -113,7 +111,7 @@ namespace JoltPhysics
             auto* newBody = aznew RigidBody(*configuration);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("JoltScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
@@ -520,7 +518,7 @@ namespace JoltPhysics
             AZ_Assert(bodyID, "Simulated Body doesn't have a valid Jolt body");
 
             {
-                m_bodyInterface->AddBody(*bodyID, JPH::EActivation::Activate);
+                m_bodyInterface->AddBody(*bodyID, JPH::EActivation::Activate); // TODO: Verify correct activation
             }
 
             if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
