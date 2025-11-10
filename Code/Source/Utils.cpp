@@ -340,8 +340,25 @@ namespace JoltPhysics
             return 0;
         }
 
+        JPH::ObjectLayer ConstructObjectLayer(const AzPhysics::CollisionLayer& assignedCollisionLayer,
+            const AzPhysics::CollisionGroup& assignedCollisionGroup, const JPH::BroadPhaseLayer& broadPhaseLayer)
+        {
+            if (JoltSystem* system = GetJoltSystem())
+            {
+                AZ::u32 newBPLayer = 1 << static_cast<const AZ::u8>(broadPhaseLayer);
+                AZ::u32 newCollisionLayer = assignedCollisionLayer.GetIndex() << 8;
+
+                AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
+                AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
+
+                return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
+            }
+            AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")
+            return 0;
+        }
+
         AZ::Transform GetColliderLocalTransform(const AZ::Vector3& colliderRelativePosition,
-            const AZ::Quaternion& colliderRelativeRotation)
+                                                const AZ::Quaternion& colliderRelativeRotation)
         {
             return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation, colliderRelativePosition);
         }
