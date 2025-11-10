@@ -3,18 +3,27 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/utility/as_const.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+
 #include <Jolt/Jolt.h>
+#include "Jolt/Physics/PhysicsSystem.h"
 #include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include "Jolt/Physics/Body/BodyCreationSettings.h"
+#include "Jolt/Physics/Collision/Shape/SphereShape.h"
+
 #include <Utils.h>
-#include <JoltPhysics/Utils.h>
 #include <Clients/Shape.h>
+#include <System/CollisionLayerFilters.h>
+#include <JoltPhysics/Utils.h>
 #include <JoltPhysics/MathConversions.h>
+#include <JoltPhysics/NativeTypeIdentifiers.h>
 
 namespace JoltPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(JoltPhysics::StaticRigidBody, AZ::SystemAllocator);
 
-    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration)
+    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem)
+        : m_owningSystem(owningSystem)
     {
         CreateJoltBody(configuration);
     }
@@ -23,19 +32,20 @@ namespace JoltPhysics
     {
         //clean up the attached shapes
         {
-            PHYSX_SCENE_WRITE_LOCK(m_joltStaticBody->getScene());
             for (auto shape : m_shapes)
             {
-                m_joltStaticBody->detachShape(*shape->GetPxShape());
+                // Jolt Body cannot change or remove shape after creation
+                // We may need to mark on m_joltStaticBody that it is to be deleted
+
                 shape->DetachedFromActor();
             }
         }
         m_shapes.clear();
 
-        // Invalidate user data so it sets m_pxStaticRigidBody->userData to nullptr.
-        // It's appropriate to do this as m_pxStaticRigidBody is a shared pointer and
+        // Invalidate user data so it sets m_joltStaticBody->userData to nullptr.
+        // It's appropriate to do this as m_joltStaticBody is a shared pointer, and
         // technically it could survive m_actorUserData life's span.
-        m_actorUserData.Invalidate();
+        m_bodyUserData.Invalidate();
     }
 
     void StaticRigidBody::CreateJoltBody(const AzPhysics::StaticRigidBodyConfiguration& configuration)
@@ -45,33 +55,61 @@ namespace JoltPhysics
             AZ_Warning("Jolt Static Rigid Body", false, "Trying to create Jolt static rigid actor when it's already created");
             return;
         }
+        // We can't crate a Body without a shape. Create a tiny sphere as placeholder
+        JPH::SphereShapeSettings placeholderSettings(0.01f);  // 1cm radius
+        JPH::Shape::ShapeResult result = placeholderSettings.Create();
 
-        if (m_joltStaticBody = PxActorFactories::CreatePxStaticRigidBody(configuration))
+        auto newBody = JPH::BodyCreationSettings(
+            result.Get(),
+            JoltMathConvert(configuration.m_position),
+            JoltMathConvert(configuration.m_orientation),
+            JPH::EMotionType::Static,
+            0 // Placeholder object layer until we set shape to get collider configuration
+            );
+
+        m_joltStaticBody = m_owningSystem.GetBodyInterface().CreateBody(newBody);
+
+        if (m_joltStaticBody)
         {
-            m_actorUserData = ActorData(m_joltStaticBody.get());
-            m_actorUserData.SetRigidBodyStatic(this);
-            m_actorUserData.SetEntityId(configuration.m_entityId);
+            m_bodyUserData = BodyData(m_joltStaticBody);
+            m_bodyUserData.SetRigidBodyStatic(this);
+
+            m_bodyUserData.SetEntityId(configuration.m_entityId);
 
             m_debugName = configuration.m_debugName;
-            m_joltStaticBody->setName(m_debugName.c_str());
         }
     }
 
+    JPH::ObjectLayer StaticRigidBody::GetNewObjectLayer(const AZStd::shared_ptr<Shape>& shape)
+    {
+        auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Static));
+        return Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
+    }
+
+    // This gets called in JoltScene directly after creating a StaticRigidBody
     void StaticRigidBody::AddShape(AZStd::shared_ptr<Physics::Shape> shape)
     {
-        auto pxShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
-        if (pxShape && pxShape->GetPxShape())
+        auto joltShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
+        if (joltShape && joltShape->GetNativePointer())
         {
             {
-                PHYSX_SCENE_WRITE_LOCK(m_joltStaticBody->getScene());
-                m_joltStaticBody->attachShape(*pxShape->GetPxShape());
+                m_owningSystem.GetBodyInterface().SetShape(
+                    m_joltStaticBody->GetID(),
+                    static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
+                    true,
+                    JPH::EActivation::DontActivate // TODO: Probably a check whether this should be activated
+                    );
+
+                // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. static)
+                JPH::ObjectLayer newLayer = GetNewObjectLayer(joltShape);
+                m_owningSystem.GetBodyInterface().SetObjectLayer(m_joltStaticBody->GetID(), newLayer);
             }
-            pxShape->AttachedToActor(m_joltStaticBody.get());
-            m_shapes.push_back(pxShape);
+            joltShape->AttachedToActor(m_joltStaticBody);
+            m_shapes.push_back(joltShape);
         }
         else
         {
-            AZ_Error("Jolt Rigid Body Static", false, "Trying to add an invalid shape.");
+            AZ_Error("Jolt Static Rigid Body", false, "Trying to add an invalid shape.");
         }
     }
 
@@ -99,27 +137,22 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_joltStaticBody->getScene());
-            return JoltMathConvert(m_joltStaticBody->getGlobalPose());
+            JPH::Mat44 transform = m_joltStaticBody->GetWorldTransform();
+            return JoltMathConvert(transform.GetTranslation(), transform.GetQuaternion());
         }
         return AZ::Transform::CreateIdentity();
     }
 
     void StaticRigidBody::SetTransform(const AZ::Transform & transform)
     {
-        if (m_joltStaticBody)
-        {
-            PHYSX_SCENE_WRITE_LOCK(m_joltStaticBody->getScene());
-            m_joltStaticBody->setGlobalPose(JoltMathConvert(transform));
-        }
+
     }
 
     AZ::Vector3 StaticRigidBody::GetPosition() const
     {
         if (m_joltStaticBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_joltStaticBody->getScene());
-            return PxMathConvert(m_joltStaticBody->getGlobalPose().p);
+            return JoltMathConvert(m_joltStaticBody->GetPosition());
         }
         return AZ::Vector3::CreateZero();
     }
@@ -128,8 +161,7 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_joltStaticBody->getScene());
-            return PxMathConvert(m_joltStaticBody->getGlobalPose().q);
+            return JoltMathConvert(m_joltStaticBody->GetRotation());
         }
         return  AZ::Quaternion::CreateZero();
     }
@@ -138,20 +170,19 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            PHYSX_SCENE_READ_LOCK(m_joltStaticBody->getScene());
-            return PxMathConvert(m_joltStaticBody->getWorldBounds(1.0f));
+            return JoltMathConvert(m_joltStaticBody->GetWorldSpaceBounds());
         }
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SceneQueryHit StaticRigidBody::RayCast(const AzPhysics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit StaticRigidBody::RayCast([[maybe_unused]] const AzPhysics::RayCastRequest& request)
     {
-        return JoltPhysics::SceneQueryHelpers::ClosestRayHitAgainstShapes(request, m_shapes, GetTransform());
+        // return JoltPhysics::SceneQueryHelpers::ClosestRayHitAgainstShapes(request, m_shapes, GetTransform());
     }
 
     AZ::EntityId StaticRigidBody::GetEntityId() const
     {
-        return m_actorUserData.GetEntityId();
+        return m_bodyUserData.GetEntityId();
     }
 
     AZ::Crc32 StaticRigidBody::GetNativeType() const
@@ -161,6 +192,6 @@ namespace JoltPhysics
 
     void* StaticRigidBody::GetNativePointer() const
     {
-        return m_joltStaticBody.get();
+        return m_joltStaticBody;
     }
 }
