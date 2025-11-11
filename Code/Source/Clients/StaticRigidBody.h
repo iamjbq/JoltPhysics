@@ -2,6 +2,7 @@
 
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
+
 #include <JoltPhysics/BodyData.h>
 
 namespace JPH

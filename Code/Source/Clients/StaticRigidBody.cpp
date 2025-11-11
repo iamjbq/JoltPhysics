@@ -89,6 +89,11 @@ namespace JoltPhysics
     // This gets called in JoltScene directly after creating a StaticRigidBody
     void StaticRigidBody::AddShape(AZStd::shared_ptr<Physics::Shape> shape)
     {
+        if (!m_joltStaticBody || !shape)
+        {
+            return;
+        }
+
         auto joltShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
         if (joltShape && joltShape->GetNativePointer())
         {
@@ -145,14 +150,22 @@ namespace JoltPhysics
 
     void StaticRigidBody::SetTransform(const AZ::Transform & transform)
     {
-
+        if (m_joltStaticBody)
+        {
+            m_owningSystem.GetBodyInterface().SetPositionAndRotation(
+                m_joltStaticBody->GetID(),
+                JoltMathConvert(transform.GetTranslation()),
+                JoltMathConvert(transform.GetRotation()),
+                JPH::EActivation::Activate
+                );
+        }
     }
 
     AZ::Vector3 StaticRigidBody::GetPosition() const
     {
         if (m_joltStaticBody)
         {
-            return JoltMathConvert(m_joltStaticBody->GetPosition());
+            return JoltMathConvert(m_owningSystem.GetBodyInterface().GetPosition(m_joltStaticBody->GetID()));
         }
         return AZ::Vector3::CreateZero();
     }
@@ -161,7 +174,7 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            return JoltMathConvert(m_joltStaticBody->GetRotation());
+            return JoltMathConvert(m_owningSystem.GetBodyInterface().GetRotation(m_joltStaticBody->GetID()));
         }
         return  AZ::Quaternion::CreateZero();
     }
@@ -170,7 +183,12 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            return JoltMathConvert(m_joltStaticBody->GetWorldSpaceBounds());
+            JPH::BodyLockRead lock(m_owningSystem.GetBodyLockInterface(), m_joltStaticBody->GetID());
+            if (lock.Succeeded())
+            {
+                auto& body = lock.GetBody();
+                return JoltMathConvert(body.GetWorldSpaceBounds());
+            }
         }
         return AZ::Aabb::CreateNull();
     }
