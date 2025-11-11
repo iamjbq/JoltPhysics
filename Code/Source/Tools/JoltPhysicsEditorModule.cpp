@@ -3,7 +3,8 @@
 #include <JoltPhysicsModuleInterface.h>
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <Tools/JoltPhysicsEditorSystemComponent.h>
-// #include "Clients/EditorRigidBodyComponent.h"
+#include <Clients/EditorRigidBodyComponent.h>
+#include <Clients/EditorStaticRigidBodyComponent.h>
 
 namespace JoltPhysics
 {
@@ -30,7 +31,8 @@ namespace JoltPhysics
             m_descriptors.insert(m_descriptors.end(), {
                 JoltPhysicsSystemComponent::CreateDescriptor(),
                 JoltPhysicsEditorSystemComponent::CreateDescriptor(),
-                // EditorRigidBodyComponent::CreateDescriptor(),
+                EditorRigidBodyComponent::CreateDescriptor(),
+                EditorStaticRigidBodyComponent::CreateDescriptor(),
             });
         }
 

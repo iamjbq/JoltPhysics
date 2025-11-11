@@ -1,6 +1,6 @@
 
 #include <Clients/EditorRigidBodyComponent.h>
-// #include <Clients/RigidBodyComponent.h>
+#include <Clients/RigidBodyComponent.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -25,7 +25,7 @@ namespace JoltPhysics
 
     void EditorRigidBodyComponent::BuildGameEntity([[maybe_unused]] AZ::Entity* gameEntity)
     {
-        // gameEntity->CreateComponent<JoltPhysics::RigidBodyComponent>(m_config, m_joltSpecificConfig, AzPhysics::InvalidSceneHandle);
+        gameEntity->CreateComponent<JoltPhysics::RigidBodyComponent>(m_config, m_joltSpecificConfig, AzPhysics::InvalidSceneHandle);
     }
 
     void EditorRigidBodyComponent::Reflect(AZ::ReflectContext* context)

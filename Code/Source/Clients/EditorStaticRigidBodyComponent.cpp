@@ -3,6 +3,7 @@
 #include <AzFramework/Physics/NameConstants.h>
 
 #include <Clients/EditorStaticRigidBodyComponent.h>
+#include <Clients/StaticRigidBodyComponent.h>
 
 namespace JoltPhysics
 {
