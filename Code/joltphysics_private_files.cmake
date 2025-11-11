@@ -25,6 +25,8 @@ set(FILES
         Source/Clients/JoltPhysicsSystemComponent.h
         Source/Clients/RigidBodyComponent.cpp
         Source/Clients/RigidBodyComponent.h
+		Source/Clients/StaticRigidBodyComponent.cpp
+		Source/Clients/StaticRigidBodyComponent.h
 		Source/Clients/StaticRigidBody.cpp
 		Source/Clients/StaticRigidBody.h
         Source/Clients/RigidBody.cpp
