@@ -149,9 +149,9 @@ namespace JoltPhysics
     {
         // TODO: confirm if this is correct or should be not transformed, but near origin
             
-        if (!m_attachedBody->IsInvalid() && m_attachedSystem != nullptr)
+        if (!m_attachedBody->GetID().IsInvalid() && m_attachedSystem != nullptr)
         {
-            const JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(*m_attachedBody);
+            const JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(m_attachedBody->GetID());
             const JPH::Mat44 comTransform = transformedShape.GetCenterOfMassTransform();
             
             return { JoltMathConvert(comTransform.GetTranslation()), JoltMathConvert(comTransform.GetQuaternion()) };
@@ -198,7 +198,7 @@ namespace JoltPhysics
 
     void Shape::AttachedToActor(void* actor)
     {
-        JPH::BodyID* joltBody = static_cast<JPH::BodyID*>(actor);
+        JPH::Body* joltBody = static_cast<JPH::Body*>(actor);
         if (joltBody != nullptr)
         {
             m_attachedBody = joltBody;
@@ -241,9 +241,9 @@ namespace JoltPhysics
 
     AZ::Aabb Shape::GetAabb([[maybe_unused]] const AZ::Transform& worldTransform) const
     {
-        if (!m_attachedBody->IsInvalid() && m_attachedSystem != nullptr)
+        if (!m_attachedBody->GetID().IsInvalid() && m_attachedSystem != nullptr)
         {
-            const JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(*m_attachedBody);
+            const JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(m_attachedBody->GetID());
             return JoltMathConvert(transformedShape.GetWorldSpaceBounds());
         }
         AZ_Warning("Shape::GetAabb", false, "Jolt Shape is null")
@@ -313,7 +313,7 @@ namespace JoltPhysics
 
     JoltPhysics::JoltScene* Shape::GetScene()
     {
-        if (!m_attachedBody->IsInvalid())
+        if (!m_attachedBody->GetID().IsInvalid())
         {
             // return m_attachedBody->getScene();
         }

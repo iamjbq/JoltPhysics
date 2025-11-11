@@ -91,6 +91,6 @@ namespace JoltPhysics
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         AZ::Crc32 m_tag;
         JPH::PhysicsSystem* m_attachedSystem = nullptr;
-        JPH::BodyID* m_attachedBody = nullptr;
+        JPH::Body* m_attachedBody = nullptr;
     };
 } // JoltPhysics
