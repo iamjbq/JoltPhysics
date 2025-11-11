@@ -4,12 +4,12 @@
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <JoltPhysics/BodyData.h>
 
 namespace JPH
 {
     class Body;
+    class PhysicsSystem;
 }
 
 namespace AzPhysics
@@ -47,7 +47,7 @@ namespace JoltPhysics
         AZ_RTTI(JoltPhysics::RigidBody, "{BC69F0A6-A0CE-4A33-B738-F1A267B6EDBF}", AzPhysics::RigidBody);
 
         RigidBody() = default;
-        RigidBody(const AzPhysics::RigidBodyConfiguration& configuration);
+        RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem);
         ~RigidBody();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -127,15 +127,17 @@ namespace JoltPhysics
             const float massOverride = 1.0f) override;
 
     private:
-        void CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration);
+        void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration);
+        JPH::ObjectLayer GetNewObjectLayer(const AZStd::shared_ptr<Shape>& shape);
 
         void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
         void SetInertia(const AZ::Matrix3x3& inertia);
 
-        AZStd::shared_ptr<JPH::Body> m_pxRigidActor;
+        JPH::PhysicsSystem& m_owningSystem;
+        JPH::Body* m_joltRigidBody = nullptr;
         AZStd::vector<AZStd::shared_ptr<JoltPhysics::Shape>> m_shapes;
-        AZStd::string m_name;
-        JPH::BodyCreationSettings m_actorUserData;
+        JoltPhysics::BodyData m_bodyUserData;
+        AZStd::string m_debugName;
         bool m_startAsleep = false;
     };
 }
