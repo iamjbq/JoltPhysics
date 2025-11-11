@@ -22,12 +22,11 @@ namespace AzPhysics
 
 namespace JoltPhysics
 {
-    class TransformForwardTimeInterpolator;
+   class TransformForwardTimeInterpolator;
 
-    /// Component used to register an entity as a dynamic rigid body in the PhysX simulation.
+    /// Component used to register an entity as a dynamic rigid body in the Jolt simulation.
     class RigidBodyComponent
         : public AZ::Component
-        , public JoltRigidBodyRequestBus::Handler
         , public AZ::EntityBus::Handler
         , public Physics::RigidBodyRequestBus::Handler
         , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
@@ -35,7 +34,7 @@ namespace JoltPhysics
         , protected AZ::TransformNotificationBus::MultiHandler
     {
     public:
-        AZ_COMPONENT(RigidBodyComponent, "{1AB9E4FD-5513-4B17-BB1E-55EC0CF41F16}");
+        AZ_COMPONENT(RigidBodyComponent, "{A6417B3F-1FD8-442A-8C04-5015F35053BD}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -65,7 +64,6 @@ namespace JoltPhysics
 
         static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-
         }
 
         // RigidBodyRequests + SimulatedBodyComponentRequests overrides ...
@@ -130,14 +128,15 @@ namespace JoltPhysics
         }
 
     protected:
+
         // AZ::Component
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
 
         // AZ::EntityBus overrides ...
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
-        // Optionally will perform interpolation outside of simulation loop
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
 
@@ -152,10 +151,13 @@ namespace JoltPhysics
         void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
 
-        std::unique_ptr<TransformForwardTimeInterpolator> m_interpolator; // TODO: Not sure if this is needed for Jolt
+        const AzPhysics::RigidBody* GetRigidBodyConst() const;
+
+        std::unique_ptr<TransformForwardTimeInterpolator> m_interpolator;
         AzPhysics::SceneInterface* m_cachedSceneInterface = nullptr;
         AzPhysics::RigidBodyConfiguration m_configuration; //!< Generic properties from AzPhysics.
-        RigidBodyConfiguration m_joltSpecificConfiguration;
+        RigidBodyConfiguration
+            m_joltSpecificConfiguration; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.
         AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
 
@@ -167,11 +169,10 @@ namespace JoltPhysics
         AzPhysics::SimulatedBodyEvents::OnSyncTransform::Handler m_activeBodySyncTransformHandler;
     };
 
-    // Unsure if this needs to be implemented for Jolt
     class TransformForwardTimeInterpolator
     {
     public:
-        AZ_RTTI(TransformForwardTimeInterpolator, "{718196D3-3611-4AB7-ABF3-B1A0755AFFF4}");
+        AZ_RTTI(TransformForwardTimeInterpolator, "{3CF24850-0AEC-49AD-B207-088469CD5C22}");
         AZ_CLASS_ALLOCATOR(TransformForwardTimeInterpolator, AZ::SystemAllocator);
         virtual ~TransformForwardTimeInterpolator() = default;
         void Reset(const AZ::Vector3& position, const AZ::Quaternion& rotation);
