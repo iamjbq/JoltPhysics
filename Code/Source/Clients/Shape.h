@@ -9,13 +9,11 @@
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Collision/Shape/Shape.h>
-
 #include <Scene/JoltScene.h>
 
 namespace JPH
 {
+    class Shape;
     class ShapeSettings;
 }
 

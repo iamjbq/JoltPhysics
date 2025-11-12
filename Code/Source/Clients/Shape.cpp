@@ -6,11 +6,14 @@
 #include "JoltPhysics/MathConversions.h"
 
 #include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 #include <Jolt/Physics/Body/Body.h>
 #include "Jolt/Physics/PhysicsSystem.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
+
+#include "JoltPhysics/BodyData.h"
 
 namespace JoltPhysics
 {
@@ -315,7 +318,8 @@ namespace JoltPhysics
     {
         if (!m_attachedBody->GetID().IsInvalid())
         {
-            // return m_attachedBody->getScene();
+            auto* bodyData = reinterpret_cast<BodyData*>(m_attachedBody->GetUserData());
+            return azrtti_cast<JoltScene*>(bodyData->GetSimulatedBody()->GetScene());
         }
         return nullptr;
     }
