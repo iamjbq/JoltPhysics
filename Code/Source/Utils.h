@@ -66,12 +66,7 @@ namespace JoltPhysics
             AzPhysics::CollisionGroup& assignedCollisionGroup
         );
 
-        JPH::ObjectLayer ConstructObjectLayer(
-            const Physics::ColliderConfiguration& colliderConfiguration,
-            const AzPhysics::CollisionGroup& assignedCollisionGroup,
-            const JPH::BroadPhaseLayer& broadPhaseLayer);
-
-        JPH::ObjectLayer ConstructObjectLayer(
+        AZ::u32 ConstructObjectLayer(
             const AzPhysics::CollisionLayer& assignedCollisionLayer,
             const AzPhysics::CollisionGroup& assignedCollisionGroup,
             const JPH::BroadPhaseLayer& broadPhaseLayer);
