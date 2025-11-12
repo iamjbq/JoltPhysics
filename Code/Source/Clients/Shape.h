@@ -11,11 +11,8 @@
 
 #include <Scene/JoltScene.h>
 
-namespace JPH
-{
-    class Shape;
-    class ShapeSettings;
-}
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 
 namespace Physics
 {

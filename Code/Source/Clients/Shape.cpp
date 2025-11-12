@@ -5,8 +5,6 @@
 #include <JoltPhysics/Material/JoltMaterial.h>
 #include "JoltPhysics/MathConversions.h"
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Collision/Shape/Shape.h>
 #include <Jolt/Physics/Body/Body.h>
 #include "Jolt/Physics/PhysicsSystem.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"

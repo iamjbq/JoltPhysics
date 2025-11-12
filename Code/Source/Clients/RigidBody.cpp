@@ -603,7 +603,9 @@ namespace JoltPhysics
         const bool computeInertiaTensor = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
         const bool computeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
         const bool needsCompute = computeCenterOfMass || computeInertiaTensor || computeMass;
+        AZ_UNUSED(needsCompute);
         const bool includeAllShapesInMassCalculation = AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
+        AZ_UNUSED(includeAllShapesInMassCalculation)
     }
 
     void RigidBody::CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration)
