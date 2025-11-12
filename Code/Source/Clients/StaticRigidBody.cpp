@@ -22,7 +22,7 @@ namespace JoltPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(JoltPhysics::StaticRigidBody, AZ::SystemAllocator);
 
-    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem)
+    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem)
         : m_owningSystem(owningSystem)
     {
         CreateJoltBody(configuration);
@@ -67,7 +67,7 @@ namespace JoltPhysics
             0 // Placeholder object layer until we set shape to get collider configuration
             );
 
-        m_joltStaticBody = m_owningSystem.GetBodyInterface().CreateBody(newBody);
+        m_joltStaticBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
 
         if (m_joltStaticBody)
         {
@@ -78,12 +78,6 @@ namespace JoltPhysics
 
             m_debugName = configuration.m_debugName;
         }
-    }
-
-    JPH::ObjectLayer StaticRigidBody::GetNewObjectLayer(const AZStd::shared_ptr<Shape>& shape)
-    {
-        auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Static));
-        return Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
     }
 
     // This gets called in JoltScene directly after creating a StaticRigidBody
@@ -98,7 +92,7 @@ namespace JoltPhysics
         if (joltShape && joltShape->GetNativePointer())
         {
             {
-                m_owningSystem.GetBodyInterface().SetShape(
+                m_owningSystem->GetBodyInterface().SetShape(
                     m_joltStaticBody->GetID(),
                     static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
                     true,
@@ -106,8 +100,9 @@ namespace JoltPhysics
                     );
 
                 // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. static)
-                JPH::ObjectLayer newLayer = GetNewObjectLayer(joltShape);
-                m_owningSystem.GetBodyInterface().SetObjectLayer(m_joltStaticBody->GetID(), newLayer);
+                auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Static));
+                JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
+                m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltStaticBody->GetID(), newLayer);
             }
             joltShape->AttachedToActor(m_joltStaticBody);
             m_shapes.push_back(joltShape);
@@ -152,7 +147,7 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            m_owningSystem.GetBodyInterface().SetPositionAndRotation(
+            m_owningSystem->GetBodyInterface().SetPositionAndRotation(
                 m_joltStaticBody->GetID(),
                 JoltMathConvert(transform.GetTranslation()),
                 JoltMathConvert(transform.GetRotation()),
@@ -165,7 +160,7 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            return JoltMathConvert(m_owningSystem.GetBodyInterface().GetPosition(m_joltStaticBody->GetID()));
+            return JoltMathConvert(m_owningSystem->GetBodyInterface().GetPosition(m_joltStaticBody->GetID()));
         }
         return AZ::Vector3::CreateZero();
     }
@@ -174,7 +169,7 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            return JoltMathConvert(m_owningSystem.GetBodyInterface().GetRotation(m_joltStaticBody->GetID()));
+            return JoltMathConvert(m_owningSystem->GetBodyInterface().GetRotation(m_joltStaticBody->GetID()));
         }
         return  AZ::Quaternion::CreateZero();
     }
@@ -183,7 +178,7 @@ namespace JoltPhysics
     {
         if (m_joltStaticBody)
         {
-            JPH::BodyLockRead lock(m_owningSystem.GetBodyLockInterface(), m_joltStaticBody->GetID());
+            JPH::BodyLockRead lock(m_owningSystem->GetBodyLockInterface(), m_joltStaticBody->GetID());
             if (lock.Succeeded())
             {
                 auto& body = lock.GetBody();
@@ -193,9 +188,20 @@ namespace JoltPhysics
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SceneQueryHit StaticRigidBody::RayCast([[maybe_unused]] const AzPhysics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit StaticRigidBody::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        // return JoltPhysics::SceneQueryHelpers::ClosestRayHitAgainstShapes(request, m_shapes, GetTransform());
+        AzPhysics::SceneQueryHit closestHit;
+        float closestHitDist = AZStd::numeric_limits<float>::max();
+        for (auto& shape : m_shapes)
+        {
+            AzPhysics::SceneQueryHit hit = shape->RayCast(request, GetTransform());
+            if (hit && hit.m_distance < closestHitDist)
+            {
+                closestHit = hit;
+                closestHitDist = hit.m_distance;
+            }
+        }
+        return closestHit;
     }
 
     AZ::EntityId StaticRigidBody::GetEntityId() const

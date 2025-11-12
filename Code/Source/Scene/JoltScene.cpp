@@ -94,9 +94,9 @@ namespace JoltPhysics
         }
 
         template<class SimulatedBodyType, class ConfigurationType>
-        AzPhysics::SimulatedBody* CreateSimulatedBody(const ConfigurationType* configuration, AZ::Crc32& crc)
+        AzPhysics::SimulatedBody* CreateSimulatedBody(const ConfigurationType* configuration, AZ::Crc32& crc, JPH::PhysicsSystem& inSystem)
         {
-            auto* newBody = aznew SimulatedBodyType(*configuration);
+            auto* newBody = aznew SimulatedBodyType(*configuration, &inSystem);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
                 const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
@@ -106,9 +106,9 @@ namespace JoltPhysics
             return newBody;
         }
 
-        AzPhysics::SimulatedBody* CreateRigidBody(const AzPhysics::RigidBodyConfiguration* configuration, AZ::Crc32& crc)
+        AzPhysics::SimulatedBody* CreateRigidBody(const AzPhysics::RigidBodyConfiguration* configuration, AZ::Crc32& crc, JPH::PhysicsSystem& inSystem)
         {
-            auto* newBody = aznew RigidBody(*configuration);
+            auto* newBody = aznew RigidBody(*configuration, &inSystem);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
                 const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
@@ -239,12 +239,12 @@ namespace JoltPhysics
         if (azrtti_istypeof<AzPhysics::RigidBodyConfiguration>(simulatedBodyConfig))
         {
             newBody = Internal::CreateRigidBody(
-                azdynamic_cast<const AzPhysics::RigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
+                azdynamic_cast<const AzPhysics::RigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc, *m_physicsSystem);
         }
         else if (azrtti_istypeof<AzPhysics::StaticRigidBodyConfiguration>(simulatedBodyConfig))
         {
             newBody = Internal::CreateSimulatedBody<StaticRigidBody, AzPhysics::StaticRigidBodyConfiguration>(
-                azdynamic_cast<const AzPhysics::StaticRigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
+                azdynamic_cast<const AzPhysics::StaticRigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc, *m_physicsSystem);
         }
         // else if (azrtti_istypeof<Physics::CharacterConfiguration>(simulatedBodyConfig))
         // {

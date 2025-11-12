@@ -46,8 +46,8 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR(RigidBody, AZ::SystemAllocator);
         AZ_RTTI(JoltPhysics::RigidBody, "{BC69F0A6-A0CE-4A33-B738-F1A267B6EDBF}", AzPhysics::RigidBody);
 
-        RigidBody() = default;
-        RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem);
+        RigidBody();
+        RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem);
         ~RigidBody();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -128,12 +128,11 @@ namespace JoltPhysics
 
     private:
         void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration);
-        JPH::ObjectLayer GetNewObjectLayer(const AZStd::shared_ptr<Shape>& shape);
 
         void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
         void SetInertia(const AZ::Matrix3x3& inertia);
 
-        JPH::PhysicsSystem& m_owningSystem;
+        JPH::PhysicsSystem* m_owningSystem = nullptr;
         JPH::Body* m_joltRigidBody = nullptr;
         AZStd::vector<AZStd::shared_ptr<JoltPhysics::Shape>> m_shapes;
         JoltPhysics::BodyData m_bodyUserData;
