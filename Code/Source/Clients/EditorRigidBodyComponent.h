@@ -12,7 +12,7 @@
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
-
+#include <JoltPhysics/ColliderComponentBus.h>
 #include <Clients/RigidBody.h>
 
 namespace JoltPhysics
@@ -35,7 +35,7 @@ namespace JoltPhysics
         , public AZ::EntityBus::Handler
         , protected AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TransformNotificationBus::Handler
-        // , private Physics::ColliderComponentEventBus::Handler
+        , private Physics::ColliderComponentEventBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AzFramework::BoundsRequestBus::Handler
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
@@ -100,7 +100,7 @@ namespace JoltPhysics
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
 
         // Physics::ColliderComponentEventBus
-        // void OnColliderChanged() override;
+        void OnColliderChanged() override;
 
         // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
@@ -116,6 +116,16 @@ namespace JoltPhysics
         bool EditorSelectionIntersectRayViewport(
             const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
         bool SupportsEditorRayIntersect() override;
+
+        void CreateEditorWorldRigidBody();
+        // void UpdateDebugDrawSettings(const Debug::DebugDisplayData& data);
+
+        void SetShouldBeRecreated();
+
+        void InitPhysicsTickHandler();
+        void PrePhysicsTick();
+
+        void OnConfigurationChanged();
 
         // Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
