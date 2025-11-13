@@ -10,6 +10,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <JoltPhysics/ColliderShapeBus.h>
+#include <Editor/PolygonPrismMeshUtils.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 
@@ -59,8 +60,9 @@ namespace JoltPhysics
         , protected AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorShapeColliderComponent, "{BA2DCD74-21B5-4F03-995A-2DDAEB2938A5}",
+        AZ_EDITOR_COMPONENT(EditorShapeColliderComponent, "{F449EFED-E9E5-4FDA-9E9C-730F1CBA2040}",
             AzToolsFramework::Components::EditorComponentBase);
+
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -91,7 +93,7 @@ namespace JoltPhysics
         void UpdateSphereConfig(const float scale);
         void UpdateCylinderConfig(const float scale);
         void UpdatePolygonPrismDecomposition();
-        void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr);
+        void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr); // Not sure if I need these
 
         // Helper function to set a specific shape configuration
         template<typename ConfigType>

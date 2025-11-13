@@ -25,7 +25,7 @@ namespace JoltPhysics
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> allShapes;
 
             const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
-
+            AZ_UNUSED(hasNonUniformScaleComponent)
             // TODO: Probably can delete this whole block
             // for (const EditorColliderComponent* collider : entity->FindComponents<EditorColliderComponent>())
             // {
@@ -127,7 +127,7 @@ namespace JoltPhysics
             &AzToolsFramework::EditorRequests::OpenViewPane, JoltConfigurationEditor);
     }
 
-    static AzToolsFramework::GenericEditResultOutcome<bool> OnEditButtonClicked(bool comboBoxValue)
+    static AzToolsFramework::GenericEditResultOutcome<bool> OnEditButtonClicked([[maybe_unused]] bool comboBoxValue)
     {
         QWidget* mainWindow = nullptr;
         AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);

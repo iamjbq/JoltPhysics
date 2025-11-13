@@ -22,8 +22,8 @@
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <LyViewPaneNames.h>
-// #include <PhysX/SystemComponentBus.h>
-// #include <RigidBodyStatic.h>
+#include <JoltPhysics/JoltPhysicsBus.h>
+#include <Clients/StaticRigidBody.h>
 #include <Clients/ShapeColliderComponent.h>
 #include <Utils.h>
 #include <System/JoltSystem.h>
@@ -368,6 +368,7 @@ namespace JoltPhysics
         m_geometryCache.m_boxDimensions = scale * boxDimensions;
     }
 
+    // TODO: We CAN create perfectly 2D flat in Jolt. Need to change
     void EditorShapeColliderComponent::UpdateQuadConfig(const AZ::Vector3& scale)
     {
         LmbrCentral::QuadShapeConfig quadShapeConfig;
@@ -411,7 +412,7 @@ namespace JoltPhysics
         }
         else
         {
-            // it's not possible to create a perfectly 2d convex in Jolt, so the best we can do is a very thin box
+            // it's not possible to create a perfectly 2d convex in PhysX, so the best we can do is a very thin box
             const float zDim = AZ::GetMax(minDimension, 1e-3f * AZ::GetMin(xDim, yDim));
             const AZ::Vector3 boxDimensions(xDim, yDim, zDim);
 
@@ -475,7 +476,7 @@ namespace JoltPhysics
         }
 
         AZStd::optional<Physics::CookedMeshShapeConfiguration> shapeConfig =
-            Utils::CreatePxCookedMeshConfiguration(points.value(), AZ::Vector3(scale));
+            Utils::CreateJoltCookedMeshConfiguration(points.value(), AZ::Vector3(scale));
 
         if (shapeConfig.has_value())
         {
@@ -552,7 +553,7 @@ namespace JoltPhysics
         }
         else
         {
-            // Compute the constrained Delaunay triangulation using poly2tri
+            // Compute the constrained Delaunay triangulation using poly2tri // TODO: Again, maybe Jolt triangles here
             AZStd::vector<p2t::Point> p2tVertices;
             std::vector<p2t::Point*> polyline;
             p2tVertices.reserve(vertices.size());
@@ -616,7 +617,7 @@ namespace JoltPhysics
                 currentEdge = currentEdge->m_next;
             }
 
-            AZStd::optional<Physics::CookedMeshShapeConfiguration> shapeConfig = Utils::CreatePxCookedMeshConfiguration(points, overallScale);
+            AZStd::optional<Physics::CookedMeshShapeConfiguration> shapeConfig = Utils::CreateJoltCookedMeshConfiguration(points, overallScale);
 
             if (shapeConfig.has_value())
             {
