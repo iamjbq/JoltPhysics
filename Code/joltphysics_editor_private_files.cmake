@@ -9,6 +9,8 @@ set(FILES
     Source/Editor/JoltEditorMaterialAsset.h
     Source/Editor/JoltEditorMaterialAssetBuilder.cpp
     Source/Editor/JoltEditorMaterialAssetBuilder.h
+    Source/Editor/PolygonPrismMeshUtils.cpp
+    Source/Editor/PolygonPrismMeshUtils.h
 
     Source/Clients/EditorShapeColliderComponent.cpp
     Source/Clients/EditorShapeColliderComponent.h
