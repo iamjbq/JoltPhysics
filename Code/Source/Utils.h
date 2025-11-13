@@ -43,6 +43,28 @@ namespace JoltPhysics
 
     namespace Utils
     {
+        //! Creates a Jolt cooked mesh config from the given points.
+        //!
+        //! @param points Vector of points to build the mesh from.
+        //! @param scale Scale to be assigned to the cooked mesh.
+        //! @return Either a valid cooked mesh or none if the cooking failed.
+        //!
+        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale);
+
+        // 255 is the hard limit for PhysX number of vertices/faces. Upper bound is set to something sensible and less than this hard limit.
+        constexpr AZ::u8 MinFrustumSubdivisions = 3;
+        constexpr AZ::u8 MaxFrustumSubdivisions = 125;
+
+        //! Creates the points for a given frustum along the z axis as specified by the supplied arguements.
+        //!
+        //! @param height Height of the frustum. Must be greater than 0.
+        //! @param bottomRadius Radius of bottom cace of frustum. Must be greater than 0 if topRadius is 0, otherwise can be 0.
+        //! @param topRadius Radius of top face of frustum. Must be greater than 0 if bottompRadius is 0, otherwise can be 0.
+        //! @param subdivisionsNumber of angular subdivisions. Must be between 3 and 125 inclusive.
+        //! @return Either a valid point list or none if any of the arguements are invalid.
+        //!
+        AZStd::optional<AZStd::vector<AZ::Vector3>> CreatePointsAtFrustumExtents(float height, float bottomRadius, float topRadius, AZ::u8 subdivisions);
+
         AzPhysics::Scene* GetDefaultScene();
 
         bool ComputeJoltShapeFromConfig(
@@ -120,5 +142,38 @@ namespace JoltPhysics
         //! Gets the overall scale, taking into account the scale from both the entity's Transform component and the
         //! Non-Uniform Scale component, if it is present.
         AZ::Vector3 GetOverallScale(AZ::EntityId entityId);
+
+        namespace Geometry
+        {
+            using PointList = AZStd::vector<AZ::Vector3>;
+
+            //! Generates a list of points on a box.
+            PointList GenerateBoxPoints(const AZ::Vector3& min, const AZ::Vector3& max);
+
+            //! Generates a list of points on the surface of a sphere.
+            PointList GenerateSpherePoints(float radius);
+
+            //! Generates a list of points on the surface of a cylinder.
+            PointList GenerateCylinderPoints(float height, float radius);
+
+            // //! Generates vertices and indices representing the provided box geometry
+            // void GetBoxGeometry(const physx::PxBoxGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices);
+            //
+            // //! Generates vertices and indices representing the provided capsule geometry
+            // void GetCapsuleGeometry(const physx::PxCapsuleGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::u32 stacks, const AZ::u32 slices);
+            //
+            // //! Generates vertices and indices representing the provided convex mesh geometry
+            // void GetConvexMeshGeometry(const physx::PxConvexMeshGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices);
+            //
+            // //! Generates vertices and indices representing the provided heightfield geometry, optionally limited to a bounding box
+            // void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices,
+            //     AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds);
+            //
+            // //! Generates vertices and indices representing the provided sphere geometry and optional stacks and slices
+            // void GetSphereGeometry(const physx::PxSphereGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::u32 stacks, const AZ::u32 slices);
+            //
+            // //! Generates vertices and indices representing the provided triangle mesh geometry
+            // void GetTriangleMeshGeometry(const physx::PxTriangleMeshGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices);
+        } // namespace Geometry
     } // namespace Utils
 }
