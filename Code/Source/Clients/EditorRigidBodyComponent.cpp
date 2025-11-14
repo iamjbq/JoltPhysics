@@ -120,7 +120,6 @@ namespace JoltPhysics
 
     static void OpenJoltConfigurationPane()
     {
-        // static const char* const PhysXConfigurationEditor = "PhysX Configuration";
         static const char* const JoltConfigurationEditor = "Jolt Configuration";
         // I guess this is fine?
         AzToolsFramework::EditorRequestBus::Broadcast(

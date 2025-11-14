@@ -53,30 +53,30 @@ namespace JoltPhysics
                     }, simulatedBody);
                 return shapeAdded;
             }
-            else if (const auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
+            if (const auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
                 for (const auto& shapeColliderConfigs : *shapeColliderPairList)
                 {
                     auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
                     AZStd::visit([shapePtr, &shapeAdded](auto&& body)
+                    {
+                        if (shapePtr->GetNativePointer())
                         {
-                            if (shapePtr->GetNativePointer())
-                            {
-                                body->AddShape(shapePtr);
-                                shapeAdded = true;
-                            }
-                        }, simulatedBody);
+                            body->AddShape(shapePtr);
+                            shapeAdded = true;
+                        }
+                    }, simulatedBody);
                 }
                 return shapeAdded;
             }
-            else if (const auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
+            if (const auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {
                 auto shapePtr = *shape;
                 AZStd::visit([shapePtr](auto&& body)
-                    {
-                        body->AddShape(shapePtr);
-                    }, simulatedBody);
+                {
+                    body->AddShape(shapePtr);
+                }, simulatedBody);
                 return true;
             }
             else if (const auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
@@ -84,9 +84,9 @@ namespace JoltPhysics
                 for (auto shapePtr : *shapeList)
                 {
                     AZStd::visit([shapePtr](auto&& body)
-                        {
-                            body->AddShape(shapePtr);
-                        }, simulatedBody);
+                    {
+                        body->AddShape(shapePtr);
+                    }, simulatedBody);
                 }
                 return true;
             }
