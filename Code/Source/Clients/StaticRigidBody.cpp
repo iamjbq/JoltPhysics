@@ -9,7 +9,7 @@
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include "Jolt/Physics/Body/BodyCreationSettings.h"
-#include "Jolt/Physics/Collision/Shape/SphereShape.h"
+#include "Jolt/Physics/Collision/Shape/EmptyShape.h"
 
 #include <Utils.h>
 #include <Clients/Shape.h>
@@ -55,16 +55,16 @@ namespace JoltPhysics
             AZ_Warning("Jolt Static Rigid Body", false, "Trying to create Jolt static rigid actor when it's already created");
             return;
         }
-        // We can't crate a Body without a shape. Create a tiny sphere as placeholder
-        JPH::SphereShapeSettings placeholderSettings(0.01f);  // 1cm radius
-        JPH::Shape::ShapeResult result = placeholderSettings.Create();
+        // We can't crate a Body without a shape. This will be replaced in AddShape()
+        JPH::EmptyShapeSettings emptySettings;
+        JPH::Shape* emptyShape = emptySettings.Create().Get();
 
         auto newBody = JPH::BodyCreationSettings(
-            result.Get(),
+            emptyShape,
             JoltMathConvert(configuration.m_position),
             JoltMathConvert(configuration.m_orientation),
             JPH::EMotionType::Static,
-            0 // Placeholder object layer until we set shape to get collider configuration
+            1 << 1 // Placeholder object layer until we set shape to get collider configuration
             );
 
         m_joltStaticBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);

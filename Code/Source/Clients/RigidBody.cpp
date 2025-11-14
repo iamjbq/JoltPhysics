@@ -13,7 +13,7 @@
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include "Jolt/Physics/Body/BodyCreationSettings.h"
-#include "Jolt/Physics/Collision/Shape/SphereShape.h"
+#include "Jolt/Physics/Collision/Shape/EmptyShape.h"
 
 #include <Utils.h>
 #include <Clients/Shape.h>
@@ -23,6 +23,7 @@
 #include <JoltPhysics/NativeTypeIdentifiers.h>
 
 #include "Jolt/Physics/Body/BodyLock.h"
+#include "Jolt/Physics/Collision/Shape/EmptyShape.h"
 
 namespace JoltPhysics
 {
@@ -615,9 +616,9 @@ namespace JoltPhysics
             AZ_Warning("Jolt Rigid Body", false, "Trying to create Jolt rigid actor when it's already created");
             return;
         }
-        // We can't crate a Body without a shape. Create a tiny sphere as placeholder
-        JPH::SphereShapeSettings placeholderSettings(0.01f);  // 1cm radius
-        JPH::Shape::ShapeResult result = placeholderSettings.Create();
+        // We can't crate a Body without a shape. This will be replaced in AddShape()
+        JPH::EmptyShapeSettings emptySettings;
+        JPH::Shape* emptyShape = emptySettings.Create().Get();
 
         JPH::EMotionType motionType;
         if (configuration.m_kinematic)
@@ -630,11 +631,11 @@ namespace JoltPhysics
         }
 
         auto newBody = JPH::BodyCreationSettings(
-            result.Get(),
+            emptyShape,
             JoltMathConvert(configuration.m_position),
             JoltMathConvert(configuration.m_orientation),
             motionType,
-            0 // Placeholder object layer until we set shape to get collider configuration
+            1 << 1 // Placeholder object layer until we set shape to get collider configuration
             );
 
         m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
