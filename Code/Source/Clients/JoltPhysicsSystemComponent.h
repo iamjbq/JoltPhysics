@@ -18,13 +18,21 @@
 
 #include <JoltPhysics/JoltPhysicsBus.h>
 
+namespace AzPhysics
+{
+    struct StaticRigidBodyConfiguration;
+    struct RigidBodyConfiguration;
+    struct SimulatedBody;
+}
+
 namespace JoltPhysics
 {
+    class MaterialManager;
     class JoltSystem;
 
     class JoltPhysicsSystemComponent
         : public AZ::Component
-        // , public Physics::SystemRequestBus::Handler
+        , public Physics::SystemRequestBus::Handler
         // , public JoltPhysics::SystemRequestsBus::Handler
         // , private Physics::CollisionRequestBus::Handler
         , public AZ::TickBus::Handler
@@ -43,6 +51,31 @@ namespace JoltPhysics
         ~JoltPhysicsSystemComponent();
 
     protected:
+        // Physics::SystemRequestBus overrides...
+        AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
+        void ReleaseNativeMeshObject(void* nativeMeshObject) override;
+        void ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject) override;
+        bool CookConvexMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount) override;
+        bool CookConvexMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount, AZStd::vector<AZ::u8>& result) override;
+        bool CookTriangleMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount,
+            const AZ::u32* indices, AZ::u32 indexCount) override;
+        bool CookTriangleMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount,
+            const AZ::u32* indices, AZ::u32 indexCount, AZStd::vector<AZ::u8>& result) override;
+
+        // CollisionRequestBus overrides...
+        // AzPhysics::CollisionLayer GetCollisionLayerByName(const AZStd::string& layerName) override;
+        // AZStd::string GetCollisionLayerName(const AzPhysics::CollisionLayer& layer) override;
+        // bool TryGetCollisionLayerByName(const AZStd::string& layerName, AzPhysics::CollisionLayer& layer) override;
+        // AzPhysics::CollisionGroup GetCollisionGroupByName(const AZStd::string& groupName) override;
+        // bool TryGetCollisionGroupByName(const AZStd::string& layerName, AzPhysics::CollisionGroup& group) override;
+        // AZStd::string GetCollisionGroupName(const AzPhysics::CollisionGroup& collisionGroup) override;
+        // AzPhysics::CollisionGroup GetCollisionGroupById(const AzPhysics::CollisionGroups::Id& groupId) override;
+        // void SetCollisionLayerName(int index, const AZStd::string& layerName) override;
+        // void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) override;
+        // bool ShouldCollide(
+        //     const Physics::ColliderConfiguration& colliderConfigurationA,
+        //     const Physics::ColliderConfiguration& colliderConfigurationB) override;
+
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
@@ -64,10 +97,11 @@ namespace JoltPhysics
 
         bool m_enabled; ///< If false, this component will not activate itself in the Activate() function.
 
-        // AZ::Interface<Physics::System> m_physicsSystem;
-
+        AZStd::unique_ptr<MaterialManager> m_materialManager;
+        AZ::Interface<Physics::System> m_physicsSystem;
         JoltSystem* m_joltSystem = nullptr;
         bool m_isTickingPhysics = false;
+        AZ::Interface<Physics::CollisionRequests> m_collisionRequests;
         AzPhysics::SystemEvents::OnInitializedEvent::Handler m_onSystemInitializedHandler;
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_onSystemConfigChangedHandler;
 

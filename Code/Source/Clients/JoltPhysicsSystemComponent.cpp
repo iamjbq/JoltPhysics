@@ -6,7 +6,9 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
+#include <Material/JoltMaterialManager.h>
 #include <System/JoltSystem.h>
+#include <Clients/Shape.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 
@@ -74,19 +76,65 @@ namespace JoltPhysics
 
     JoltPhysicsSystemComponent::~JoltPhysicsSystemComponent()
     {
-        // if (m_physicsSystem.Get() == this)
-        // {
-        //     m_physicsSystem.Unregister(this);
-        // }
+        if (m_physicsSystem.Get() == this)
+        {
+            m_physicsSystem.Unregister(this);
+        }
+    }
+
+    AZStd::shared_ptr<Physics::Shape> JoltPhysicsSystemComponent::CreateShape(
+        const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration)
+    {
+        auto shapePtr = AZStd::make_shared<JoltPhysics::Shape>(colliderConfiguration, configuration);
+
+        if (shapePtr->GetNativePointer())
+        {
+            return shapePtr;
+        }
+
+        AZ_Error("Jolt", false, "SystemComponent::CreateShape error. Unable to create a shape from configuration.");
+
+        return nullptr;
+    }
+
+    void JoltPhysicsSystemComponent::ReleaseNativeMeshObject([[maybe_unused]] void* nativeMeshObject)
+    {
+    }
+
+    void JoltPhysicsSystemComponent::ReleaseNativeHeightfieldObject([[maybe_unused]] void* nativeHeightfieldObject)
+    {
+    }
+
+    bool JoltPhysicsSystemComponent::CookConvexMeshToFile([[maybe_unused]] const AZStd::string& filePath, [[maybe_unused]] const AZ::Vector3* vertices,
+        [[maybe_unused]] AZ::u32 vertexCount)
+    {
+        return false;
+    }
+
+    bool JoltPhysicsSystemComponent::CookConvexMeshToMemory([[maybe_unused]] const AZ::Vector3* vertices, [[maybe_unused]] AZ::u32 vertexCount,
+        [[maybe_unused]] AZStd::vector<AZ::u8>& result)
+    {
+        return false;
+    }
+
+    bool JoltPhysicsSystemComponent::CookTriangleMeshToFile([[maybe_unused]] const AZStd::string& filePath, [[maybe_unused]] const AZ::Vector3* vertices,
+        [[maybe_unused]] AZ::u32 vertexCount, [[maybe_unused]] const AZ::u32* indices, [[maybe_unused]] AZ::u32 indexCount)
+    {
+        return false;
+    }
+
+    bool JoltPhysicsSystemComponent::CookTriangleMeshToMemory([[maybe_unused]] const AZ::Vector3* vertices, [[maybe_unused]] AZ::u32 vertexCount,
+        [[maybe_unused]] const AZ::u32* indices, [[maybe_unused]] AZ::u32 indexCount, [[maybe_unused]] AZStd::vector<AZ::u8>& result)
+    {
+        return false;
     }
 
     void JoltPhysicsSystemComponent::Init()
     {
-        // if (m_physicsSystem.Get() == nullptr)
-        // {
-        //     m_physicsSystem.Register(this);
-        // }
-        
+        if (m_physicsSystem.Get() == nullptr)
+        {
+            m_physicsSystem.Register(this);
+        }
     }
 
     template<typename AssetHandlerT, typename AssetT>
@@ -104,7 +152,9 @@ namespace JoltPhysics
         {
             return;
         }
+        Physics::SystemRequestBus::Handler::BusConnect();
         // JoltPhysicsRequestBus::Handler::BusConnect();
+        // Physics::CollisionRequestBus::Handler::BusConnect();
 
         ActivateSimulation();
     }
@@ -112,7 +162,9 @@ namespace JoltPhysics
     void JoltPhysicsSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
+        // Physics::CollisionRequestBus::Handler::BusDisconnect();
         // JoltPhysicsRequestBus::Handler::BusDisconnect();
+        Physics::SystemRequestBus::Handler::BusDisconnect();
 
         if (m_joltSystem != nullptr)
         {
@@ -167,5 +219,8 @@ namespace JoltPhysics
 
             AZ_Info("JoltSystemComponent", "Simulation activated")
         }
+
+        m_materialManager = AZStd::make_unique<MaterialManager>();
+        m_materialManager->Init();
     }
 } // namespace JoltPhysics
