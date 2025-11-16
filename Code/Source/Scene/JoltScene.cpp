@@ -100,7 +100,7 @@ namespace JoltPhysics
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
                 const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
-                AZ_Warning("JoltScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+                AZ_Warning("JoltScene::CreateSimulatedBody", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             crc = AZ::Crc32(newBody, sizeof(*newBody));
             return newBody;
@@ -202,6 +202,57 @@ namespace JoltPhysics
         {
             return;
         }
+
+        bool activeBodiesEnabled = false;
+        {
+            AZ_PROFILE_SCOPE(Physics, "JoltScene::GetNumActiveBodies");
+            activeBodiesEnabled = m_physicsSystem->GetNumActiveBodies(JPH::EBodyType::RigidBody) > 0
+            // || m_physicsSystem->GetNumActiveBodies(JPH::EBodyType::SoftBody) > 0
+            ;
+        }
+
+        if (activeBodiesEnabled)
+        {
+            AZ_PROFILE_SCOPE(Physics, "JoltScene::ProcessActiveBodies");
+
+            AzPhysics::SimulatedBodyHandleList activeBodyHandles;
+
+            {
+                AZ::u32 activeRigidBodiesCount = 0;
+                activeRigidBodiesCount = m_physicsSystem->GetNumActiveBodies(JPH::EBodyType::RigidBody);
+                AZ_Printf("JoltScene", "There are %d active bodies", activeRigidBodiesCount)
+
+                activeBodyHandles.reserve(activeRigidBodiesCount);
+                JPH::BodyIDVector activeRigidBodies;
+                // JPH::BodyIDVector activeSoftBodies;
+                m_physicsSystem->GetActiveBodies(JPH::EBodyType::RigidBody,activeRigidBodies);
+                // m_physicsSystem->GetActiveBodies(JPH::EBodyType::SoftBody,activeSoftBodies);
+
+                for (AZ::u32 i = 0; i < activeRigidBodiesCount; ++i)
+                {
+
+                    if (auto* bodyData = reinterpret_cast<BodyData*>(m_bodyInterface->GetUserData(activeRigidBodies[i])))
+                    {
+                        activeBodyHandles.emplace_back(bodyData->GetBodyHandle());
+                    }
+                }
+            }
+
+            // Keep the event signal outside the scene lock since there may be handlers that want to lock the scene for write
+            m_sceneActiveSimulatedBodies.Signal(m_sceneHandle, activeBodyHandles, m_currentDeltaTime);
+
+            SyncActiveBodyTransform(activeBodyHandles);
+        }
+
+        FlushQueuedEvents();
+        ClearDeferredDeletions();
+
+        {
+            AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationFinishedEvent::Signaled");
+            m_sceneSimulationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
+        }
+
+        UpdateAzProfilerDataPoints();
     }
 
     void JoltScene::SetEnabled(bool enable)
@@ -353,12 +404,50 @@ namespace JoltPhysics
 
     void JoltScene::EnableSimulationOfBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle)
     {
-        // TODO: Incomplete
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return;
+        }
+
+        if (AzPhysics::SimulatedBody* body = GetSimulatedBodyFromHandle(bodyHandle))
+        {
+            if (body->m_simulating)
+            {
+                return;
+            }
+
+            m_simulatedBodySimulationEnabledEvent.Signal(m_sceneHandle, bodyHandle);
+
+            EnableSimulationOfBodyInternal(*body);
+        }
+        else
+        {
+            AZ_Warning("JoltScene", false, "Unable to enable Simulated body, failed to find body.")
+        }
     }
 
     void JoltScene::DisableSimulationOfBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle)
     {
-        // TODO: Incomplete
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return;
+        }
+
+        if (AzPhysics::SimulatedBody* body = GetSimulatedBodyFromHandle(bodyHandle))
+        {
+            if (!body->m_simulating)
+            {
+                return;
+            }
+
+            m_simulatedBodySimulationDisabledEvent.Signal(m_sceneHandle, bodyHandle);
+
+            DisableSimulationOfBodyInternal(*body);
+        }
+        else
+        {
+            AZ_Warning("JoltScene", false, "Unable to disable Simulated body, failed to find body.")
+        }
     }
 
     AzPhysics::JointHandle JoltScene::AddJoint([[maybe_unused]] const AzPhysics::JointConfiguration* jointConfig,
@@ -530,7 +619,7 @@ namespace JoltPhysics
                 }
             }
         }
-
+        AZ_Printf("JoltScene", "Simulating of body is now enabled")
         body.m_simulating = true;
     }
 
