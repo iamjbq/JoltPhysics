@@ -252,7 +252,7 @@ namespace JoltPhysics
             m_sceneSimulationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
         }
 
-        UpdateAzProfilerDataPoints();
+        // UpdateAzProfilerDataPoints();
     }
 
     void JoltScene::SetEnabled(bool enable)
@@ -603,11 +603,11 @@ namespace JoltPhysics
         //     !azrtti_istypeof<JoltPhysics::ArticulationLink>(body))
         if (body.GetNativePointer()) // TODO: temp fix to test basic shapes first
         {
-            auto bodyID = static_cast<JPH::BodyID*>(body.GetNativePointer());
-            AZ_Assert(bodyID, "Simulated Body doesn't have a valid Jolt body");
+            auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer());
+            AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
 
             {
-                m_bodyInterface->AddBody(*bodyID, JPH::EActivation::Activate); // TODO: Verify correct activation
+                m_bodyInterface->AddBody(joltBody->GetID(), JPH::EActivation::Activate); // TODO: Verify correct activation
             }
 
             if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
@@ -619,7 +619,14 @@ namespace JoltPhysics
                 }
             }
         }
-        AZ_Printf("JoltScene", "Simulating of body is now enabled")
+        if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
+        {
+            AZ_Printf("JoltScene", "Simulating of rigid is now enabled") // TODO: crashes on rigid body
+        }
+        if (azrtti_istypeof<JoltPhysics::StaticRigidBody>(body))
+        {
+            AZ_Printf("JoltScene", "Simulating of static rigid is now enabled")
+        }
         body.m_simulating = true;
     }
 
@@ -631,11 +638,11 @@ namespace JoltPhysics
         //     !azrtti_istypeof<PhysX::ArticulationLink>(body))
         if (body.GetNativePointer()) // TODO: temp fix to test basic shapes first
         {
-            auto bodyID = static_cast<JPH::BodyID*>(body.GetNativePointer());
-            AZ_Assert(bodyID, "Simulated Body doesn't have a valid Jolt body");
+            auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer());
+            AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
 
             {
-                m_bodyInterface->RemoveBody(*bodyID);
+                m_bodyInterface->RemoveBody(joltBody->GetID());
             }
         }
         body.m_simulating = false;
