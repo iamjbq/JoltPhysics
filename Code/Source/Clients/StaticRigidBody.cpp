@@ -69,15 +69,16 @@ namespace JoltPhysics
 
         m_joltStaticBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
 
-        if (m_joltStaticBody)
+        if (m_joltStaticBody == nullptr)
         {
-            m_bodyUserData = BodyData(m_joltStaticBody);
-            m_bodyUserData.SetRigidBodyStatic(this);
-
-            m_bodyUserData.SetEntityId(configuration.m_entityId);
-
-            m_debugName = configuration.m_debugName;
+            AZ_Warning("StaticRigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
         }
+        m_bodyUserData = BodyData(m_joltStaticBody);
+        m_bodyUserData.SetRigidBodyStatic(this);
+
+        m_bodyUserData.SetEntityId(configuration.m_entityId);
+
+        m_debugName = configuration.m_debugName;
     }
 
     // This gets called in JoltScene directly after creating a StaticRigidBody

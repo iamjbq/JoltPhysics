@@ -640,14 +640,15 @@ namespace JoltPhysics
 
         m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
 
-        if (m_joltRigidBody)
+        if (m_joltRigidBody == nullptr)
         {
-            m_bodyUserData = BodyData(m_joltRigidBody); // TODO: find out when user data is set on Jolt Body
-            m_bodyUserData.SetRigidBody(this);
-
-            m_bodyUserData.SetEntityId(configuration.m_entityId);
-
-            m_debugName = configuration.m_debugName;
+            AZ_Warning("RigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
         }
+        m_bodyUserData = BodyData(m_joltRigidBody);
+        m_bodyUserData.SetRigidBody(this);
+
+        m_bodyUserData.SetEntityId(configuration.m_entityId);
+
+        m_debugName = configuration.m_debugName;
     }
 }
