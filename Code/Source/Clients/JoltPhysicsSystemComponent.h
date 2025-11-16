@@ -17,6 +17,8 @@
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 
 #include <JoltPhysics/JoltPhysicsBus.h>
+#include <JoltPhysics/Configuration/JoltConfiguration.h>
+#include <CLients/DefaultWorldComponent.h>
 
 namespace AzPhysics
 {
@@ -97,11 +99,13 @@ namespace JoltPhysics
 
         bool m_enabled; ///< If false, this component will not activate itself in the Activate() function.
 
+        AZ::Interface<Physics::CollisionRequests> m_collisionRequests;
         AZStd::unique_ptr<MaterialManager> m_materialManager;
         AZ::Interface<Physics::System> m_physicsSystem;
+        DefaultWorldComponent m_defaultWorldComponent;
+
         JoltSystem* m_joltSystem = nullptr;
         bool m_isTickingPhysics = false;
-        AZ::Interface<Physics::CollisionRequests> m_collisionRequests;
         AzPhysics::SystemEvents::OnInitializedEvent::Handler m_onSystemInitializedHandler;
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_onSystemConfigChangedHandler;
 

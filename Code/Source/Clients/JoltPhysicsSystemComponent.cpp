@@ -152,6 +152,9 @@ namespace JoltPhysics
         {
             return;
         }
+
+        m_defaultWorldComponent.Activate();
+
         Physics::SystemRequestBus::Handler::BusConnect();
         // JoltPhysicsRequestBus::Handler::BusConnect();
         // Physics::CollisionRequestBus::Handler::BusConnect();
@@ -165,6 +168,13 @@ namespace JoltPhysics
         // Physics::CollisionRequestBus::Handler::BusDisconnect();
         // JoltPhysicsRequestBus::Handler::BusDisconnect();
         Physics::SystemRequestBus::Handler::BusDisconnect();
+
+        m_defaultWorldComponent.Deactivate();
+
+        m_materialManager.reset();
+
+        m_onSystemInitializedHandler.Disconnect();
+        m_onSystemConfigChangedHandler.Disconnect();
 
         if (m_joltSystem != nullptr)
         {

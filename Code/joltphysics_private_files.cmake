@@ -21,6 +21,8 @@ set(FILES
 		Source/Utils.cpp
 		Source/Utils.h
 
+		Source/Clients/DefaultWorldComponent.cpp
+		Source/Clients/DefaultWorldComponent.h
         Source/Clients/JoltPhysicsSystemComponent.cpp
         Source/Clients/JoltPhysicsSystemComponent.h
         Source/Clients/RigidBodyComponent.cpp
