@@ -556,7 +556,7 @@ namespace JoltPhysics
                 m_joltRigidBody->GetID(),
                 static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
                 true,
-                JPH::EActivation::DontActivate // TODO: Probably a check whether this should be activated
+                JPH::EActivation::DontActivate
                 );
 
             // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
