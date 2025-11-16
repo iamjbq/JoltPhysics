@@ -1,11 +1,4 @@
 ﻿
-#include "Material/JoltMaterial.h"
-#include "Material/JoltPhysicsMaterial.h"
-
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Body/Body.h>
-#include <Jolt/Physics/Collision/Shape/Shape.h>
-
 namespace JoltPhysics
 {
     inline BodyData* Utils::GetUserData(const JPH::Body& body)

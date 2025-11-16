@@ -2,7 +2,11 @@
 #pragma once
 
 #include <JoltPhysics/BodyData.h>
+#include "Material/JoltMaterial.h"
+#include "Material/JoltPhysicsMaterial.h"
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 
 namespace AzPhysics
@@ -17,11 +21,11 @@ namespace Physics
     class Shape;
 }
 
-namespace JPH
-{
-    class Body;
-    class Shape;
-}
+// namespace JPH
+// {
+//     class Body;
+//     class Shape;
+// }
 
 namespace JoltPhysics
 {
