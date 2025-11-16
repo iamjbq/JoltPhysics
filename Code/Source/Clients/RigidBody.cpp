@@ -547,7 +547,6 @@ namespace JoltPhysics
 
         if (static_cast<JPH::Shape*>(shape->GetNativePointer())->GetType() == JPH::EShapeType::Mesh && !IsKinematic())
         {
-            // Actually not sure if this is true for Jolt, but leaving it here until otherwise
             AZ_Error("Jolt", false, "Cannot use mesh geometry on a dynamic object: %s", GetName().c_str());
             return;
         }
