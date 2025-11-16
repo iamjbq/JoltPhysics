@@ -538,7 +538,7 @@ namespace JoltPhysics
                 // Set simulation disabled for this actor so it doesn't actually interact when the editor world is updated.
                 if (auto* joltBody = static_cast<JPH::Body*>(body->GetNativePointer()))
                 {
-                    auto* owningSystem = static_cast<JPH::PhysicsSystem*>(sceneInterface->GetScene(m_editorRigidBodyHandle)->GetNativePointer());
+                    auto* owningSystem = static_cast<JPH::PhysicsSystem*>(sceneInterface->GetScene(m_editorSceneHandle)->GetNativePointer());
                     owningSystem->GetBodyInterface().DeactivateBody(joltBody->GetID());
                 }
             }
