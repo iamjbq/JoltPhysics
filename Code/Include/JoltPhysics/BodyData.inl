@@ -13,23 +13,23 @@ namespace JoltPhysics
             bodyToSet->SetUserData(0);
         };
 
-        m_body = JoltBodyUniquePtr(inBody, nullUserData);
+        m_joltBody = JoltBodyUniquePtr(inBody, nullUserData);
         inBody->SetUserData(reinterpret_cast<const uintptr_t>(this));
     }
     
     inline BodyData::BodyData(BodyData&& inBodyData)
         : m_sanity(inBodyData.m_sanity)
-        , m_body(AZStd::move(inBodyData.m_body))
+        , m_joltBody(AZStd::move(inBodyData.m_joltBody))
         , m_payload(AZStd::move(inBodyData.m_payload))
     {
-        m_body->SetUserData(inBodyData.m_body->GetUserData());
+        m_joltBody->SetUserData(inBodyData.m_joltBody->GetUserData());
     }
 
     inline BodyData& BodyData::operator=(BodyData&& inBodyData)
     {
         m_sanity = inBodyData.m_sanity;
-        m_body = AZStd::move(inBodyData.m_body);
-        m_body->SetUserData(inBodyData.m_body->GetUserData());
+        m_joltBody = AZStd::move(inBodyData.m_joltBody);
+        m_joltBody->SetUserData(reinterpret_cast<const uintptr_t>(this));
         m_payload = AZStd::move(inBodyData.m_payload);
         return *this;
     }
@@ -41,7 +41,7 @@ namespace JoltPhysics
 
     inline void BodyData::Invalidate()
     {
-        m_body = nullptr;
+        m_joltBody = nullptr;
         m_payload = Payload();
     }
 
