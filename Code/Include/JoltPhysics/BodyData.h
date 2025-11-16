@@ -63,7 +63,7 @@ namespace JoltPhysics
         static constexpr AZ::u32 SanityValue = 0xf005ba11;
 
         AZ::u32 m_sanity = SanityValue;
-        JoltBodyUniquePtr m_body;
+        JoltBodyUniquePtr m_joltBody;
 
         struct Payload
         {
