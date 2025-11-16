@@ -14,7 +14,7 @@ namespace JoltPhysics
 {
     AZStd::shared_ptr<Material> Material::FindOrCreateMaterial(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
     {
-        return AZStd::rtti_pointer_cast<Material>(
+        return AZStd::rtti_pointer_cast<JoltPhysics::Material>(
             AZ::Interface<Physics::MaterialManager>::Get()->FindOrCreateMaterial(
                 Physics::MaterialId::CreateFromAssetId(materialAsset.GetId()),
                 materialAsset));
@@ -23,7 +23,7 @@ namespace JoltPhysics
     AZStd::vector<AZStd::shared_ptr<Material>> Material::FindOrCreateMaterials(const Physics::MaterialSlots& materialSlots)
     {
         AZStd::shared_ptr<Material> defaultMaterial =
-            AZStd::rtti_pointer_cast<Material>(
+            AZStd::rtti_pointer_cast<JoltPhysics::Material>(
                 AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial());
 
         const size_t slotsCount = materialSlots.GetSlotsCount();
