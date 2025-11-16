@@ -66,6 +66,7 @@ namespace JoltPhysics
 
     RigidBody::RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem)
         : m_owningSystem(owningSystem)
+        , m_startAsleep(configuration.m_startAsleep)
     {
         CreateJoltBody(configuration);
     }
@@ -76,9 +77,8 @@ namespace JoltPhysics
         {
             for (auto shape : m_shapes)
             {
-                // Jolt Body cannot change or remove shape after creation
                 // We may need to mark on m_joltStaticBody that it is to be deleted
-
+                // TODO: Set body shape to EmptyShape again?
                 shape->DetachedFromActor();
             }
         }

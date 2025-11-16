@@ -22,6 +22,9 @@ namespace JoltPhysics
     class Shape;
     class RigidBodyComponent;
 
+    // TODO: These are called continuously in editor
+    // [Warning] (RigidBody::GetCenterOfMassLocal) - Not currently implemented
+    // [Warning] (RigidBody::GetInertiaLocal) - Not currently implemented
     //! Jolt-specific settings which are not generic enough to be stored in the AzPhysics rigid body configuration.
     class RigidBodyConfiguration
     {
