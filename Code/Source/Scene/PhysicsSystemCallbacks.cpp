@@ -200,11 +200,13 @@ namespace JoltPhysics
 
     void JoltBodyActivationListener::OnBodyActivated([[maybe_unused]] const JPH::BodyID& inBodyID, [[maybe_unused]] JPH::uint64 inBodyUserData)
     {
-        AZ_Info("JoltBodyActivationListener", "A body got activated")
+        auto* bodyData = reinterpret_cast<JoltPhysics::BodyData*>(inBodyUserData);
+        AZ_Info("JoltBodyActivationListener", "Body %s was activated", bodyData->GetEntityId().ToString().c_str())
     }
 
     void JoltBodyActivationListener::OnBodyDeactivated([[maybe_unused]] const JPH::BodyID& inBodyID, [[maybe_unused]] JPH::uint64 inBodyUserData)
     {
-        AZ_Info("JoltBodyActivationListener", "A body went to sleep")
+        auto* bodyData = reinterpret_cast<JoltPhysics::BodyData*>(inBodyUserData);
+        AZ_Info("JoltBodyActivationListener", "Body %s was deactivated", bodyData->GetEntityId().ToString().c_str())
     }
 }
