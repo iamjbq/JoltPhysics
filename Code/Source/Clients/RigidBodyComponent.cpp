@@ -195,7 +195,7 @@ namespace JoltPhysics
         CreateRigidBody();
 
         // Add to world
-        EnablePhysics();
+        EnablePhysics(); // TODO: game mode crashes some point after this
     }
 
     void RigidBodyComponent::Deactivate()
