@@ -123,13 +123,21 @@ namespace JoltPhysics
 
     AZ::Vector3 RigidBody::GetCenterOfMassWorld() const
     {
-        AZ_Warning("RigidBody::GetCenterOfMassWorld", false, "Not currently implemented")
+        if (m_joltRigidBody)
+        {
+            return JoltMathConvert(m_owningSystem->GetBodyInterface().GetCenterOfMassPosition(m_joltRigidBody->GetID()));
+        }
         return AZ::Vector3::CreateZero();
     }
 
     AZ::Vector3 RigidBody::GetCenterOfMassLocal() const
     {
-        AZ_Warning("RigidBody::GetCenterOfMassLocal", false, "Not currently implemented")
+        if (m_joltRigidBody)
+        {
+            JPH::Vec3 comWorld = m_owningSystem->GetBodyInterface().GetCenterOfMassPosition(m_joltRigidBody->GetID());
+            JPH::Vec3 worldTM = m_owningSystem->GetBodyInterface().GetWorldTransform(m_joltRigidBody->GetID()).GetTranslation();
+            return JoltMathConvert(comWorld - worldTM);
+        }
         return AZ::Vector3::CreateZero();
     }
 
@@ -236,7 +244,7 @@ namespace JoltPhysics
             JPH::BodyLockWrite lock(m_owningSystem->GetBodyLockInterface(), m_joltRigidBody->GetID());
             if (lock.Succeeded())
             {
-                JPH::Body& body = lock.GetBody();
+                auto& body = lock.GetBody();
                 body.SetAngularVelocity(JoltMathConvert(angularVelocity));
             }
         }
@@ -296,8 +304,16 @@ namespace JoltPhysics
 
     bool RigidBody::IsGravityEnabled() const
     {
-        AZ_Warning("RigidBody::IsGravityEnabled", false, "Not currently implemented")
-        return true;
+        if (m_joltRigidBody)
+        {
+            JPH::BodyLockRead lock(m_owningSystem->GetBodyLockInterface(), m_joltRigidBody->GetID());
+            if (lock.Succeeded())
+            {
+                auto& body = lock.GetBody();
+                return body.GetMotionProperties()->GetGravityFactor() > 0.0f;
+            }
+        }
+        return false;
     }
 
     void RigidBody::SetGravityEnabled([[maybe_unused]] bool enabled)
@@ -638,7 +654,11 @@ namespace JoltPhysics
             );
 
         m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
+        m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate);
 
+        // TODO: For later optimization, have a way to buffer initial body additions at game start
+        /// Note that if you need to add multiple bodies, use the AddBodiesPrepare/AddBodiesFinalize function.
+        /// Adding many bodies, one at a time, results in a really inefficient broadphase until PhysicsSystem::OptimizeBroadPhase is called or when PhysicsSystem::Update rebuilds the tree!
         if (m_joltRigidBody == nullptr)
         {
             AZ_Warning("RigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
