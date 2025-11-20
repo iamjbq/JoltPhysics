@@ -162,7 +162,7 @@ namespace JoltPhysics
                 if (simulatedBody.second->m_simulating)
                 {
                     // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event)
-                    // DisableSimulationOfBodyInternal(*simulatedBody.second);
+                    DisableSimulationOfBodyInternal(*simulatedBody.second);
                 }
                 m_simulatedBodyRemovedEvent.Signal(m_sceneHandle, simulatedBody.second->m_bodyHandle);
                 delete simulatedBody.second;
@@ -284,7 +284,8 @@ namespace JoltPhysics
 
     AzPhysics::SimulatedBodyHandle JoltScene::AddSimulatedBody([[maybe_unused]] const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig)
     {
-        // TODO: Incomplete
+        // TODO: Missing character config, ragdoll, articulation
+
         AzPhysics::SimulatedBody* newBody = nullptr;
         AZ::Crc32 newBodyCrc;
         if (azrtti_istypeof<AzPhysics::RigidBodyConfiguration>(simulatedBodyConfig))
@@ -340,11 +341,12 @@ namespace JoltPhysics
             newBody->m_bodyHandle = newBodyHandle;
             m_simulatedBodyAddedEvent.Signal(m_sceneHandle, newBodyHandle);
 
+            // TODO: In Jolt I think we need to add shapes
             // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
-            if (simulatedBodyConfig->m_startSimulationEnabled)
-            {
-                EnableSimulationOfBodyInternal(*newBody);
-            }
+            // if (simulatedBodyConfig->m_startSimulationEnabled)
+            // {
+            //     EnableSimulationOfBodyInternal(*newBody);
+            // }
 
             return newBodyHandle;
         }
@@ -578,7 +580,7 @@ namespace JoltPhysics
 
     void JoltScene::InitializeJoltSystem()
     {
-        if (JoltSystem* system = GetJoltSystem()) // TODO: maybe change the nomenclature here to be less ambiguous
+        if (JoltSystem* system = GetJoltSystem())
         {
             m_physicsSystem->Init(
                 cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
@@ -601,13 +603,13 @@ namespace JoltPhysics
         // if (!azrtti_istypeof<JoltPhysics::CharacterController>(body) &&
         //     !azrtti_istypeof<JoltPhysics::Ragdoll>(body) &&
         //     !azrtti_istypeof<JoltPhysics::ArticulationLink>(body))
-        if (body.GetNativePointer()) // TODO: temp fix to test basic shapes first
+        if (body.GetNativePointer() != nullptr) // TODO: temp fix to test basic shapes first
         {
             auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer());
             AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
-
             {
-                m_bodyInterface->AddBody(joltBody->GetID(), JPH::EActivation::Activate); // TODO: Verify correct activation
+                // m_bodyInterface->AddBody(joltBody->GetID(), JPH::EActivation::Activate); // TODO: Verify correct activation
+                m_bodyInterface->ActivateBody(joltBody->GetID());
             }
 
             if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
@@ -642,7 +644,7 @@ namespace JoltPhysics
             AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
 
             {
-                m_bodyInterface->RemoveBody(joltBody->GetID());
+                m_bodyInterface->DeactivateBody(joltBody->GetID());
             }
         }
         body.m_simulating = false;
