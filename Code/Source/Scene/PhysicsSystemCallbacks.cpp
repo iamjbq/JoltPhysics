@@ -14,7 +14,7 @@ namespace JoltPhysics
     // PhysX set to 10, Jolt provides up to 64 points
     static constexpr const JPH::uint32 MaxPointsToReport = 10;
 
-    void GetFrictionAndRestitution(const JPH::Body& inBody, const JPH::SubShapeID& inSubShapeID, float& outFriction,
+    void JoltContactListener::GetFrictionAndRestitution(const JPH::Body& inBody, const JPH::SubShapeID& inSubShapeID, float& outFriction,
         float& outRestitution, CombineMode& outFrictionCombine, CombineMode& outRestitutionCombine)
     {
         // Get the material that corresponds to the sub shape ID
@@ -36,7 +36,7 @@ namespace JoltPhysics
         }
     }
 
-    void OverrideContactSettings(const JPH::Body& inBody1, const JPH::Body& inBody2,
+    void JoltContactListener::OverrideContactSettings(const JPH::Body& inBody1, const JPH::Body& inBody2,
         const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
     {
         // Get the custom friction and restitution for both bodies

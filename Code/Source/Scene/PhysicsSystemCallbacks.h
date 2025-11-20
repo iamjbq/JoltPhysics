@@ -12,12 +12,7 @@ namespace JoltPhysics
 {    
     enum class CombineMode : AZ::u8;
     
-    /// Extract custom friction and restitution from a body and sub shape ID
-    static void GetFrictionAndRestitution(const JPH::Body &inBody, const JPH::SubShapeID &inSubShapeID, float &outFriction, float &outRestitution, CombineMode& outFrictionCombine, CombineMode& outRestitutionCombine);
 
-    /// Calculates and overrides friction and restitution settings for a contact between two bodies
-    static void OverrideContactSettings(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings);
-    
     /// The ContactListener class handles callbacks for all solid bodies. See SoftBodyContactListener for this purpose.
     class JoltContactListener : public JPH::ContactListener
     {
@@ -27,6 +22,12 @@ namespace JoltPhysics
         virtual void OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings) override;
         virtual void OnContactPersisted(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings) override;
         virtual void OnContactRemoved(const JPH::SubShapeIDPair& inSubShapePair) override;
+
+        /// Extract custom friction and restitution from a body and sub shape ID
+        static void GetFrictionAndRestitution(const JPH::Body &inBody, const JPH::SubShapeID &inSubShapeID, float &outFriction, float &outRestitution, CombineMode& outFrictionCombine, CombineMode& outRestitutionCombine);
+
+        /// Calculates and overrides friction and restitution settings for a contact between two bodies
+        static void OverrideContactSettings(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings);
 
         //! Accessor to the queued Collision / trigger Events.
         AzPhysics::CollisionEventList& GetQueuedCollisionEvents();
