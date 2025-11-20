@@ -230,6 +230,7 @@ namespace JoltPhysics
             AZ_Info("JoltSystemComponent", "Simulation activated")
         }
 
+        AZ_Info("JoltSystemComponent", "JoltSystem was null")
         m_materialManager = AZStd::make_unique<MaterialManager>();
         m_materialManager->Init();
     }
