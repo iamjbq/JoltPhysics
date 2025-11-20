@@ -12,16 +12,19 @@
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 
 #include <Jolt/Jolt.h>
-#include <Jolt/Core/TempAllocator.h>
-#include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
-// #include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/PhysicsSettings.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
 
 #include <System/JoltSystem.h>
 #include <Scene/JoltScene.h>
 #include <System/JoltJobSystemThreaded.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
+
+#include "Jolt/Core/Core.h"
+#include "Jolt/Core/IssueReporting.h"
 
 // only enable Jolt timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -33,7 +36,7 @@ namespace JoltPhysics
     AZ_CLASS_ALLOCATOR_IMPL(JoltSystem, AZ::SystemAllocator)
 
     // Disable common warnings triggered by Jolt, you can use JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store and restore the warning state
-    JPH_SUPPRESS_WARNINGS
+    // JPH_SUPPRESS_WARNINGS
 
     // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
     using namespace JPH::literals;
@@ -131,8 +134,8 @@ namespace JoltPhysics
         JPH::RegisterTypes();
 
         m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(cAllocationArenaSize);
-        m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
-        // m_tempJobSystem = AZStd::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
+        // m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
+        m_jobSystem = AZStd::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -468,15 +471,15 @@ namespace JoltPhysics
         return m_allocator.get();
     }
 
-    JoltJobSystemThreaded* JoltSystem::GetJoltJobSystem()
+    // JoltJobSystemThreaded* JoltSystem::GetJoltJobSystem()
+    // {
+    //     return m_jobSystem.get();
+    // }
+
+    JPH::JobSystemThreadPool* JoltSystem::GetJoltJobSystem()
     {
         return m_jobSystem.get();
     }
-
-    // JPH::JobSystemThreadPool* JoltSystem::GetTempJobSystem()
-    // {
-    //     return m_tempJobSystem.get();
-    // }
 
     BroadPhaseLayerInterfaceImpl& JoltSystem::GetBroadPhaseLayerInterface()
     {
