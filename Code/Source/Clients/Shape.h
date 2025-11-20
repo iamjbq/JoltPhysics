@@ -34,11 +34,11 @@ namespace JoltPhysics
         AZ_RTTI(Shape, "{92AC6CAF-4C88-4BFF-B2EF-D2C1F740918D}", Physics::Shape)
 
         Shape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration);
-        Shape(JPH::Shape* nativeShape);
+        explicit Shape(JPH::Shape* nativeShape);
         virtual ~Shape();
 
-        Shape(Shape&& shape);
-        Shape& operator=(Shape&& shape);
+        Shape(Shape&& shape) noexcept ;
+        Shape& operator=(Shape&& shape) noexcept ;
         Shape(const Shape& shape) = delete;
         Shape& operator=(const Shape& shape) = delete;
 
