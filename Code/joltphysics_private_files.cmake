@@ -20,6 +20,8 @@ set(FILES
         Source/JoltPhysicsModuleInterface.h
 		Source/Utils.cpp
 		Source/Utils.h
+		Source/JoltSceneQueryHelpers.cpp
+		Source/JoltSceneQueryHelpers.h
 
 		Source/Clients/DefaultWorldComponent.cpp
 		Source/Clients/DefaultWorldComponent.h
