@@ -18,7 +18,7 @@
 
 #include <JoltPhysics/JoltPhysicsBus.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
-#include <CLients/DefaultWorldComponent.h>
+#include <Clients/DefaultWorldComponent.h>
 
 namespace AzPhysics
 {
