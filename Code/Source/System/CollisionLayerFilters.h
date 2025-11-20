@@ -107,24 +107,25 @@ namespace JoltPhysics
 	#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
 		[[nodiscard]] const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
 		{
-			switch (inLayer)
+			switch (JoltBroadPhaseLayer layer = static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer)))
 			{
-			case Static:
+			case JoltBroadPhaseLayer::Static:
 				return "Static";
 
-			case Dynamic:
+			case JoltBroadPhaseLayer::Dynamic:
 				return "Dynamic";
 
-			case Character:
+			case JoltBroadPhaseLayer::Character:
 				return "Character";
 
-			case Query:
+			case JoltBroadPhaseLayer::Query:
 				return "Query";
 
-			case Trigger:
+			case JoltBroadPhaseLayer::Trigger:
 				return "Trigger";
 
-			default: ;
+			default:
+				return "Invalid";
 			}
 		}
 	#endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
