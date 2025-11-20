@@ -67,6 +67,7 @@ namespace JoltPhysics
             );
 
         m_joltStaticBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
+        m_owningSystem->GetBodyInterface().AddBody(m_joltStaticBody->GetID(), JPH::EActivation::DontActivate);
 
         if (m_joltStaticBody == nullptr)
         {
