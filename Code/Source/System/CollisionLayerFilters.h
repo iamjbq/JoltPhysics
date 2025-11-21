@@ -107,7 +107,7 @@ namespace JoltPhysics
 	#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
 		[[nodiscard]] const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
 		{
-			switch (JoltBroadPhaseLayer layer = static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer)))
+			switch (auto layer = static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer)))
 			{
 			case JoltBroadPhaseLayer::Static:
 				return "Static";
