@@ -8,6 +8,7 @@
 #include <Clients/ShapeColliderComponent.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Clients/StaticRigidBodyComponent.h>
+#include <Configuration/JoltSettingsRegistryManager.h>
 
 namespace JoltPhysics
 {
@@ -17,6 +18,8 @@ namespace JoltPhysics
     AZ_CLASS_ALLOCATOR_IMPL(JoltPhysicsModuleInterface, AZ::SystemAllocator);
 
     JoltPhysicsModuleInterface::JoltPhysicsModuleInterface()
+        : AZ::Module()
+        , m_joltSystem(AZStd::make_unique<JoltSettingsRegistryManager>())
     {
         AZ_TracePrintf("PhysicsModuleInterface", "Constructed\n")
         

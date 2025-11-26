@@ -6,6 +6,7 @@
 #include <Clients/EditorShapeColliderComponent.h>
 #include <Clients/EditorRigidBodyComponent.h>
 #include <Clients/EditorStaticRigidBodyComponent.h>
+#include <Editor/JoltEditorSettingsRegistryManager.h>
 
 namespace JoltPhysics
 {
@@ -19,6 +20,7 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR(JoltPhysicsEditorModule, AZ::SystemAllocator);
 
         JoltPhysicsEditorModule()
+            : m_joltSystem(AZStd::make_unique<JoltEditorSettingsRegistryManager>())
         {
             static_assert(alignof(JoltPhysics::JoltSystemConfiguration) == 16);
             static_assert(alignof(JoltPhysics::JoltSystem) == 16);
