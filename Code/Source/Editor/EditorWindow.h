@@ -4,6 +4,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <QWidget>
+#include <QScopedPointer>
 #endif
 
 namespace AzPhysics
@@ -17,6 +18,12 @@ namespace Ui
     class EditorWindowClass;
 }
 
+// This is defined in the core engine editor, so gonna try this first
+namespace LyViewPane
+{
+    static const char* const JoltConfigurationEditor = "Jolt Configuration";
+}
+
 namespace JoltPhysics
 {
     struct JoltSystemConfiguration;
@@ -27,7 +34,7 @@ namespace JoltPhysics
 
     namespace Editor
     {
-        /// Window pane wrapper for the PhysX Configuration Widget.
+        /// Window pane wrapper for the Jolt Configuration Widget.
         ///
         class EditorWindow
             : public QWidget

@@ -2,11 +2,13 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <JoltPhysics/Configuration/JoltSystemConfiguration.h>
-// #include <Editor/ConfigurationWindowBus.h>
+#include <JoltPhysics/Configuration/JoltConfiguration.h>
+#include <Editor/ConfigurationWindowBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #endif
+
+#include <QWidget>
 
 namespace AzQtComponents
 {
@@ -21,7 +23,7 @@ namespace JoltPhysics
         class CollisionFilteringWidget;
         class PvdWidget;
 
-        /// Widget for editing physx configuration and settings.
+        /// Widget for editing Jolt configuration and settings.
         ///
         class ConfigurationWidget
             : public QWidget
@@ -35,8 +37,8 @@ namespace JoltPhysics
             explicit ConfigurationWidget(QWidget* parent = nullptr);
             ~ConfigurationWidget() override;
 
-            void SetConfiguration(const PhysX::PhysXSystemConfiguration& physXSystemConfiguration,
-                                  const PhysX::Debug::DebugConfiguration& physXDebugConfiguration,
+            void SetConfiguration(const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
+                                  // const PhysX::Debug::DebugConfiguration& physXDebugConfiguration,
                                   const AzPhysics::SceneConfiguration& defaultSceneConfiguration);
 
             // ConfigurationWindowRequestBus
@@ -45,14 +47,14 @@ namespace JoltPhysics
             void ShowGlobalSettingsTab() override;
 
             signals:
-                void onConfigurationChanged(const PhysX::PhysXSystemConfiguration& physXSystemConfiguration,
-                                            const PhysX::Debug::DebugConfiguration& physXDebugConfig,
+                void onConfigurationChanged(const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
+                                            // const PhysX::Debug::DebugConfiguration& physXDebugConfig,
                                             const AzPhysics::SceneConfiguration& defaultSceneConfiguration);
 
         private:
             AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
-            PhysX::PhysXSystemConfiguration m_physXSystemConfiguration;
-            PhysX::Debug::DebugConfiguration m_physXDebugConfiguration;
+            JoltPhysics::JoltSystemConfiguration m_joltSystemConfiguration;
+            // PhysX::Debug::DebugConfiguration m_physXDebugConfiguration;
 
             AzQtComponents::TabWidget* m_tabs;
             SettingsWidget* m_settings;
@@ -61,9 +63,3 @@ namespace JoltPhysics
         };
     }
 }
-
-class ConfigurationWidget
-{
-public:
-    
-};

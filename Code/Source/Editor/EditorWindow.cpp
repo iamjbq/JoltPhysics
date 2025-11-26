@@ -6,15 +6,15 @@
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-// #include <LyViewPaneNames.h>
+#include <LyViewPaneNames.h>
 
-// #include <Editor/ui_EditorWindow.h>
+#include <Editor/ui_EditorWindow.h>
 #include <Editor/EditorWindow.h>
-// #include <Editor/ConfigurationWidget.h>
-#include <System/JoltPhysicsSystem.h>
-#include <JoltPhysics/Configuration/JoltSystemConfiguration.h>
+#include <Editor/ConfigurationWidget.h>
+#include <System/JoltSystem.h>
+#include <JoltPhysics/Configuration/JoltConfiguration.h>
 
-namespace  JoltPhysics
+namespace JoltPhysics
 {
     namespace Editor
     {
@@ -25,13 +25,17 @@ namespace  JoltPhysics
             m_ui->setupUi(this);
 
             auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-            const auto* JoltSys = azdynamic_cast<const JoltPhysics::JoltSystemConfiguration*>(physicsSystem->GetConfiguration());
+            const auto* JoltSystemConfiguration = azdynamic_cast<const JoltPhysics::JoltSystemConfiguration*>(physicsSystem->GetConfiguration());
             const AzPhysics::SceneConfiguration& defaultSceneConfiguration = physicsSystem->GetDefaultSceneConfiguration();
             // const JoltPhysics::Debug::DebugConfiguration& physXDebugConfiguration = AZ::Interface<JoltPhysics::Debug::PhysXDebugInterface>::Get()->GetDebugConfiguration();
             
 
-            m_ui->m_JoltConfigurationWidget->SetConfiguration(*JoltSystemConfiguration, JoltDebugConfiguration, defaultSceneConfiguration);
-            connect(m_ui->m_PhysXConfigurationWidget, &PhysX::Editor::ConfigurationWidget::onConfigurationChanged, 
+            m_ui->m_joltConfigurationWidget->SetConfiguration(
+                *JoltSystemConfiguration,
+                // JoltDebugConfiguration,
+                defaultSceneConfiguration
+                );
+            connect(m_ui->m_joltConfigurationWidget, &JoltPhysics::Editor::ConfigurationWidget::onConfigurationChanged,
                 this, &EditorWindow::SaveConfiguration);
         }
 
@@ -45,11 +49,11 @@ namespace  JoltPhysics
         }
 
         void EditorWindow::SaveConfiguration(
-            const JoltPhysics::JoltSystemConfiguration& physXSystemConfiguration,
-            const JoltPhysics::Debug::DebugConfiguration& physXDebugConfig,
+            const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
+            // const JoltPhysics::Debug::DebugConfiguration& physXDebugConfig,
             const AzPhysics::SceneConfiguration& defaultSceneConfiguration)
         {
-            auto* joltSystem = GetPhysXSystem();
+            auto* joltSystem = GetJoltSystem();
             if (joltSystem == nullptr)
             {
                 AZ_Error("JoltPhysics", false, "Unable to save the Jolt configuration. The JoltSystem not initialized. Any changes have not been applied.");
@@ -58,30 +62,30 @@ namespace  JoltPhysics
 
             //update the Jolt system config if it has changed
             const JoltSettingsRegistryManager& settingsRegManager = joltSystem->GetSettingsRegistryManager();
-            if (joltSystem->GetPhysXConfiguration() != physXSystemConfiguration)
+            if (joltSystem->GetJoltConfiguration() != joltSystemConfiguration)
             {
-                auto saveCallback = [](const PhysXSystemConfiguration& config, PhysXSettingsRegistryManager::Result result)
+                auto saveCallback = [](const JoltSystemConfiguration& config, JoltSettingsRegistryManager::Result result)
                 {
-                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success, "Unable to save the PhysX configuration. Any changes have not been applied.");
-                    if (result == PhysXSettingsRegistryManager::Result::Success)
+                    AZ_Warning("Jolt", result == JoltSettingsRegistryManager::Result::Success, "Unable to save the Jolt configuration. Any changes have not been applied.");
+                    if (result == JoltSettingsRegistryManager::Result::Success)
                     {
-                        if (auto* physXSystem = GetPhysXSystem())
+                        if (auto* physXSystem = GetJoltSystem())
                         {
                             physXSystem->UpdateConfiguration(&config);
                         }
                     }
                 };
-                settingsRegManager.SaveSystemConfiguration(physXSystemConfiguration, saveCallback);
+                settingsRegManager.SaveSystemConfiguration(joltSystemConfiguration, saveCallback);
             }
 
             if (joltSystem->GetDefaultSceneConfiguration() != defaultSceneConfiguration)
             {
-                auto saveCallback = [](const AzPhysics::SceneConfiguration& config, PhysXSettingsRegistryManager::Result result)
+                auto saveCallback = [](const AzPhysics::SceneConfiguration& config, JoltSettingsRegistryManager::Result result)
                 {
-                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success, "Unable to save the Default Scene configuration. Any changes have not been applied.");
-                    if (result == PhysXSettingsRegistryManager::Result::Success)
+                    AZ_Warning("Jolt", result == JoltSettingsRegistryManager::Result::Success, "Unable to save the Default Scene configuration. Any changes have not been applied.");
+                    if (result == JoltSettingsRegistryManager::Result::Success)
                     {
-                        if (auto* physXSystem = GetPhysXSystem())
+                        if (auto* physXSystem = GetJoltSystem())
                         {
                             physXSystem->UpdateDefaultSceneConfiguration(config);
                         }
@@ -90,25 +94,25 @@ namespace  JoltPhysics
                 settingsRegManager.SaveDefaultSceneConfiguration(defaultSceneConfiguration, saveCallback);
             }
 
-            //Update the debug configuration
-            if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
-            {
-                if (physXDebug->GetDebugConfiguration() != physXDebugConfig)
-                {
-                    auto saveCallback = [](const Debug::DebugConfiguration& config, PhysXSettingsRegistryManager::Result result)
-                    {
-                        AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success, "Unable to save the PhysX debug configuration. Any changes have not been applied.");
-                        if (result == PhysXSettingsRegistryManager::Result::Success)
-                        {
-                            if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
-                            {
-                                physXDebug->UpdateDebugConfiguration(config);
-                            }
-                        }
-                    };
-                    settingsRegManager.SaveDebugConfiguration(physXDebugConfig, saveCallback);
-                }
-            }
+            // //Update the debug configuration
+            // if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
+            // {
+            //     if (physXDebug->GetDebugConfiguration() != physXDebugConfig)
+            //     {
+            //         auto saveCallback = [](const Debug::DebugConfiguration& config, JoltSettingsRegistryManager::Result result)
+            //         {
+            //             AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success, "Unable to save the PhysX debug configuration. Any changes have not been applied.");
+            //             if (result == JoltSettingsRegistryManager::Result::Success)
+            //             {
+            //                 if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
+            //                 {
+            //                     physXDebug->UpdateDebugConfiguration(config);
+            //                 }
+            //             }
+            //         };
+            //         settingsRegManager.SaveDebugConfiguration(physXDebugConfig, saveCallback);
+            //     }
+            // }
         }
     }
 }

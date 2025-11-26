@@ -124,6 +124,7 @@ ly_add_target(
         ${pal_dir}/joltphysics_private_files.cmake
     COMPILE_DEFINITIONS
         PUBLIC
+            JOLT_SETREG_GEM_NAME="Jolt"
             $<$<NOT:$<CONFIG:release>>:AZ_PHYSICS_DEBUG_ENABLED>
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
@@ -217,6 +218,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
+        AUTOMOC
+        AUTOUIC
         FILES_CMAKE
             joltphysics_editor_private_files.cmake
         COMPILE_DEFINITIONS
@@ -250,6 +253,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
+#        AUTOUIC
         FILES_CMAKE
             joltphysics_editor_shared_files.cmake
         INCLUDE_DIRECTORIES

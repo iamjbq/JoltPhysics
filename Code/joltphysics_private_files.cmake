@@ -50,6 +50,8 @@ set(FILES
         Source/System/CollisionLayerFilters.h
 
         Source/Configuration/JoltConfiguration.cpp
+		Source/Configuration/JoltSettingsRegistryManager.cpp
+		Source/Configuration/JoltSettingsRegistryManager.h
 
         Source/Scene/JoltScene.cpp
         Source/Scene/JoltScene.h
