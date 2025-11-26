@@ -86,8 +86,9 @@ namespace JoltPhysics
         }
     }
 
-    JoltSystem::JoltSystem()
-        : m_sceneInterface(this)
+    JoltSystem::JoltSystem(AZStd::unique_ptr<JoltSettingsRegistryManager> registryManager)
+        : m_registryManager(AZStd::move(registryManager))
+        , m_sceneInterface(this)
     {
     }
 
@@ -411,6 +412,16 @@ namespace JoltPhysics
     const AzPhysics::SceneConfiguration& JoltSystem::GetDefaultSceneConfiguration() const
     {
         return m_defaultSceneConfiguration;
+    }
+
+    const JoltSystemConfiguration& JoltSystem::GetJoltConfiguration() const
+    {
+        return m_systemConfig;
+    }
+
+    const JoltSettingsRegistryManager& JoltSystem::GetSettingsRegistryManager() const
+    {
+        return *m_registryManager;
     }
 
     // These are noted in PhysX to be temporary, but unsure if this is still true.
