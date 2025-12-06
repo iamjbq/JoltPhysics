@@ -17,6 +17,8 @@ set(FILES
     Source/Editor/EditorWindow.ui
     Source/Editor/EditorWindow.cpp
     Source/Editor/EditorWindow.h
+    Source/Editor/CollisionFilteringWidget.cpp
+    Source/Editor/CollisionFilteringWidget.h
     Source/Editor/CollisionGroupWidget.cpp
     Source/Editor/CollisionGroupWidget.h
     Source/Editor/CollisionGroupsWidget.cpp
@@ -32,8 +34,8 @@ set(FILES
     Source/Editor/JoltEditorSettingsRegistryManager.h
     Source/Editor/SettingsWidget.cpp
     Source/Editor/SettingsWidget.h
-    Source/Editor/PvdWidget.cpp
-    Source/Editor/PvdWidget.h
+#    Source/Editor/PvdWidget.cpp
+#    Source/Editor/PvdWidget.h
     Source/Editor/DocumentationLinkWidget.cpp
     Source/Editor/DocumentationLinkWidget.h
 
