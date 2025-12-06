@@ -5,7 +5,9 @@
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <QBoxLayout>
-
+#include <Editor/ConfigurationWidget.h>
+#include <Editor/SettingsWidget.h>
+#include <Editor/CollisionFilteringWidget.h>
 #include <Editor/ConfigurationWidget.h>
 
 namespace JoltPhysics
@@ -24,23 +26,26 @@ namespace JoltPhysics
 
             m_settings = new SettingsWidget();
             m_collisionFiltering = new CollisionFilteringWidget();
-            m_pvd = new PvdWidget();
+            // m_pvd = new PvdWidget();
 
             m_tabs->addTab(m_settings, "Global Configuration");
             m_tabs->addTab(m_collisionFiltering, "Collision Filtering");
-            m_tabs->addTab(m_pvd, "Debugger");
+            // m_tabs->addTab(m_pvd, "Debugger");
 
             verticalLayout->addWidget(m_tabs);
 
             connect(m_settings, &SettingsWidget::onValueChanged,
                 this, [this](const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-                            const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-                             const Debug::DebugDisplayData& debugDisplayData)
+                            const AzPhysics::SceneConfiguration& defaultSceneConfiguration
+                             // const Debug::DebugDisplayData& debugDisplayData
+                             )
             {
                 m_joltSystemConfiguration = joltSystemConfiguration;
                 m_defaultSceneConfiguration = defaultSceneConfiguration;
-                m_physXDebugConfiguration.m_debugDisplayData = debugDisplayData;
-                emit onConfigurationChanged(m_joltSystemConfiguration, m_physXDebugConfiguration, m_defaultSceneConfiguration);
+                // m_physXDebugConfiguration.m_debugDisplayData = debugDisplayData;
+                emit onConfigurationChanged(m_joltSystemConfiguration,
+                    // m_physXDebugConfiguration,
+                    m_defaultSceneConfiguration);
             });
 
             connect(m_collisionFiltering, &CollisionFilteringWidget::onConfigurationChanged,
@@ -48,15 +53,17 @@ namespace JoltPhysics
             {
                 m_joltSystemConfiguration.m_collisionConfig.m_collisionLayers = layers;
                 m_joltSystemConfiguration.m_collisionConfig.m_collisionGroups = groups;
-                emit onConfigurationChanged(m_joltSystemConfiguration, m_physXDebugConfiguration, m_defaultSceneConfiguration);
+                emit onConfigurationChanged(m_joltSystemConfiguration,
+                    // m_physXDebugConfiguration,
+                    m_defaultSceneConfiguration);
             });
 
-            connect(m_pvd, &PvdWidget::onValueChanged,
-                this, [this](const Debug::PvdConfiguration& configuration)
-            {
-                m_physXDebugConfiguration.m_pvdConfigurationData = configuration;
-                emit onConfigurationChanged(m_joltSystemConfiguration, m_physXDebugConfiguration, m_defaultSceneConfiguration);
-            });
+            // connect(m_pvd, &PvdWidget::onValueChanged,
+            //     this, [this](const Debug::PvdConfiguration& configuration)
+            // {
+            //     m_physXDebugConfiguration.m_pvdConfigurationData = configuration;
+            //     emit onConfigurationChanged(m_joltSystemConfiguration, m_physXDebugConfiguration, m_defaultSceneConfiguration);
+            // });
 
             ConfigurationWindowRequestBus::Handler::BusConnect();
         }
@@ -74,9 +81,12 @@ namespace JoltPhysics
             m_joltSystemConfiguration = joltSystemConfiguration;
             m_defaultSceneConfiguration = defaultSceneConfiguration;
             // m_physXDebugConfiguration = physXDebugConfiguration;
-            m_settings->SetValue(m_joltSystemConfiguration, m_defaultSceneConfiguration, m_physXDebugConfiguration.m_debugDisplayData);
+            m_settings->SetValue(m_joltSystemConfiguration,
+                m_defaultSceneConfiguration
+                // m_physXDebugConfiguration.m_debugDisplayData
+                );
             m_collisionFiltering->SetConfiguration(m_joltSystemConfiguration.m_collisionConfig.m_collisionLayers, m_joltSystemConfiguration.m_collisionConfig.m_collisionGroups);
-            m_pvd->SetValue(m_physXDebugConfiguration.m_pvdConfigurationData);
+            // m_pvd->SetValue(m_physXDebugConfiguration.m_pvdConfigurationData);
         }
 
         void ConfigurationWidget::ShowCollisionLayersTab()

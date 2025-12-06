@@ -4,7 +4,7 @@
 #include <QBoxLayout>
 #include <Editor/PvdWidget.h>
 #include <Editor/DocumentationLinkWidget.h>
-#include <Source/NameConstants.h>
+#include <NameConstants.h>
 
 namespace JoltPhysics
 {

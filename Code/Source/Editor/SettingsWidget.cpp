@@ -20,18 +20,19 @@ namespace JoltPhysics
         }
 
         void SettingsWidget::SetValue(const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-            const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-            const Debug::DebugDisplayData& debugDisplayData)
+            const AzPhysics::SceneConfiguration& defaultSceneConfiguration
+            // const Debug::DebugDisplayData& debugDisplayData
+            )
         {
             m_joltSystemConfiguration = joltSystemConfiguration;
             m_defaultSceneConfiguration = defaultSceneConfiguration;
-            m_debugDisplayData = debugDisplayData;
+            // m_debugDisplayData = debugDisplayData;
 
             blockSignals(true);
             m_propertyEditor->ClearInstances();
             m_propertyEditor->AddInstance(&m_joltSystemConfiguration);
             m_propertyEditor->AddInstance(&m_defaultSceneConfiguration);
-            m_propertyEditor->AddInstance(&m_debugDisplayData);
+            // m_propertyEditor->AddInstance(&m_debugDisplayData);
             // m_propertyEditor->AddInstance(&m_joltSystemConfiguration.m_windConfiguration);
             m_propertyEditor->InvalidateAll();
             blockSignals(false);
@@ -74,8 +75,8 @@ namespace JoltPhysics
         void SettingsWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/)
         {
             emit onValueChanged(m_joltSystemConfiguration,
-                m_defaultSceneConfiguration,
-                m_debugDisplayData
+                m_defaultSceneConfiguration
+                // m_debugDisplayData
             );
         }
 

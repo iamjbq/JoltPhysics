@@ -27,13 +27,15 @@ namespace JoltPhysics
             explicit SettingsWidget(QWidget* parent = nullptr);
 
             void SetValue(const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-                const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-                const Debug::DebugDisplayData& debugDisplayData);
+                const AzPhysics::SceneConfiguration& defaultSceneConfiguration
+                // const Debug::DebugDisplayData& debugDisplayData
+                );
 
         signals:
             void onValueChanged(const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-                const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
-                const Debug::DebugDisplayData& debugDisplayData);
+                const AzPhysics::SceneConfiguration& defaultSceneConfiguration
+                // const Debug::DebugDisplayData& debugDisplayData
+                );
 
         private:
             void CreatePropertyEditor(QWidget* parent);
@@ -48,7 +50,7 @@ namespace JoltPhysics
             DocumentationLinkWidget* m_documentationLinkWidget;
             JoltPhysics::JoltSystemConfiguration m_joltSystemConfiguration;
             AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
-            Debug::DebugDisplayData m_debugDisplayData;
+            // Debug::DebugDisplayData m_debugDisplayData;
         };
     }
 }

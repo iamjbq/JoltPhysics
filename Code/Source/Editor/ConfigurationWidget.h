@@ -21,7 +21,7 @@ namespace JoltPhysics
     {
         class SettingsWidget;
         class CollisionFilteringWidget;
-        class PvdWidget;
+        // class PvdWidget;
 
         /// Widget for editing Jolt configuration and settings.
         ///
@@ -59,7 +59,7 @@ namespace JoltPhysics
             AzQtComponents::TabWidget* m_tabs;
             SettingsWidget* m_settings;
             CollisionFilteringWidget* m_collisionFiltering;
-            PvdWidget* m_pvd;
+            // PvdWidget* m_pvd;
         };
     }
 }
