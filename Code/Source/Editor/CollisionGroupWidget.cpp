@@ -6,6 +6,9 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Editor/CollisionGroupWidget.h>
 #include <Editor/ConfigurationWindowBus.h>
+
+#include "EditorWindow.h"
+#include "LyViewPaneNames.h"
 // #include <LyViewPaneNames.h>
 
 namespace JoltPhysics
