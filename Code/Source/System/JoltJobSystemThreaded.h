@@ -6,9 +6,10 @@
 #include <AzCore/Jobs/JobManager.h>
 
 #include <Jolt/Jolt.h>
-
 #include "Jolt/Core/FixedSizeFreeList.h"
 #include "Jolt/Core/JobSystemWithBarrier.h"
+
+#include <System/JoltAllocator.h>
 
 namespace JoltPhysics
 {
@@ -16,7 +17,7 @@ namespace JoltPhysics
         : public JPH::JobSystemWithBarrier
     {
     public:
-        AZ_CLASS_ALLOCATOR(JoltJobSystemThreaded, AZ::SystemAllocator);
+        AZ_CLASS_ALLOCATOR(JoltJobSystemThreaded, JoltAllocator);
 
         JoltJobSystemThreaded(JPH::uint inMaxJobs, JPH::uint inMaxBarriers, int inNumThreads = -1);
         JoltJobSystemThreaded() = default;
