@@ -134,9 +134,10 @@ namespace JoltPhysics
         JPH::Factory::sInstance = new JPH::Factory();
         JPH::RegisterTypes();
 
-        m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(cAllocationArenaSize);
-        // m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
-        m_jobSystem = AZStd::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
+        m_allocator = AZStd::make_unique<JoltAzAllocatorCallback>();
+        // m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(cAllocationArenaSize);
+        m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
+        // m_jobSystem = AZStd::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -477,20 +478,25 @@ namespace JoltPhysics
         return &m_collisionGroupMasks;
     }
 
-    JPH::TempAllocatorImpl* JoltSystem::GetJoltAllocator()
+    JoltAzAllocatorCallback* JoltSystem::GetJoltAllocator()
     {
         return m_allocator.get();
     }
 
-    // JoltJobSystemThreaded* JoltSystem::GetJoltJobSystem()
+    // JPH::TempAllocatorImpl* JoltSystem::GetJoltAllocator()
     // {
-    //     return m_jobSystem.get();
+    //     return m_allocator.get();
     // }
 
-    JPH::JobSystemThreadPool* JoltSystem::GetJoltJobSystem()
+    JoltJobSystemThreaded* JoltSystem::GetJoltJobSystem()
     {
         return m_jobSystem.get();
     }
+
+    // JPH::JobSystemThreadPool* JoltSystem::GetJoltJobSystem()
+    // {
+    //     return m_jobSystem.get();
+    // }
 
     BroadPhaseLayerInterfaceImpl& JoltSystem::GetBroadPhaseLayerInterface()
     {

@@ -11,6 +11,7 @@
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <Scene/JoltSceneInterface.h>
 #include <System/CollisionLayerFilters.h>
+#include <System/JoltAllocator.h>
 
 namespace AZ::Debug
 {
@@ -76,9 +77,10 @@ namespace JoltPhysics
         AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* GetCollisionMasks();
 
         // Jolt Physics System Init helpers
-        JPH::TempAllocatorImpl* GetJoltAllocator();
-        // JoltJobSystemThreaded* GetJoltJobSystem();
-        JPH::JobSystemThreadPool* GetJoltJobSystem();
+        JoltAzAllocatorCallback* GetJoltAllocator();
+        // JPH::TempAllocatorImpl* GetJoltAllocator();
+        JoltJobSystemThreaded* GetJoltJobSystem();
+        // JPH::JobSystemThreadPool* GetJoltJobSystem();
         BroadPhaseLayerInterfaceImpl& GetBroadPhaseLayerInterface();
         ObjectVsBroadPhaseLayerFilterImpl& GetObjectVsBroadPhaseLayerFilter();
         ObjectLayerPairFilterImpl& GetObjectLayerPairFilter();
@@ -103,12 +105,14 @@ namespace JoltPhysics
 
         // 10 MB is given in HelloWorld example, but this is ~268 MB
         // TODO: Move to editor eventually
-        const unsigned int cAllocationArenaSize = 10 * 1024 * 1024;
+        [[maybe_unused]] const unsigned int cAllocationArenaSize = 10 * 1024 * 1024;
 
         // All systems can share these as long as they are updated consecutively.
-        AZStd::unique_ptr<JPH::TempAllocatorImpl> m_allocator;
-        // AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
-        AZStd::unique_ptr<JPH::JobSystemThreadPool> m_jobSystem;
+        // TODO: add JoltAllocator instance
+        AZStd::unique_ptr<JoltAzAllocatorCallback> m_allocator;
+        // AZStd::unique_ptr<JPH::TempAllocatorImpl> m_allocator;
+        AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
+        // AZStd::unique_ptr<JPH::JobSystemThreadPool> m_jobSystem;
 
         // Collision filtering objects shared with all scenes
         BroadPhaseLayerInterfaceImpl m_broadPhaseInterface;

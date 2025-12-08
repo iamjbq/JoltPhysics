@@ -578,6 +578,20 @@ namespace JoltPhysics
         return m_physicsSystem.get();
     }
 
+    void JoltScene::FlushTransformSync()
+    {
+        AZ_PROFILE_SCOPE(Physics, "Jolt::FlushTransformSync");
+
+        auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
+        {
+            if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
+            {
+                m_simulatedBodies[bodyIndex].second->SyncTransform(m_accumulatedDeltaTime);
+            }
+        };
+        // TODO: complete
+    }
+
     void JoltScene::InitializeJoltSystem()
     {
         if (JoltSystem* system = GetJoltSystem())
@@ -608,7 +622,6 @@ namespace JoltPhysics
             auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer());
             AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
             {
-                // m_bodyInterface->AddBody(joltBody->GetID(), JPH::EActivation::Activate); // TODO: Verify correct activation
                 m_bodyInterface->ActivateBody(joltBody->GetID());
             }
 
@@ -623,7 +636,7 @@ namespace JoltPhysics
         }
         if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
         {
-            AZ_Printf("JoltScene", "Simulating of rigid is now enabled") // TODO: crashes on rigid body
+            AZ_Printf("JoltScene", "Simulating of rigid is now enabled")
         }
         if (azrtti_istypeof<JoltPhysics::StaticRigidBody>(body))
         {

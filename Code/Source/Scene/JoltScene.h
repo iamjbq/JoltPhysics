@@ -9,6 +9,11 @@
 
 #include <Scene/PhysicsSystemCallbacks.h>
 
+namespace JoltPhysics
+{
+    class JoltAllocator;
+}
+
 namespace JPH
 {
     class PhysicsSystem;
@@ -21,6 +26,7 @@ namespace JPH
 namespace JoltPhysics
 {
     class JoltJobSystemThreaded;
+    class JoltAzAllocatorCallback;
 
     // TODO: These need to be defined in a JoltSpecificConfig
     // This is the max amount of rigid bodies that you can add to the physics system. If you try to add more you'll get an error.
@@ -99,11 +105,27 @@ namespace JoltPhysics
 
         //! Apply batched transform sync events for the current simulation pass.
         //! This will clear the batched data for the next simulation pass.
-        // void FlushTransformSync();
+        void FlushTransformSync();
 
         void InitializeJoltSystem();
 
     private:
+        //! Data structure for efficient unique vector functionality.
+        //! Body indices are inserted avoiding duplicated data and stored in a vector for efficient iteration.
+        class QueuedActiveBodyIndices
+        {
+        public:
+            void Insert(AzPhysics::SimulatedBodyIndex bodyIndex);
+            void IncreaseCapacity(size_t extraSize);
+            void Clear();
+            void Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction);
+            void ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, JoltScene* joltScene);
+
+        private:
+            AZStd::unordered_set<AzPhysics::SimulatedBodyIndex> m_uniqueIndices;
+            AZStd::vector<AzPhysics::SimulatedBodyIndex> m_packedIndices;
+        };
+
         void EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
         void DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
 
@@ -117,6 +139,11 @@ namespace JoltPhysics
         void SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles);
 
         bool m_isEnabled = true;
+
+        // Batch transform sync data. Here we store the indices of actors that have moved since the last simulation pass.
+        // After the full simulation pass (possibly made of multiple simulation sub-steps) is complete,
+        // we send the transform sync event once.
+        QueuedActiveBodyIndices m_queuedActiveBodyIndices;
 
         // Accumulated delta time over multiple simulation sub-steps.
         // When we run the batched transform sync, the accumulated simulation time is provided
@@ -150,9 +177,11 @@ namespace JoltPhysics
         JoltBodyActivationListener m_activationListener; //!< Callback class for body sleep/wake notification.
 
         // Cached variables to save look-up as they are inputs for every physics update loop
-        // JoltJobSystemThreaded* m_jobSystem = nullptr;
-        JPH::JobSystemThreadPool* m_jobSystem = nullptr; // TODO: check if this works
-        JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
+        JoltJobSystemThreaded* m_jobSystem = nullptr;
+        // JPH::JobSystemThreadPool* m_jobSystem = nullptr;
+
+        JoltAzAllocatorCallback* m_tempAllocator = nullptr;
+        // JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
         int m_collisionSteps = 1; // TODO: Should move to the editor eventually
 
         AZ::Vector3 m_gravity; // cache the gravity of the scene to avoid a lock in GetGravity().
