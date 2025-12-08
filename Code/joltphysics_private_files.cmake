@@ -42,6 +42,8 @@ set(FILES
 		Source/Clients/ShapeColliderComponent.cpp
 		Source/Clients/ShapeColliderComponent.h
 
+		Source/System/JoltAllocator.cpp
+		Source/System/JoltAllocator.h
         Source/System/JoltJobSystemThreaded.cpp
         Source/System/JoltJobSystemThreaded.h
         Source/System/JoltSystem.cpp
