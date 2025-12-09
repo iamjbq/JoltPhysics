@@ -180,8 +180,8 @@ namespace JoltPhysics
         JoltJobSystemThreaded* m_jobSystem = nullptr;
         // JPH::JobSystemThreadPool* m_jobSystem = nullptr;
 
-        JoltAzAllocatorCallback* m_tempAllocator = nullptr;
-        // JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
+        // JoltAzAllocatorCallback* m_tempAllocator = nullptr;
+        JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
         int m_collisionSteps = 1; // TODO: Should move to the editor eventually
 
         AZ::Vector3 m_gravity; // cache the gravity of the scene to avoid a lock in GetGravity().

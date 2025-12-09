@@ -4,6 +4,7 @@
 #include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+
 namespace JoltPhysics
 {
     //! System allocator to be used for all .
@@ -17,5 +18,8 @@ namespace JoltPhysics
         ~JoltAzAllocatorCallback() override = default;
         void* Allocate(JPH::uint inSize) override;
         void Free(void* inAddress, JPH::uint inSize) override;
+
+    private:
+
     };
 }
