@@ -18,6 +18,10 @@ namespace JoltPhysics
 
     void JoltPhysicsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        // These were bundled in void ReflectPhysXOnlyApi(AZ::ReflectContext* context) in PhysX
+        JoltSystemConfiguration::Reflect(context);
+        MaterialConfiguration::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JoltPhysicsSystemComponent, AZ::Component>()
