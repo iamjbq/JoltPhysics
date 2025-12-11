@@ -1,4 +1,10 @@
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Module/Module.h>
+#include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <JoltPhysicsModuleInterface.h>
 #include <Clients/JoltPhysicsSystemComponent.h>
@@ -58,6 +64,28 @@ namespace JoltPhysics
         }
 
     private:
+        void LoadModules()
+        {
+            AZStd::unique_ptr<AZ::DynamicModuleHandle> sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
+            [[maybe_unused]] bool ok = sceneCoreModule->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired);
+            AZ_Error("JoltPhysics::JoltPhysicsEditorModule", ok, "Error loading SceneCore module");
+
+            m_modules.push_back(AZStd::move(sceneCoreModule));
+        }
+
+        void UnloadModules()
+        {
+            // Unload modules in reserve order that were loaded
+            for (auto it = m_modules.rbegin(); it != m_modules.rend(); ++it)
+            {
+                it->reset();
+            }
+            m_modules.clear();
+        }
+
+        /// Required modules to load/unload when Jolt Gem module is created/destroyed
+        AZStd::vector<AZStd::unique_ptr<AZ::DynamicModuleHandle>> m_modules;
+
         JoltSystem m_joltSystem;
     };
 }// namespace JoltPhysics

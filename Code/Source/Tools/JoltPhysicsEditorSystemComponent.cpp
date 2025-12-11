@@ -30,26 +30,6 @@ namespace JoltPhysics
         }
     }
 
-    AzPhysics::SceneHandle JoltPhysicsEditorSystemComponent::GetEditorSceneHandle() const
-    {
-        return m_editorWorldSceneHandle;
-    }
-
-    void JoltPhysicsEditorSystemComponent::OnActionRegistrationHook()
-    {
-    }
-
-    void JoltPhysicsEditorSystemComponent::OnActionContextModeBindingHook()
-    {
-    }
-
-    void JoltPhysicsEditorSystemComponent::OnMenuBindingHook()
-    {
-    }
-
-    void JoltPhysicsEditorSystemComponent::NotifyRegisterViews()
-    {
-    }
 
     void JoltPhysicsEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
@@ -76,6 +56,11 @@ namespace JoltPhysics
     void JoltPhysicsEditorSystemComponent::Activate()
     {
         Physics::EditorWorldBus::Handler::BusConnect();
+
+        // Register Jolt Material Asset
+        auto* materialAsset = aznew AzFramework::GenericAssetHandler<JoltPhysics::EditorMaterialAsset>("Jolt Material", Physics::MaterialAsset::AssetGroup, EditorMaterialAsset::FileExtension);
+        materialAsset->Register();
+        m_assetHandlers.emplace_back(materialAsset);
 
         // Register Jolt Material Asset Builder
         AssetBuilderSDK::AssetBuilderDesc materialAssetBuilderDescriptor;
@@ -131,6 +116,27 @@ namespace JoltPhysics
             }
         }
         m_assetHandlers.clear();
+    }
+
+    AzPhysics::SceneHandle JoltPhysicsEditorSystemComponent::GetEditorSceneHandle() const
+    {
+        return m_editorWorldSceneHandle;
+    }
+
+    void JoltPhysicsEditorSystemComponent::OnActionRegistrationHook()
+    {
+    }
+
+    void JoltPhysicsEditorSystemComponent::OnActionContextModeBindingHook()
+    {
+    }
+
+    void JoltPhysicsEditorSystemComponent::OnMenuBindingHook()
+    {
+    }
+
+    void JoltPhysicsEditorSystemComponent::NotifyRegisterViews()
+    {
     }
 
     void JoltPhysicsEditorSystemComponent::OnStartPlayInEditorBegin()
