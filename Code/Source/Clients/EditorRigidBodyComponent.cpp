@@ -132,7 +132,7 @@ namespace JoltPhysics
         AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
 
         // TODO: UI widget that shows description text for kinematic vs dynamic bodies
-        // PhysX::Editor::KinematicDescriptionDialog kinematicDialog(comboBoxValue, mainWindow);
+        // JoltPhysics::Editor::KinematicDescriptionDialog kinematicDialog(comboBoxValue, mainWindow);
         //
         // int dialogResult = kinematicDialog.exec();
         // if (dialogResult == QDialog::Accepted)
@@ -257,7 +257,7 @@ namespace JoltPhysics
                         AZ::Edit::UIHandlers::Button,
                         &AzPhysics::RigidBodyConfiguration::m_configButton,
                         "",
-                        "Click here to open the PhysX Configuration window. Enable global CCD to enable component CCD editing.")
+                        "Click here to open the Jolt Configuration window. Enable global CCD to enable component CCD editing.")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Open Jolt Configuration to Enable CCD")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &IsSceneCcdDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenJoltConfigurationPane)
@@ -431,7 +431,7 @@ namespace JoltPhysics
             if (editContext)
             {
                 editContext->Class<EditorRigidBodyComponent>(
-                    "Jolt Dynamic Rigid Body", "The entity behaves as a movable rigid body in PhysX.")
+                    "Jolt Dynamic Rigid Body", "The entity behaves as a movable rigid body in Jolt.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
