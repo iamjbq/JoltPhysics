@@ -12,6 +12,8 @@
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <System/JoltSystem.h>
 
+#include "Editor/EditorWindow.h"
+
 namespace JoltPhysics
 {
     AZ_COMPONENT_IMPL(JoltPhysicsEditorSystemComponent, "JoltPhysicsEditorSystemComponent",
@@ -137,6 +139,7 @@ namespace JoltPhysics
 
     void JoltPhysicsEditorSystemComponent::NotifyRegisterViews()
     {
+        JoltPhysics::Editor::EditorWindow::RegisterViewClass();
     }
 
     void JoltPhysicsEditorSystemComponent::OnStartPlayInEditorBegin()

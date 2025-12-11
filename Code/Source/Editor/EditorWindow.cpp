@@ -43,7 +43,7 @@ namespace JoltPhysics
         {
             AzToolsFramework::ViewPaneOptions options;
             options.preferedDockingArea = Qt::LeftDockWidgetArea;
-            options.saveKeyName = "JOltConfiguration";
+            options.saveKeyName = "JoltConfiguration";
             options.isPreview = true;
             AzToolsFramework::RegisterViewPane<EditorWindow>(LyViewPane::JoltConfigurationEditor, LyViewPane::CategoryTools, options);
         }
