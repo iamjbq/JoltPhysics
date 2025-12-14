@@ -360,8 +360,6 @@ namespace JoltPhysics
         {
             // We get the materials from the collider config here and extract them to set on a shape
             // We can't set Jolt materials on base shapes because we need to know the type
-            // We know the type when getting the shape result, but we can't set density there until Create() is called and IsValid()
-            // One option is to pass in the joltMaterials vector above and return a fully baked shape that has material and density set
             AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
             AZStd::vector<const JoltPhysicsMaterial*> joltMaterials(materials.size(), nullptr);
             for (size_t materialIndex = 0; materialIndex < materials.size(); ++materialIndex)
@@ -403,7 +401,7 @@ namespace JoltPhysics
 
                 AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
                 AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
-
+                AZ_Printf("ConstructObjectLayer", "BPLayer %d, CLayer %d, CGrpIdx %d, CGroup %d", newBPLayer, newCollisionLayer, collisionGroupIndex, newCollisionGroup)
                 return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
             }
             AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")
