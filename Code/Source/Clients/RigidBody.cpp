@@ -577,7 +577,8 @@ namespace JoltPhysics
 
             // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
             auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
-            JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
+            const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
+            AZ_Printf("Rigidbody", "ObjectLayer %d", newLayer)
             m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
         }
         joltShape->AttachedToActor(m_joltRigidBody);
