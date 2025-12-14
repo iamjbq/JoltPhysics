@@ -124,7 +124,7 @@ ly_add_target(
         ${pal_dir}/joltphysics_private_files.cmake
     COMPILE_DEFINITIONS
         PUBLIC
-            JOLT_SETREG_GEM_NAME="Jolt"
+            JOLT_SETREG_GEM_NAME="JoltPhysics"
             $<$<NOT:$<CONFIG:release>>:AZ_PHYSICS_DEBUG_ENABLED>
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
@@ -172,7 +172,8 @@ ly_add_target(
 # is used to bootstrap the gem in monolithic builds to link to the new gem name
 ly_add_source_properties(
 SOURCES
-    Source/Clients/JoltPhysicsModule.cpp
+        Source/JoltPhysicsModule.cpp
+        Source/JoltPhysicsModule.h
 PROPERTY COMPILE_DEFINITIONS
     VALUES
         O3DE_GEM_NAME=${gem_name}
@@ -273,13 +274,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # This is to allow renaming of the gem to also cause
     # the CreateModuleClass_Gem_<gem-name> function which
     # is used to bootstrap the gem in monolithic builds to link to the new gem name
-    ly_add_source_properties(
-    SOURCES
-        Source/Tools/JoltPhysicsEditorModule.cpp
-    PROPERTY COMPILE_DEFINITIONS
-        VALUES
-            O3DE_GEM_NAME=${gem_name}
-            O3DE_GEM_VERSION=${gem_version})
+#    ly_add_source_properties(
+#    SOURCES
+#        Source/Tools/JoltPhysicsEditorModule.cpp
+#    PROPERTY COMPILE_DEFINITIONS
+#        VALUES
+#            O3DE_GEM_NAME=${gem_name}
+#            O3DE_GEM_VERSION=${gem_version})
 
     # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it

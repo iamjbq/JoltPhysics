@@ -16,12 +16,13 @@ set(FILES
 		Include/JoltPhysics/ColliderShapeBus.h
 		Include/JoltPhysics/NativeTypeIdentifiers.h
 
-        Source/JoltPhysicsModuleInterface.cpp
-        Source/JoltPhysicsModuleInterface.h
+        Source/JoltPhysicsModule.cpp
+        Source/JoltPhysicsModule.h
 		Source/Utils.cpp
 		Source/Utils.h
 		Source/JoltSceneQueryHelpers.cpp
 		Source/JoltSceneQueryHelpers.h
+
 
 		Source/Clients/DefaultWorldComponent.cpp
 		Source/Clients/DefaultWorldComponent.h

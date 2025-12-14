@@ -26,20 +26,18 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR(JoltPhysicsEditorModule, AZ::SystemAllocator);
 
         JoltPhysicsEditorModule()
-            : m_joltSystem(AZStd::make_unique<JoltEditorSettingsRegistryManager>())
+            // : m_joltSystem(AZStd::make_unique<JoltEditorSettingsRegistryManager>())
         {
             static_assert(alignof(JoltPhysics::JoltSystemConfiguration) == 16);
             static_assert(alignof(JoltPhysics::JoltSystem) == 16);
-            
-            AZ_TracePrintf("JoltPhysicsEditorModule", "Constructed\n")
-            
+
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
-                JoltPhysicsSystemComponent::CreateDescriptor(),
                 JoltPhysicsEditorSystemComponent::CreateDescriptor(),
+                JoltPhysicsSystemComponent::CreateDescriptor(),
                 EditorShapeColliderComponent::CreateDescriptor(),
                 EditorRigidBodyComponent::CreateDescriptor(),
                 EditorStaticRigidBodyComponent::CreateDescriptor(),
@@ -48,7 +46,7 @@ namespace JoltPhysics
 
         ~JoltPhysicsEditorModule()
         {
-            m_joltSystem.Shutdown();
+            // m_joltSystem.Shutdown();
         }
 
         /**
@@ -58,8 +56,8 @@ namespace JoltPhysics
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {
-                azrtti_typeid<JoltPhysicsSystemComponent>(),
                 azrtti_typeid<JoltPhysicsEditorSystemComponent>(),
+                azrtti_typeid<JoltPhysicsSystemComponent>(),
             };
         }
 
@@ -86,7 +84,7 @@ namespace JoltPhysics
         /// Required modules to load/unload when Jolt Gem module is created/destroyed
         AZStd::vector<AZStd::unique_ptr<AZ::DynamicModuleHandle>> m_modules;
 
-        JoltSystem m_joltSystem;
+        // JoltSystem m_joltSystem;
     };
 }// namespace JoltPhysics
 

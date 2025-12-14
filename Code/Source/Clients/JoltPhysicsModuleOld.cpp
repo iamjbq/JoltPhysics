@@ -1,16 +1,16 @@
 
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
-#include <JoltPhysicsModuleInterface.h>
+#include <JoltPhysicsModule.h>
 #include "JoltPhysicsSystemComponent.h"
 
 namespace JoltPhysics
 {
-    class JoltPhysicsModule
+    class JoltPhysicsModuleOld
         : public JoltPhysicsModuleInterface
     {
     public:
-        AZ_RTTI(JoltPhysicsModule, JoltPhysicsModuleTypeId, JoltPhysicsModuleInterface);
-        AZ_CLASS_ALLOCATOR(JoltPhysicsModule, AZ::SystemAllocator);
+        AZ_RTTI(JoltPhysicsModuleOld, JoltPhysicsModuleTypeId, JoltPhysicsModuleInterface);
+        AZ_CLASS_ALLOCATOR(JoltPhysicsModuleOld, AZ::SystemAllocator);
     };
 }// namespace JoltPhysics
 

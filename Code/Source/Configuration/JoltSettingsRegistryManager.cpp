@@ -13,6 +13,7 @@ namespace JoltPhysics
 
     JoltSettingsRegistryManager::JoltSettingsRegistryManager()
     {
+        // TODO: The paths are different than the ones set in editor "/Amazon/Gems/Jolt/JoltSystemConfiguration"
         m_settingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/JoltSystemConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
         m_defaultSceneConfigSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/DefaultSceneConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
         // m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/Debug/PhysXDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
@@ -85,7 +86,7 @@ namespace JoltPhysics
 
     void JoltSettingsRegistryManager::SaveSystemConfiguration([[maybe_unused]] const JoltSystemConfiguration& config, const OnJoltConfigSaveComplete& saveCallback) const
     {
-        //PhysXEditorSettingsRegistryManager will implement, as saving is editor only currently.
+        //JoltEditorSettingsRegistryManager will implement, as saving is editor only currently.
         if (saveCallback)
         {
             saveCallback(config, Result::Failed);
@@ -94,7 +95,7 @@ namespace JoltPhysics
 
     void JoltSettingsRegistryManager::SaveDefaultSceneConfiguration([[maybe_unused]] const AzPhysics::SceneConfiguration& config, const OnDefaultSceneConfigSaveComplete& saveCallback) const
     {
-        //PhysXEditorSettingsRegistryManager will implement, as saving is editor only currently.
+        //JoltEditorSettingsRegistryManager will implement, as saving is editor only currently.
         if (saveCallback)
         {
             saveCallback(config, Result::Failed);

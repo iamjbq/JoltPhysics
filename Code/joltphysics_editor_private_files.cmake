@@ -2,12 +2,23 @@
 set(FILES
     Include/JoltPhysics/EditorColliderComponentRequestBus.h
 
+    Source/Clients/ComponentDescriptors.cpp
+    Source/Clients/ComponentDescriptors.h
+    Source/Clients/EditorShapeColliderComponent.cpp
+    Source/Clients/EditorShapeColliderComponent.h
+    Source/Clients/EditorStaticRigidBodyComponent.cpp
+    Source/Clients/EditorStaticRigidBodyComponent.h
+    Source/Clients/EditorRigidBodyComponent.cpp
+    Source/Clients/EditorRigidBodyComponent.h
+
     Source/NameConstants.cpp
     Source/NameConstants.h
 
     Source/Tools/JoltPhysicsEditorSystemComponent.cpp
     Source/Tools/JoltPhysicsEditorSystemComponent.h
 
+    Source/Editor/EditorComponentDescriptors.cpp
+    Source/Editor/EditorComponentDescriptors.h
     Source/Editor/JoltEditorMaterialAsset.cpp
     Source/Editor/JoltEditorMaterialAsset.h
     Source/Editor/JoltEditorMaterialAssetBuilder.cpp
@@ -38,11 +49,7 @@ set(FILES
 #    Source/Editor/PvdWidget.h
     Source/Editor/DocumentationLinkWidget.cpp
     Source/Editor/DocumentationLinkWidget.h
+    Source/Editor/PropertyTypes.cpp
+    Source/Editor/PropertyTypes.h
 
-    Source/Clients/EditorShapeColliderComponent.cpp
-    Source/Clients/EditorShapeColliderComponent.h
-    Source/Clients/EditorStaticRigidBodyComponent.cpp
-    Source/Clients/EditorStaticRigidBodyComponent.h
-    Source/Clients/EditorRigidBodyComponent.cpp
-    Source/Clients/EditorRigidBodyComponent.h
 )

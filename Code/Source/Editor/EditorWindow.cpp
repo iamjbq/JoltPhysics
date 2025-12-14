@@ -56,7 +56,7 @@ namespace JoltPhysics
             auto* joltSystem = GetJoltSystem();
             if (joltSystem == nullptr)
             {
-                AZ_Error("JoltPhysics", false, "Unable to save the Jolt configuration. The JoltSystem not initialized. Any changes have not been applied.");
+                AZ_Error("JoltPhysics", false, "Unable to save the Jolt configuration. The JoltSystem is not initialized. Any changes have not been applied.");
                 return;
             }
 
@@ -69,9 +69,9 @@ namespace JoltPhysics
                     AZ_Warning("Jolt", result == JoltSettingsRegistryManager::Result::Success, "Unable to save the Jolt configuration. Any changes have not been applied.");
                     if (result == JoltSettingsRegistryManager::Result::Success)
                     {
-                        if (auto* physXSystem = GetJoltSystem())
+                        if (auto* joltSystem = GetJoltSystem())
                         {
-                            physXSystem->UpdateConfiguration(&config);
+                            joltSystem->UpdateConfiguration(&config);
                         }
                     }
                 };
@@ -82,12 +82,13 @@ namespace JoltPhysics
             {
                 auto saveCallback = [](const AzPhysics::SceneConfiguration& config, JoltSettingsRegistryManager::Result result)
                 {
+                    // TODO: determine if this is being called in EditorSettingsRegistryManager or runtime version
                     AZ_Warning("Jolt", result == JoltSettingsRegistryManager::Result::Success, "Unable to save the Default Scene configuration. Any changes have not been applied.");
                     if (result == JoltSettingsRegistryManager::Result::Success)
                     {
-                        if (auto* physXSystem = GetJoltSystem())
+                        if (auto* joltSystem = GetJoltSystem())
                         {
-                            physXSystem->UpdateDefaultSceneConfiguration(config);
+                            joltSystem->UpdateDefaultSceneConfiguration(config);
                         }
                     }
                 };
