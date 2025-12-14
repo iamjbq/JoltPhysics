@@ -84,8 +84,8 @@ namespace JoltPhysics
         // Jolt Physics System Init helpers
         // JoltAzAllocatorCallback* GetJoltAllocator();
         JPH::TempAllocatorImpl* GetJoltAllocator();
-        JoltJobSystemThreaded* GetJoltJobSystem();
-        // JPH::JobSystemThreadPool* GetJoltJobSystem();
+        // JoltJobSystemThreaded* GetJoltJobSystem();
+        JPH::JobSystemThreadPool* GetJoltJobSystem();
         BroadPhaseLayerInterfaceImpl& GetBroadPhaseLayerInterface();
         ObjectVsBroadPhaseLayerFilterImpl& GetObjectVsBroadPhaseLayerFilter();
         ObjectLayerPairFilterImpl& GetObjectLayerPairFilter();
@@ -118,8 +118,8 @@ namespace JoltPhysics
         // TODO: add JoltAllocator instance
         // AZStd::unique_ptr<JoltAzAllocatorCallback> m_allocator;
         AZStd::unique_ptr<JPH::TempAllocatorImpl> m_allocator;
-        AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
-        // AZStd::unique_ptr<JPH::JobSystemThreadPool> m_jobSystem;
+        // AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
+        AZStd::unique_ptr<JPH::JobSystemThreadPool> m_jobSystem;
 
         // Collision filtering objects shared with all scenes
         BroadPhaseLayerInterfaceImpl m_broadPhaseInterface;

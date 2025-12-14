@@ -177,8 +177,8 @@ namespace JoltPhysics
         JoltBodyActivationListener m_activationListener; //!< Callback class for body sleep/wake notification.
 
         // Cached variables to save look-up as they are inputs for every physics update loop
-        JoltJobSystemThreaded* m_jobSystem = nullptr;
-        // JPH::JobSystemThreadPool* m_jobSystem = nullptr;
+        // JoltJobSystemThreaded* m_jobSystem = nullptr;
+        JPH::JobSystemThreadPool* m_jobSystem = nullptr;
 
         // JoltAzAllocatorCallback* m_tempAllocator = nullptr;
         JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
