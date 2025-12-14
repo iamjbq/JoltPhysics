@@ -220,7 +220,7 @@ namespace JoltPhysics
             {
                 AZ::u32 activeRigidBodiesCount = 0;
                 activeRigidBodiesCount = m_physicsSystem->GetNumActiveBodies(JPH::EBodyType::RigidBody);
-                AZ_Printf("JoltScene", "There are %d active bodies", activeRigidBodiesCount)
+                // AZ_Printf("JoltScene", "There are %d active bodies", activeRigidBodiesCount)
 
                 activeBodyHandles.reserve(activeRigidBodiesCount);
                 JPH::BodyIDVector activeRigidBodies;
