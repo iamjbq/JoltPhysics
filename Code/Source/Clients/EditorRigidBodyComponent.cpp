@@ -121,7 +121,6 @@ namespace JoltPhysics
     static void OpenJoltConfigurationPane()
     {
         static const char* const JoltConfigurationEditor = "Jolt Configuration";
-        // I guess this is fine?
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequests::OpenViewPane, JoltConfigurationEditor);
     }
@@ -254,6 +253,7 @@ namespace JoltPhysics
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
                     ->DataElement(
+
                         AZ::Edit::UIHandlers::Button,
                         &AzPhysics::RigidBodyConfiguration::m_configButton,
                         "",
@@ -271,32 +271,32 @@ namespace JoltPhysics
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     // Mass properties
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeCenterOfMass,
-                        "Compute COM", "Compute the center of mass (COM) for this rigid body.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    // ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeCenterOfMass,
+                    //     "Compute COM", "Compute the center of mass (COM) for this rigid body.")
+                    //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
+                    //     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_centerOfMassOffset,
                         "COM offset", "Local space offset for the center of mass (COM).")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCoMVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeMass,
-                        "Compute Mass", "When active, the mass of the rigid body is computed based on the volume and density values of its colliders.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_mass,
-                        "Mass", "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
-                        "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMassVisibility)
-
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeInertiaTensor,
-                        "Compute inertia", "When active, inertia is computed based on the mass and shape of the rigid body.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    // ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeMass,
+                    //     "Compute Mass", "When active, the mass of the rigid body is computed based on the volume and density values of its colliders.")
+                    //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
+                    //     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    //
+                    // ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_mass,
+                    //     "Mass", "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
+                    //     "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.")
+                    //     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    //     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
+                    //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMassVisibility)
+                    //
+                    // ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeInertiaTensor,
+                    //     "Compute inertia", "When active, inertia is computed based on the mass and shape of the rigid body.")
+                    //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
+                    //     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     // ->DataElement(Editor::InertiaHandler, &AzPhysics::RigidBodyConfiguration::m_inertiaTensor,
                     //     "Inertia diagonal", "Inertia diagonal elements that specify an inertia tensor; determines the "

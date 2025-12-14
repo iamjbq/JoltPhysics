@@ -212,7 +212,7 @@ namespace JoltPhysics
         m_attachedSystem = nullptr;
     }
 
-    AzPhysics::SceneQueryHit Shape::RayCast([[maybe_unused]] const AzPhysics::RayCastRequest& worldSpaceRequest,
+    AzPhysics::SceneQueryHit Shape::RayCast(const AzPhysics::RayCastRequest& worldSpaceRequest,
         [[maybe_unused]] const AZ::Transform& worldTransform)
     {
         if (m_joltShape)
@@ -228,7 +228,7 @@ namespace JoltPhysics
                 JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
                 );
             // Convert the ray to center of mass space for the shape
-            inRay.mOrigin -= m_joltShape->GetCenterOfMass();
+            // inRay.mOrigin -= m_joltShape->GetCenterOfMass();
             JPH::RayCastResult hit;
             bool hadHit = m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), hit);
 
@@ -285,7 +285,7 @@ namespace JoltPhysics
             }
         }
 
-        AZ_Warning("JoltPhysics::Shape", false, "Jolt shape was null")
+        AZ_Warning("Shape::RayCast", false, "Jolt shape was null")
         return AzPhysics::SceneQueryHit();
     }
 
