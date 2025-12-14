@@ -7,12 +7,13 @@
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 
+#include <Editor/EditorWindow.h>
+#include <Editor/PropertyTypes.h>
 #include <Tools/JoltPhysicsEditorSystemComponent.h>
 #include <Editor/JoltEditorMaterialAsset.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <System/JoltSystem.h>
 
-#include "Editor/EditorWindow.h"
 
 namespace JoltPhysics
 {
@@ -88,6 +89,7 @@ namespace JoltPhysics
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
         }
 
+        JoltPhysics::Editor::RegisterPropertyTypes();
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
