@@ -89,11 +89,6 @@ namespace JoltPhysics
     AZStd::shared_ptr<Physics::Shape> JoltPhysicsSystemComponent::CreateShape(
         const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration)
     {
-        auto* joltSystem = GetJoltSystem();
-        AZ_Printf("JoltPhysicsSystemComponent::CreateShape", "Layer %d, group %d",
-                  colliderConfiguration.m_collisionLayer.GetIndex(),
-                  joltSystem->GetCollisionGroupIndex(colliderConfiguration.m_collisionGroupId))
-
         auto shapePtr = AZStd::make_shared<JoltPhysics::Shape>(colliderConfiguration, configuration);
 
         if (shapePtr->GetNativePointer())

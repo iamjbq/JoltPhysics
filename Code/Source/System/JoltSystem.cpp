@@ -114,9 +114,9 @@ namespace JoltPhysics
 
         // We need to store the raw bitmasks for direct collision lookup in Jolt
         // Since we don't have anything convenient like pxFilterData
-        for (const auto& preset : presets)
+        for (AZ::u32 i = 0; i < presets.size(); ++i)
         {
-            m_collisionGroupMasks.push_back(preset.m_group.GetMask());
+            m_collisionGroupMasks.emplace_back(presets.at(i).m_group.GetMask());
         }
 
         JPH::RegisterDefaultAllocator();
@@ -395,9 +395,18 @@ namespace JoltPhysics
     void JoltSystem::UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization)
     {
         if (const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(newConfig);
-            m_systemConfig != (*joltConfig))
+            m_systemConfig != *joltConfig)
         {
-            m_systemConfig = (*joltConfig);
+            m_systemConfig = *joltConfig;
+            m_collisionGroupMasks.clear();
+
+            const AZStd::vector<AzPhysics::CollisionGroups::Preset>& presets = m_systemConfig.m_collisionConfig.m_collisionGroups.GetPresets();
+
+            for (AZ::u32 i = 0; i < presets.size(); ++i)
+            {
+                m_collisionGroupMasks.emplace_back(presets.at(i).m_group.GetMask());
+            }
+
             m_configChangeEvent.Signal(joltConfig);
 
             // May need to restart simulation, as per PhysX comment
@@ -449,24 +458,25 @@ namespace JoltPhysics
     AZ::u32 JoltSystem::GetCollisionGroupIndex(const AzPhysics::CollisionGroup& group) const
     {
         const AZStd::vector<AzPhysics::CollisionGroups::Preset>& presets = m_systemConfig.m_collisionConfig.m_collisionGroups.GetPresets();
-
         for (AZ::u32 i = 0; i < presets.size(); ++i)
         {
             if (presets.at(i).m_group == group)
+            {
                 return i;
+            }
         }
         AZ_Warning("JoltSystem", false, "Unable to find a match for group in vector of Presets.")
         return 0;
     }
-
     AZ::u32 JoltSystem::GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id& groupId) const
     {
         const AZStd::vector<AzPhysics::CollisionGroups::Preset>& presets = m_systemConfig.m_collisionConfig.m_collisionGroups.GetPresets();
-
         for (AZ::u32 i = 0; i < presets.size(); ++i)
         {
             if (presets.at(i).m_id == groupId)
+            {
                 return i;
+            }
         }
         AZ_Warning("JoltSystem", false, "Unable to find a match for group Id in vector of Presets.")
         return 0;
@@ -477,7 +487,7 @@ namespace JoltPhysics
         return m_collisionGroupMasks.at(index);
     }
 
-    AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* JoltSystem::GetCollisionMasks()
+    AZStd::vector<AZ::u64>* JoltSystem::GetCollisionMasks()
     {
         return &m_collisionGroupMasks;
     }

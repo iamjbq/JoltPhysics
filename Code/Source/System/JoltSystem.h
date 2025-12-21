@@ -79,7 +79,7 @@ namespace JoltPhysics
         AZ::u32 GetCollisionGroupIndex(const AzPhysics::CollisionGroups::Id & groupId) const;
 
         AZ::u64 GetCollisionMask(AZ::u32 index) const;
-        AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* GetCollisionMasks();
+        AZStd::vector<AZ::u64>* GetCollisionMasks();
 
         // Jolt Physics System Init helpers
         // JoltAzAllocatorCallback* GetJoltAllocator();
@@ -91,8 +91,7 @@ namespace JoltPhysics
         ObjectLayerPairFilterImpl& GetObjectLayerPairFilter();
 
     private:
-        AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers> m_collisionGroupMasks;
-
+        AZStd::vector<AZ::u64> m_collisionGroupMasks;
         JoltSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
         AzPhysics::SceneList m_sceneList;

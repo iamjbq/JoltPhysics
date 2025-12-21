@@ -83,7 +83,8 @@ namespace JoltPhysics
         [[nodiscard]] bool ShouldCollide(const JPH::ObjectLayer inObject1, const JPH::ObjectLayer inObject2) const override;
 
     private:
-    	AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* m_collisionGroupMasks;
+    	// AZStd::fixed_vector<AZ::u64, AzPhysics::CollisionLayers::MaxCollisionLayers>* m_collisionGroupMasks;
+		AZStd::vector<AZ::u64>* m_collisionGroupMasks;
     };
 
 	// BroadPhaseLayerInterface implementation

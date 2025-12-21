@@ -20,7 +20,8 @@ namespace JoltPhysics
         : m_collisionLayer(colliderConfiguration.m_collisionLayer)
     {
         m_shapeConfiguration = configuration.Clone();
-        
+
+        // m_collisionGroup gets set in util function b/c the input is an ID and we use CollisionRequests to get the actual group
         if (JPH::Shape* newShape = Utils::CreateJoltShapeFromConfig(colliderConfiguration, configuration, m_collisionGroup))
         {
             m_joltShape = JoltShapeUniquePtr(newShape, AZStd::bind(&Shape::ReleaseJoltShape, this, newShape));

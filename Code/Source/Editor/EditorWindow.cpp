@@ -82,7 +82,6 @@ namespace JoltPhysics
             {
                 auto saveCallback = [](const AzPhysics::SceneConfiguration& config, JoltSettingsRegistryManager::Result result)
                 {
-                    // TODO: determine if this is being called in EditorSettingsRegistryManager or runtime version
                     AZ_Warning("Jolt", result == JoltSettingsRegistryManager::Result::Success, "Unable to save the Default Scene configuration. Any changes have not been applied.");
                     if (result == JoltSettingsRegistryManager::Result::Success)
                     {

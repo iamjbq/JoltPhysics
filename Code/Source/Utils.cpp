@@ -384,12 +384,12 @@ namespace JoltPhysics
             
             AzPhysics::CollisionGroup collisionGroup;
             Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
-            
             assignedCollisionGroup = collisionGroup;
             
             return newShape;
         }
 
+        // Called in AddShape
         AZ::u32 ConstructObjectLayer(const AzPhysics::CollisionLayer& assignedCollisionLayer,
                                      const AzPhysics::CollisionGroup& assignedCollisionGroup,
                                      const JPH::BroadPhaseLayer& broadPhaseLayer)
@@ -401,7 +401,8 @@ namespace JoltPhysics
 
                 AZ::u32 collisionGroupIndex = system->GetCollisionGroupIndex(assignedCollisionGroup);
                 AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
-                AZ_Printf("ConstructObjectLayer", "BPLayer %d, CLayer %d, CGrpIdx %d, CGroup %d", newBPLayer, newCollisionLayer, collisionGroupIndex, newCollisionGroup)
+
+                AZ_Printf("ConstructObjectLayer", "BPLayer %d, CLayer %d, CGrpIdx %d", newBPLayer, newCollisionLayer, newCollisionGroup)
                 return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
             }
             AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")

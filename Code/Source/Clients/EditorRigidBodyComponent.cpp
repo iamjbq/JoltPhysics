@@ -24,9 +24,9 @@ namespace JoltPhysics
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> allShapes;
 
-            const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
-            AZ_UNUSED(hasNonUniformScaleComponent)
-            // TODO: Probably can delete this whole block
+            [[maybe_unused]] const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
+
+            // TODO: Probably can delete this whole block as we're not using the depreciated primitive collider
             // for (const EditorColliderComponent* collider : entity->FindComponents<EditorColliderComponent>())
             // {
             //     const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
@@ -90,6 +90,7 @@ namespace JoltPhysics
             for (const EditorShapeColliderComponent* shapeCollider : entity->FindComponents<EditorShapeColliderComponent>())
             {
                 const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
+
                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
                     shapeCollider->GetShapeConfigurations();
                 for (const auto& shapeConfig : shapeConfigs)
@@ -236,7 +237,7 @@ namespace JoltPhysics
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled,
                         "CCD enabled", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
-                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX configuration.")
+                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global Jolt configuration.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetCcdTooltip)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::CcdReadOnly)
@@ -374,6 +375,7 @@ namespace JoltPhysics
         //     physXDebug->RegisterDebugDisplayDataChangedEvent(m_debugDisplayDataChangeHandler);
         //     UpdateDebugDrawSettings(physXDebug->GetDebugDisplayData());
         // }
+
         CreateEditorWorldRigidBody();
 
         // JoltPhysics::EditorMeshColliderValidationRequestBus::Event(
@@ -522,7 +524,7 @@ namespace JoltPhysics
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
         configuration.m_colliderAndShapeData = Internal::CreateCollisionShapes(GetEntity());
-
+        // TODO something breaks here
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_editorRigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -581,7 +583,6 @@ namespace JoltPhysics
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
                 sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
-
                 CreateEditorWorldRigidBody();
             }
             m_shouldBeRecreated = false;
