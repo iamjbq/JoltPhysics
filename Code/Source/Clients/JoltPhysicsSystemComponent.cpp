@@ -89,6 +89,11 @@ namespace JoltPhysics
     AZStd::shared_ptr<Physics::Shape> JoltPhysicsSystemComponent::CreateShape(
         const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration)
     {
+        auto* joltSystem = GetJoltSystem();
+        AZ_Printf("JoltPhysicsSystemComponent::CreateShape", "Layer %d, group %d",
+                  colliderConfiguration.m_collisionLayer.GetIndex(),
+                  joltSystem->GetCollisionGroupIndex(colliderConfiguration.m_collisionGroupId))
+
         auto shapePtr = AZStd::make_shared<JoltPhysics::Shape>(colliderConfiguration, configuration);
 
         if (shapePtr->GetNativePointer())
@@ -133,6 +138,72 @@ namespace JoltPhysics
         return false;
     }
 
+    AzPhysics::CollisionLayer JoltPhysicsSystemComponent::GetCollisionLayerByName(const AZStd::string& layerName)
+    {
+        return m_joltSystem->GetJoltConfiguration().m_collisionConfig.m_collisionLayers.GetLayer(layerName);
+    }
+
+    AZStd::string JoltPhysicsSystemComponent::GetCollisionLayerName(const AzPhysics::CollisionLayer& layer)
+    {
+        return m_joltSystem->GetJoltConfiguration().m_collisionConfig.m_collisionLayers.GetName(layer);
+    }
+
+    bool JoltPhysicsSystemComponent::TryGetCollisionLayerByName(const AZStd::string& layerName,
+        AzPhysics::CollisionLayer& layer)
+    {
+        return m_joltSystem->GetJoltConfiguration().m_collisionConfig.m_collisionLayers.TryGetLayer(layerName, layer);
+    }
+
+    AzPhysics::CollisionGroup JoltPhysicsSystemComponent::GetCollisionGroupByName(const AZStd::string& groupName)
+    {
+        return m_joltSystem->GetJoltConfiguration().m_collisionConfig.m_collisionGroups.FindGroupByName(groupName);
+    }
+
+    bool JoltPhysicsSystemComponent::TryGetCollisionGroupByName(const AZStd::string& layerName,
+        AzPhysics::CollisionGroup& group)
+    {
+        return m_joltSystem->GetJoltConfiguration().m_collisionConfig.m_collisionGroups.TryFindGroupByName(layerName, group);
+    }
+
+    AZStd::string JoltPhysicsSystemComponent::GetCollisionGroupName(const AzPhysics::CollisionGroup& collisionGroup)
+    {
+        AZStd::string groupName;
+        for (const auto& group : m_joltSystem->GetJoltConfiguration().m_collisionConfig.m_collisionGroups.GetPresets())
+        {
+            if (group.m_group.GetMask() == collisionGroup.GetMask())
+            {
+                groupName = group.m_name;
+                break;
+            }
+        }
+        return groupName;
+    }
+
+    AzPhysics::CollisionGroup JoltPhysicsSystemComponent::GetCollisionGroupById(
+        const AzPhysics::CollisionGroups::Id& groupId)
+    {
+        auto groups = m_joltSystem->GetJoltConfiguration().m_collisionConfig.m_collisionGroups;
+        return groups.FindGroupById(groupId);
+    }
+
+    void JoltPhysicsSystemComponent::SetCollisionLayerName(int index, const AZStd::string& layerName)
+    {
+        m_joltSystem->SetCollisionLayerName(index, layerName);
+    }
+
+    void JoltPhysicsSystemComponent::CreateCollisionGroup(const AZStd::string& groupName,
+        const AzPhysics::CollisionGroup& group)
+    {
+        m_joltSystem->CreateCollisionGroup(groupName, group);
+    }
+
+    bool JoltPhysicsSystemComponent::ShouldCollide([[maybe_unused]] const Physics::ColliderConfiguration& colliderConfigurationA,
+        [[maybe_unused]] const Physics::ColliderConfiguration& colliderConfigurationB)
+    {
+        AZ_Info("JoltPhysicsSystemComponent::ShouldCollide","Not implemented")
+        return false;
+    }
+
     void JoltPhysicsSystemComponent::Init()
     {
         if (m_physicsSystem.Get() == nullptr)
@@ -161,7 +232,7 @@ namespace JoltPhysics
 
         Physics::SystemRequestBus::Handler::BusConnect();
         // JoltPhysicsRequestBus::Handler::BusConnect();
-        // Physics::CollisionRequestBus::Handler::BusConnect();
+        Physics::CollisionRequestBus::Handler::BusConnect();
 
         ActivateSimulation();
     }
@@ -169,7 +240,7 @@ namespace JoltPhysics
     void JoltPhysicsSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        // Physics::CollisionRequestBus::Handler::BusDisconnect();
+        Physics::CollisionRequestBus::Handler::BusDisconnect();
         // JoltPhysicsRequestBus::Handler::BusDisconnect();
         Physics::SystemRequestBus::Handler::BusDisconnect();
 

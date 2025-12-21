@@ -36,7 +36,7 @@ namespace JoltPhysics
         : public AZ::Component
         , public Physics::SystemRequestBus::Handler
         // , public JoltPhysics::SystemRequestsBus::Handler
-        // , private Physics::CollisionRequestBus::Handler
+        , private Physics::CollisionRequestBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
@@ -65,18 +65,18 @@ namespace JoltPhysics
             const AZ::u32* indices, AZ::u32 indexCount, AZStd::vector<AZ::u8>& result) override;
 
         // CollisionRequestBus overrides...
-        // AzPhysics::CollisionLayer GetCollisionLayerByName(const AZStd::string& layerName) override;
-        // AZStd::string GetCollisionLayerName(const AzPhysics::CollisionLayer& layer) override;
-        // bool TryGetCollisionLayerByName(const AZStd::string& layerName, AzPhysics::CollisionLayer& layer) override;
-        // AzPhysics::CollisionGroup GetCollisionGroupByName(const AZStd::string& groupName) override;
-        // bool TryGetCollisionGroupByName(const AZStd::string& layerName, AzPhysics::CollisionGroup& group) override;
-        // AZStd::string GetCollisionGroupName(const AzPhysics::CollisionGroup& collisionGroup) override;
-        // AzPhysics::CollisionGroup GetCollisionGroupById(const AzPhysics::CollisionGroups::Id& groupId) override;
-        // void SetCollisionLayerName(int index, const AZStd::string& layerName) override;
-        // void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) override;
-        // bool ShouldCollide(
-        //     const Physics::ColliderConfiguration& colliderConfigurationA,
-        //     const Physics::ColliderConfiguration& colliderConfigurationB) override;
+        AzPhysics::CollisionLayer GetCollisionLayerByName(const AZStd::string& layerName) override;
+        AZStd::string GetCollisionLayerName(const AzPhysics::CollisionLayer& layer) override;
+        bool TryGetCollisionLayerByName(const AZStd::string& layerName, AzPhysics::CollisionLayer& layer) override;
+        AzPhysics::CollisionGroup GetCollisionGroupByName(const AZStd::string& groupName) override;
+        bool TryGetCollisionGroupByName(const AZStd::string& layerName, AzPhysics::CollisionGroup& group) override;
+        AZStd::string GetCollisionGroupName(const AzPhysics::CollisionGroup& collisionGroup) override;
+        AzPhysics::CollisionGroup GetCollisionGroupById(const AzPhysics::CollisionGroups::Id& groupId) override;
+        void SetCollisionLayerName(int index, const AZStd::string& layerName) override;
+        void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) override;
+        bool ShouldCollide(
+            const Physics::ColliderConfiguration& colliderConfigurationA,
+            const Physics::ColliderConfiguration& colliderConfigurationB) override;
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
