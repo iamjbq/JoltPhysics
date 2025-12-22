@@ -48,7 +48,6 @@ namespace JoltPhysics
 	    // this mapping defines which types of objects can generally collide with each other
 	    // if a flag is not included here, those types will never collide, no matter what their collision group is and other filter settings are
 	    // note that this is only used for the simulation, ray casts and shape queries can use their own mapping
-
 	    switch (broadPhase)
 	    {
 			case JoltBroadPhaseLayer::Static:
@@ -142,7 +141,7 @@ namespace JoltPhysics
 		[[nodiscard]] bool ShouldCollide(const JPH::ObjectLayer inLayer1, const JPH::BroadPhaseLayer inLayer2) const override
 		{
 			// BroadPhase is stored as index in ObjectLayer
-			const AZ::u8 mask1 = 1 << static_cast<AZ::u8>(inLayer1);
+			const AZ::u8 mask1 = static_cast<AZ::u8>(inLayer1);
 			const AZ::u8 mask2 = GetBroadPhaseCollisionMask(static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer2)));
 
 			return (mask1 & mask2) != 0;

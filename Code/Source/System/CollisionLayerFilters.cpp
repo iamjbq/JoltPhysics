@@ -18,6 +18,7 @@ namespace JoltPhysics
 
     bool ObjectLayerPairFilterImpl::ShouldCollide(const JPH::ObjectLayer inObject1, const JPH::ObjectLayer inObject2) const
     {
+        AZ_Printf("ObjectLayerPairFilterImpl::ShouldCollide", "Collision check")
         const AZ::u64 collisionLayer1 = 1ULL << static_cast<AZ::u8>(inObject1 >> 8);
         const AZ::u64 collisionLayer2 = 1ULL << static_cast<AZ::u8>(inObject2 >> 8);
 

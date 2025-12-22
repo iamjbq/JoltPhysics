@@ -634,14 +634,7 @@ namespace JoltPhysics
                 }
             }
         }
-        if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
-        {
-            AZ_Printf("JoltScene", "Simulating of rigid is now enabled")
-        }
-        if (azrtti_istypeof<JoltPhysics::StaticRigidBody>(body))
-        {
-            AZ_Printf("JoltScene", "Simulating of static rigid is now enabled")
-        }
+
         body.m_simulating = true;
     }
 

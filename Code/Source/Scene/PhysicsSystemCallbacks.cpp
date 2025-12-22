@@ -1,5 +1,6 @@
 ﻿
 #include <AzCore/Debug/Trace.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 
 #include <Scene/PhysicsSystemCallbacks.h>
 #include <JoltPhysics/MathConversions.h>
@@ -56,8 +57,6 @@ namespace JoltPhysics
     JPH::ValidateResult JoltContactListener::OnContactValidate([[maybe_unused]] const JPH::Body& inBody1, [[maybe_unused]] const JPH::Body& inBody2,
                                                                [[maybe_unused]] JPH::RVec3Arg inBaseOffset, [[maybe_unused]] const JPH::CollideShapeResult& inCollisionResult)
     {
-        AZ_Info("JoltContactListener", "Contact validate callback")
-
         // Allows you to ignore a contact before it is created (using layers to not make objects collide is cheaper!)
         return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
     }
@@ -66,23 +65,19 @@ namespace JoltPhysics
         const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
     {
         OnContact(inBody1, inBody2, inManifold, ioSettings, AzPhysics::CollisionEvent::Type::Begin);
-        
-        AZ_Info("JoltContactListener", "A contact was added")
     }
 
     void JoltContactListener::OnContactPersisted(const JPH::Body& inBody1, const JPH::Body& inBody2,
         const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings)
     {
         OnContact(inBody1, inBody2, inManifold, ioSettings, AzPhysics::CollisionEvent::Type::Persist);
-
-        AZ_Info("JoltContactListener", "A contact persisted")
     }
 
     void JoltContactListener::OnContactRemoved([[maybe_unused]] const JPH::SubShapeIDPair& inSubShapePair)
     {
         // TODO: Need to treat this one a little differently
         
-        AZ_Info("JoltContactListener", "A contact was removed")
+        AZ_Printf("JoltContactListener", "A contact was removed")
     }
 
     AzPhysics::CollisionEventList& JoltContactListener::GetQueuedCollisionEvents()
@@ -201,12 +196,12 @@ namespace JoltPhysics
     void JoltBodyActivationListener::OnBodyActivated([[maybe_unused]] const JPH::BodyID& inBodyID, [[maybe_unused]] JPH::uint64 inBodyUserData)
     {
         auto* bodyData = reinterpret_cast<JoltPhysics::BodyData*>(inBodyUserData);
-        AZ_Info("JoltBodyActivationListener", "Body %s was activated", bodyData->GetEntityId().ToString().c_str())
+        AZ_Printf("JoltBodyActivationListener", "Body %s was activated", bodyData->GetEntityId().ToString().c_str())
     }
 
     void JoltBodyActivationListener::OnBodyDeactivated([[maybe_unused]] const JPH::BodyID& inBodyID, [[maybe_unused]] JPH::uint64 inBodyUserData)
     {
         auto* bodyData = reinterpret_cast<JoltPhysics::BodyData*>(inBodyUserData);
-        AZ_Info("JoltBodyActivationListener", "Body %s was deactivated", bodyData->GetEntityId().ToString().c_str())
+        AZ_Printf("JoltBodyActivationListener", "Body %s was deactivated", bodyData->GetEntityId().ToString().c_str())
     }
 }

@@ -172,7 +172,6 @@ namespace JoltPhysics
 
         AZStd::unique_ptr<JPH::PhysicsSystem> m_physicsSystem; //!< The underlying Jolt System
         JPH::BodyInterface* m_bodyInterface;
-
         JoltContactListener m_contactListener; //!< Callback class for collision event notification.
         JoltBodyActivationListener m_activationListener; //!< Callback class for body sleep/wake notification.
 
