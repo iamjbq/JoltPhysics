@@ -5,7 +5,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Clients/EditorRigidBodyComponent.h>
 #include <Clients/EditorShapeColliderComponent.h>
-#include <Tools/JoltPhysicsEditorSystemComponent.h>
+#include <Clients/JoltPhysicsEditorSystemComponent.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Utils.h>
 #include <System/JoltSystem.h>

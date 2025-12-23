@@ -76,8 +76,6 @@ namespace JoltPhysics
     void JoltContactListener::OnContactRemoved([[maybe_unused]] const JPH::SubShapeIDPair& inSubShapePair)
     {
         // TODO: Need to treat this one a little differently
-        
-        AZ_Printf("JoltContactListener", "A contact was removed")
     }
 
     AzPhysics::CollisionEventList& JoltContactListener::GetQueuedCollisionEvents()

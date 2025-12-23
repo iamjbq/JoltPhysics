@@ -19,9 +19,6 @@ namespace JoltPhysics
         : public AZ::Module
     {
     public:
-        // AZ_TYPE_INFO_WITH_NAME_DECL(JoltPhysicsModuleInterface)
-        // AZ_RTTI_NO_TYPE_INFO_DECL()
-        // AZ_CLASS_ALLOCATOR_DECL
         AZ_RTTI(JoltPhysicsModule, JoltPhysicsModuleTypeId, AZ::Module);
         AZ_CLASS_ALLOCATOR(JoltPhysicsModule, AZ::SystemAllocator);
 

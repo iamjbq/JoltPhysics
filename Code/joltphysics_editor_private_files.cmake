@@ -14,8 +14,8 @@ set(FILES
     Source/NameConstants.cpp
     Source/NameConstants.h
 
-    Source/Tools/JoltPhysicsEditorSystemComponent.cpp
-    Source/Tools/JoltPhysicsEditorSystemComponent.h
+    Source/Clients/JoltPhysicsEditorSystemComponent.cpp
+    Source/Clients/JoltPhysicsEditorSystemComponent.h
 
     Source/Editor/EditorComponentDescriptors.cpp
     Source/Editor/EditorComponentDescriptors.h

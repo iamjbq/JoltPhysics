@@ -9,7 +9,7 @@
 
 #include <Editor/EditorWindow.h>
 #include <Editor/PropertyTypes.h>
-#include <Tools/JoltPhysicsEditorSystemComponent.h>
+#include <Clients/JoltPhysicsEditorSystemComponent.h>
 #include <Editor/JoltEditorMaterialAsset.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include <System/JoltSystem.h>

@@ -1,6 +1,6 @@
 #include <Editor/EditorComponentDescriptors.h>
 
-#include <Tools/JoltPhysicsEditorSystemComponent.h>
+#include <Clients/JoltPhysicsEditorSystemComponent.h>
 #include <Clients/EditorShapeColliderComponent.h>
 #include <Clients/EditorRigidBodyComponent.h>
 #include <Clients/EditorStaticRigidBodyComponent.h>

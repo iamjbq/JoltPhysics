@@ -7,18 +7,13 @@
 #include <Configuration/JoltSettingsRegistryManager.h>
 
 #if defined(JOLT_EDITOR)
-#include <Tools/JoltPhysicsEditorSystemComponent.h>
+#include <Clients/JoltPhysicsEditorSystemComponent.h>
 #include <Editor/EditorComponentDescriptors.h>
 #include <Editor/JoltEditorSettingsRegistryManager.h>
 #endif
 
 namespace JoltPhysics
 {
-    // AZ_TYPE_INFO_WITH_NAME_IMPL(JoltPhysicsModuleInterface,
-    //     "JoltPhysicsModuleInterface", JoltPhysicsModuleInterfaceTypeId);
-    // AZ_RTTI_NO_TYPE_INFO_IMPL(JoltPhysicsModuleInterface, AZ::Module);
-    // AZ_CLASS_ALLOCATOR_IMPL(JoltPhysicsModuleInterface, AZ::SystemAllocator);
-
     JoltPhysicsModule::JoltPhysicsModule()
         : AZ::Module()
 #if defined(JOLT_EDITOR)
