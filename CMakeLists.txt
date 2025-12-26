@@ -1,6 +1,6 @@
 
 o3de_gem_setup("JoltPhysics")
 
-ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+ ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
 
 add_subdirectory(Code)
