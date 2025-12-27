@@ -5,7 +5,7 @@
 
 namespace JoltPhysics
 {
-    class JoltPhysicsMaterial final : public JPH::PhysicsMaterial
+    class JoltPhysicsMaterial : public JPH::PhysicsMaterial
     {
     public:
         JoltPhysicsMaterial() = default;
@@ -32,6 +32,5 @@ namespace JoltPhysics
         float m_restitution = 0.2f;
         float m_friction = 0.2f;
         float m_density = 1.0f;
-
     };
 } // JoltPhysics

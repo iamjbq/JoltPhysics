@@ -30,7 +30,6 @@ namespace Physics
 namespace JoltPhysics
 {
     enum class CombineMode : AZ::u8;
-    class JoltPhysicsMaterial;
     
     namespace Utils
     {

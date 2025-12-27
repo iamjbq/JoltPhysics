@@ -1,3 +1,4 @@
+#include <JoltPhysics/Material/JoltMaterial.h>
 #include <AzCore/Interface/Interface.h>
 
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
@@ -5,9 +6,8 @@
 
 #include <Jolt/Jolt.h>
 
-#include <JoltPhysics/Material/JoltMaterial.h>
-#include <JoltPhysics/Material/JoltMaterialConfiguration.h>
 #include <Material/JoltPhysicsMaterial.h>
+#include <JoltPhysics/Material/JoltMaterialConfiguration.h>
 
 
 namespace JoltPhysics

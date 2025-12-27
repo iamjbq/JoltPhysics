@@ -11,6 +11,7 @@
 #include <Clients/Shape.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
+#include "JoltPhysics/Material/JoltMaterialConfiguration.h"
 
 namespace JoltPhysics
 {

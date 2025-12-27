@@ -234,7 +234,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
         BUILD_DEPENDENCIES
             PUBLIC
-                3rdParty::poly2tri
+#                3rdParty::poly2tri
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework

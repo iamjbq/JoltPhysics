@@ -23,8 +23,8 @@ namespace JoltPhysics
 
         if (m_collisionGroupMasks != nullptr)
         {
-            const AZ::u64 collisionMask1 = m_collisionGroupMasks->at(inObject1 >> 16);
-            const AZ::u64 collisionMask2 = m_collisionGroupMasks->at(inObject2 >> 16);
+            AZ::u64 collisionMask1 = m_collisionGroupMasks->at(inObject1 >> 16);
+            AZ::u64 collisionMask2 = m_collisionGroupMasks->at(inObject2 >> 16);
 
             return (collisionMask1 & collisionLayer2) && (collisionMask2 & collisionLayer1);
         }

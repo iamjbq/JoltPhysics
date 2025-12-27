@@ -2,13 +2,12 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include "AzCore/std/containers/fixed_vector.h"
+#include "AzCore/std/containers/vector.h"
 #include "AzFramework/Physics/Collision/CollisionLayers.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
-
 
 namespace AZ
 {

@@ -12,11 +12,7 @@
 #include <Scene/JoltSceneInterface.h>
 #include <System/CollisionLayerFilters.h>
 #include <System/JoltAllocator.h>
-
-namespace JoltPhysics
-{
-    class JoltPhysicsMaterial;
-}
+// #include <JoltPhysics/Material/JoltMaterial.h>
 
 namespace AZ::Debug
 {
@@ -32,6 +28,7 @@ namespace JPH
 namespace JoltPhysics
 {
     class JoltJobSystemThreaded;
+    class JoltPhysicsMaterial;
 
     class JoltSystem
         : public AZ::Interface<AzPhysics::SystemInterface>::Registrar

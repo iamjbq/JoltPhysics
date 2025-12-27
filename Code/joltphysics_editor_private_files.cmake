@@ -23,8 +23,8 @@ set(FILES
     Source/Editor/JoltEditorMaterialAsset.h
     Source/Editor/JoltEditorMaterialAssetBuilder.cpp
     Source/Editor/JoltEditorMaterialAssetBuilder.h
-    Source/Editor/PolygonPrismMeshUtils.cpp
-    Source/Editor/PolygonPrismMeshUtils.h
+#    Source/Editor/PolygonPrismMeshUtils.cpp
+#    Source/Editor/PolygonPrismMeshUtils.h
     Source/Editor/EditorWindow.ui
     Source/Editor/EditorWindow.cpp
     Source/Editor/EditorWindow.h

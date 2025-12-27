@@ -500,154 +500,154 @@ namespace JoltPhysics
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
-    void EditorShapeColliderComponent::UpdatePolygonPrismDecomposition()
-    {
-        m_mesh.Clear();
-
-        AZ::PolygonPrismPtr polygonPrismPtr;
-        LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(polygonPrismPtr, GetEntityId(),
-            &LmbrCentral::PolygonPrismShapeComponentRequests::GetPolygonPrism);
-
-        if (polygonPrismPtr)
-        {
-            UpdatePolygonPrismDecomposition(polygonPrismPtr);
-        }
-
-        CreateStaticEditorCollider();
-        m_mesh.SetDebugDrawDirty();
-
-        m_shapeType = ShapeType::PolygonPrism;
-    }
-
-    void EditorShapeColliderComponent::UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr)
-    {
-        const AZStd::vector<AZ::Vector2>& vertices = polygonPrismPtr->m_vertexContainer.GetVertices();
-
-        // if the polygon prism vertices do not form a simple polygon, we cannot perform the decomposition
-        if (!AZ::Geometry2DUtils::IsSimplePolygon(vertices))
-        {
-            if (!m_simplePolygonErrorIssued)
-            {
-                AZ_Error("Jolt Shape Collider Component", false, "Invalid polygon prism for entity \"%s\""
-                    " - must be a simple polygon (no self intersection or duplicate vertices) to be represented in Jolt.",
-                    GetEntity()->GetName().c_str());
-                m_simplePolygonErrorIssued = true;
-            }
-
-            m_mesh.Clear();
-            m_shapeConfigs.clear();
-
-            RefreshUiProperties();
-
-            return;
-        }
-
-        m_simplePolygonErrorIssued = false;
-        size_t numFacesRemoved = 0;
-
-        // If the polygon prism is already convex and meets the Jolt limit on convex mesh vertices/faces,
-        // then we don't need to do any complicated decomposition
-        if (vertices.size() <= PolygonPrismMeshUtils::MaxPolygonPrismEdges && AZ::Geometry2DUtils::IsConvex(vertices))
-        {
-            m_mesh.CreateFromSimpleConvexPolygon(vertices);
-        }
-        else
-        {
-            // Compute the constrained Delaunay triangulation using poly2tri // TODO: Again, maybe Jolt triangles here
-            AZStd::vector<p2t::Point> p2tVertices;
-            std::vector<p2t::Point*> polyline;
-            p2tVertices.reserve(vertices.size());
-            polyline.reserve(vertices.size());
-
-            int vertexIndex = 0;
-            for (const AZ::Vector2& vert : vertices)
-            {
-                p2tVertices.push_back(p2t::Point(vert.GetX(), vert.GetY()));
-                polyline.push_back(&(p2tVertices.data()[vertexIndex++]));
-            }
-
-            p2t::CDT constrainedDelaunayTriangulation(polyline);
-            constrainedDelaunayTriangulation.Triangulate();
-            const std::vector<p2t::Triangle*>& triangles = constrainedDelaunayTriangulation.GetTriangles();
-
-            // Iteratively merge faces if it's possible to do so while maintaining convexity
-            m_mesh.CreateFromPoly2Tri(triangles);
-            numFacesRemoved = m_mesh.ConvexMerge();
-        }
-
-        // Create the cooked convex mesh configurations
-        const AZStd::vector<PolygonPrismMeshUtils::Face>& faces = m_mesh.GetFaces();
-        size_t numFacesTotal = faces.size();
-
-        if (m_shapeType != ShapeType::PolygonPrism)
-        {
-            m_shapeConfigs.clear();
-            m_shapeType = ShapeType::PolygonPrism;
-        }
-
-        if (numFacesRemoved <= numFacesTotal)
-        {
-            m_shapeConfigs.reserve(numFacesTotal - numFacesRemoved);
-        }
-
-        const float unscaledPrismHeight = polygonPrismPtr->GetHeight();
-
-        const float transformScale = Utils::GetTransformScale(GetEntityId());
-        const AZ::Vector3 overallScale = transformScale * m_currentNonUniformScale;
-        m_geometryCache.m_height = overallScale.GetZ() * unscaledPrismHeight;
-
-        int shapeConfigsCount = 0;
-        bool refreshPropertyTree = false;
-
-        for (int faceIndex = 0; faceIndex < numFacesTotal; faceIndex++)
-        {
-            if (faces[faceIndex].m_removed)
-            {
-                continue;
-            }
-
-            AZStd::vector<AZ::Vector3> points;
-            points.reserve(2 * faces[faceIndex].m_numEdges);
-            PolygonPrismMeshUtils::HalfEdge* currentEdge = faces[faceIndex].m_edge;
-
-            for (int edgeIndex = 0; edgeIndex < faces[faceIndex].m_numEdges; edgeIndex++)
-            {
-                points.emplace_back(currentEdge->m_origin.GetX(), currentEdge->m_origin.GetY(), 0.0f);
-                points.emplace_back(currentEdge->m_origin.GetX(), currentEdge->m_origin.GetY(), unscaledPrismHeight);
-                currentEdge = currentEdge->m_next;
-            }
-
-            AZStd::optional<Physics::CookedMeshShapeConfiguration> shapeConfig = Utils::CreateJoltCookedMeshConfiguration(points, overallScale);
-
-            if (shapeConfig.has_value())
-            {
-                if (shapeConfigsCount >= m_shapeConfigs.size())
-                {
-                    m_shapeConfigs.push_back(AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(shapeConfig.value()));
-                    refreshPropertyTree = true;
-                }
-                else
-                {
-                    Physics::CookedMeshShapeConfiguration& configuration =
-                        static_cast<Physics::CookedMeshShapeConfiguration&>(*m_shapeConfigs[shapeConfigsCount]);
-                    configuration = Physics::CookedMeshShapeConfiguration(shapeConfig.value());
-                }
-
-                ++shapeConfigsCount;
-            }
-        }
-
-        if (m_shapeConfigs.size() != shapeConfigsCount)
-        {
-            refreshPropertyTree = true;
-            m_shapeConfigs.resize(shapeConfigsCount);
-        }
-
-        if (refreshPropertyTree)
-        {
-            RefreshUiProperties();
-        }
-    }
+    // void EditorShapeColliderComponent::UpdatePolygonPrismDecomposition()
+    // {
+    //     m_mesh.Clear();
+    //
+    //     AZ::PolygonPrismPtr polygonPrismPtr;
+    //     LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(polygonPrismPtr, GetEntityId(),
+    //         &LmbrCentral::PolygonPrismShapeComponentRequests::GetPolygonPrism);
+    //
+    //     if (polygonPrismPtr)
+    //     {
+    //         UpdatePolygonPrismDecomposition(polygonPrismPtr);
+    //     }
+    //
+    //     CreateStaticEditorCollider();
+    //     m_mesh.SetDebugDrawDirty();
+    //
+    //     m_shapeType = ShapeType::PolygonPrism;
+    // }
+    //
+    // void EditorShapeColliderComponent::UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr)
+    // {
+    //     const AZStd::vector<AZ::Vector2>& vertices = polygonPrismPtr->m_vertexContainer.GetVertices();
+    //
+    //     // if the polygon prism vertices do not form a simple polygon, we cannot perform the decomposition
+    //     if (!AZ::Geometry2DUtils::IsSimplePolygon(vertices))
+    //     {
+    //         if (!m_simplePolygonErrorIssued)
+    //         {
+    //             AZ_Error("Jolt Shape Collider Component", false, "Invalid polygon prism for entity \"%s\""
+    //                 " - must be a simple polygon (no self intersection or duplicate vertices) to be represented in Jolt.",
+    //                 GetEntity()->GetName().c_str());
+    //             m_simplePolygonErrorIssued = true;
+    //         }
+    //
+    //         m_mesh.Clear();
+    //         m_shapeConfigs.clear();
+    //
+    //         RefreshUiProperties();
+    //
+    //         return;
+    //     }
+    //
+    //     m_simplePolygonErrorIssued = false;
+    //     size_t numFacesRemoved = 0;
+    //
+    //     // If the polygon prism is already convex and meets the Jolt limit on convex mesh vertices/faces,
+    //     // then we don't need to do any complicated decomposition
+    //     if (vertices.size() <= PolygonPrismMeshUtils::MaxPolygonPrismEdges && AZ::Geometry2DUtils::IsConvex(vertices))
+    //     {
+    //         m_mesh.CreateFromSimpleConvexPolygon(vertices);
+    //     }
+    //     else
+    //     {
+    //         // Compute the constrained Delaunay triangulation using poly2tri // TODO: Again, maybe Jolt triangles here
+    //         AZStd::vector<p2t::Point> p2tVertices;
+    //         std::vector<p2t::Point*> polyline;
+    //         p2tVertices.reserve(vertices.size());
+    //         polyline.reserve(vertices.size());
+    //
+    //         int vertexIndex = 0;
+    //         for (const AZ::Vector2& vert : vertices)
+    //         {
+    //             p2tVertices.push_back(p2t::Point(vert.GetX(), vert.GetY()));
+    //             polyline.push_back(&(p2tVertices.data()[vertexIndex++]));
+    //         }
+    //
+    //         p2t::CDT constrainedDelaunayTriangulation(polyline);
+    //         constrainedDelaunayTriangulation.Triangulate();
+    //         const std::vector<p2t::Triangle*>& triangles = constrainedDelaunayTriangulation.GetTriangles();
+    //
+    //         // Iteratively merge faces if it's possible to do so while maintaining convexity
+    //         m_mesh.CreateFromPoly2Tri(triangles);
+    //         numFacesRemoved = m_mesh.ConvexMerge();
+    //     }
+    //
+    //     // Create the cooked convex mesh configurations
+    //     const AZStd::vector<PolygonPrismMeshUtils::Face>& faces = m_mesh.GetFaces();
+    //     size_t numFacesTotal = faces.size();
+    //
+    //     if (m_shapeType != ShapeType::PolygonPrism)
+    //     {
+    //         m_shapeConfigs.clear();
+    //         m_shapeType = ShapeType::PolygonPrism;
+    //     }
+    //
+    //     if (numFacesRemoved <= numFacesTotal)
+    //     {
+    //         m_shapeConfigs.reserve(numFacesTotal - numFacesRemoved);
+    //     }
+    //
+    //     const float unscaledPrismHeight = polygonPrismPtr->GetHeight();
+    //
+    //     const float transformScale = Utils::GetTransformScale(GetEntityId());
+    //     const AZ::Vector3 overallScale = transformScale * m_currentNonUniformScale;
+    //     m_geometryCache.m_height = overallScale.GetZ() * unscaledPrismHeight;
+    //
+    //     int shapeConfigsCount = 0;
+    //     bool refreshPropertyTree = false;
+    //
+    //     for (int faceIndex = 0; faceIndex < numFacesTotal; faceIndex++)
+    //     {
+    //         if (faces[faceIndex].m_removed)
+    //         {
+    //             continue;
+    //         }
+    //
+    //         AZStd::vector<AZ::Vector3> points;
+    //         points.reserve(2 * faces[faceIndex].m_numEdges);
+    //         PolygonPrismMeshUtils::HalfEdge* currentEdge = faces[faceIndex].m_edge;
+    //
+    //         for (int edgeIndex = 0; edgeIndex < faces[faceIndex].m_numEdges; edgeIndex++)
+    //         {
+    //             points.emplace_back(currentEdge->m_origin.GetX(), currentEdge->m_origin.GetY(), 0.0f);
+    //             points.emplace_back(currentEdge->m_origin.GetX(), currentEdge->m_origin.GetY(), unscaledPrismHeight);
+    //             currentEdge = currentEdge->m_next;
+    //         }
+    //
+    //         AZStd::optional<Physics::CookedMeshShapeConfiguration> shapeConfig = Utils::CreateJoltCookedMeshConfiguration(points, overallScale);
+    //
+    //         if (shapeConfig.has_value())
+    //         {
+    //             if (shapeConfigsCount >= m_shapeConfigs.size())
+    //             {
+    //                 m_shapeConfigs.push_back(AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(shapeConfig.value()));
+    //                 refreshPropertyTree = true;
+    //             }
+    //             else
+    //             {
+    //                 Physics::CookedMeshShapeConfiguration& configuration =
+    //                     static_cast<Physics::CookedMeshShapeConfiguration&>(*m_shapeConfigs[shapeConfigsCount]);
+    //                 configuration = Physics::CookedMeshShapeConfiguration(shapeConfig.value());
+    //             }
+    //
+    //             ++shapeConfigsCount;
+    //         }
+    //     }
+    //
+    //     if (m_shapeConfigs.size() != shapeConfigsCount)
+    //     {
+    //         refreshPropertyTree = true;
+    //         m_shapeConfigs.resize(shapeConfigsCount);
+    //     }
+    //
+    //     if (refreshPropertyTree)
+    //     {
+    //         RefreshUiProperties();
+    //     }
+    // }
 
     void EditorShapeColliderComponent::RefreshUiProperties()
     {

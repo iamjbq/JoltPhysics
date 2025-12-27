@@ -9,6 +9,8 @@
 
 #include <Scene/PhysicsSystemCallbacks.h>
 
+#include <Jolt/Jolt.h>
+
 namespace JoltPhysics
 {
     class JoltAllocator;

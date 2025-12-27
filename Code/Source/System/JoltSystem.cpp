@@ -1,4 +1,4 @@
-
+#include <System/JoltSystem.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -17,14 +17,14 @@
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
+#include "Jolt/Core/Core.h"
+#include "Jolt/Core/IssueReporting.h"
+#include "Jolt/Physics/Collision/PhysicsMaterial.h"
 
-#include <System/JoltSystem.h>
 #include <Scene/JoltScene.h>
 #include <System/JoltJobSystemThreaded.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
-
-#include "Jolt/Core/Core.h"
-#include "Jolt/Core/IssueReporting.h"
+#include <Material/JoltPhysicsMaterial.h>
 
 // only enable Jolt timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
