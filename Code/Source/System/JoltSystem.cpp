@@ -60,7 +60,7 @@ namespace JoltPhysics
 
 #endif // JPH_ENABLE_ASSERTS
 
-    // I don't know what the implementation of this looks like yet
+    // TODO: FrameTimeWarning
 #ifdef ENABLE_JOLT_TIMESTEP_WARNING
     namespace FrameTimeWarning
     {
@@ -124,7 +124,7 @@ namespace JoltPhysics
         JPH::Trace = JoltTraceImpl;
         JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = JoltPhysics::JoltAssertFailedImpl);
 
-        // TODO: Eventually create a JoltAllocator class in O3DE
+        // TODO: Maybe create a JoltAllocator class in O3DE
         // JPH::Allocate = ;
         // JPH::Free = ;
         // JPH::Reallocate = ;
@@ -138,6 +138,8 @@ namespace JoltPhysics
         m_defaultMaterial->AddRef();
         JPH::PhysicsMaterial::sDefault = m_defaultMaterial;
 
+        // TODO: fix JoltAllocator as static_buffer_allocator
+        // TODO: fix JoltJobSystem. No jobs available bug
         // m_allocator = AZStd::make_unique<JoltAzAllocatorCallback>();
         m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(cAllocationArenaSize);
         // m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);

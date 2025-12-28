@@ -227,7 +227,7 @@ namespace JoltPhysics
         m_defaultWorldComponent.Activate();
 
         Physics::SystemRequestBus::Handler::BusConnect();
-        // JoltPhysicsRequestBus::Handler::BusConnect();
+        // JoltPhysicsRequestBus::Handler::BusConnect(); // TODO: maybe remove
         Physics::CollisionRequestBus::Handler::BusConnect();
 
         ActivateSimulation();

@@ -13,10 +13,10 @@ namespace JoltPhysics
 
     JoltSettingsRegistryManager::JoltSettingsRegistryManager()
     {
+        // TODO: implement debug config
         m_settingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/JoltSystemConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-        // m_settingsRegistryPath = AZStd::string::format("%s/" JOLT_SETREG_GEM_NAME "/JoltSystemConfiguration", AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
         m_defaultSceneConfigSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/DefaultSceneConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-        // m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/Debug/PhysXDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
+        // m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/Debug/JoltDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
     }
 
     AZStd::optional<JoltSystemConfiguration> JoltSettingsRegistryManager::LoadSystemConfiguration() const

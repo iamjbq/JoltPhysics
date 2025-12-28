@@ -105,13 +105,12 @@ namespace JoltPhysics
         State m_state = State::Uninitialized;
 
         // 10 MB is given in HelloWorld example, but this is ~268 MB
-        // TODO: Move to editor eventually
+        // TODO: Add physics init variables to settings registry
         [[maybe_unused]] const unsigned int cAllocationArenaSize = 256 * 1024 * 1024;
 
         JoltPhysicsMaterial* m_defaultMaterial = nullptr;
 
         // All systems can share these as long as they are updated consecutively.
-        // TODO: add JoltAllocator instance
         // AZStd::unique_ptr<JoltAzAllocatorCallback> m_allocator;
         AZStd::unique_ptr<JPH::TempAllocatorImpl> m_allocator;
         // AZStd::unique_ptr<JoltJobSystemThreaded> m_jobSystem;
