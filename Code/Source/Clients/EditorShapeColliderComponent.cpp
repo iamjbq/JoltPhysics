@@ -334,7 +334,7 @@ namespace JoltPhysics
 
         else if (shapeCrc == ShapeConstants::PolygonPrism)
         {
-            UpdatePolygonPrismDecomposition();
+            // UpdatePolygonPrismDecomposition();
         }
 
         else if (shapeCrc == ShapeConstants::Cylinder)
