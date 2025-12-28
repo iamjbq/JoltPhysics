@@ -188,7 +188,7 @@ namespace JoltPhysics
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationStartEvent::Signaled");
             m_sceneSimulationStartEvent.Signal(m_sceneHandle, deltaTime);
         }
-        
+
         m_currentDeltaTime = deltaTime;
         m_physicsSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem);
     }
@@ -581,7 +581,7 @@ namespace JoltPhysics
     {
         AZ_PROFILE_SCOPE(Physics, "Jolt::FlushTransformSync");
 
-        auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
+        [[maybe_unused]] auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
         {
             if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
             {
@@ -603,9 +603,9 @@ namespace JoltPhysics
             m_physicsSystem->SetContactListener(&m_contactListener);
             m_physicsSystem->SetBodyActivationListener(&m_activationListener);
             m_physicsSystem->SetGravity(JoltMathConvert(m_gravity));
-            
+
             m_bodyInterface = &m_physicsSystem->GetBodyInterface();
-            
+
             m_physicsSystem->OptimizeBroadPhase();
         }
     }
