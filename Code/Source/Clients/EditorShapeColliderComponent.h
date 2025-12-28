@@ -10,7 +10,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <JoltPhysics/ColliderShapeBus.h>
-#include <Editor/PolygonPrismMeshUtils.h>
+// #include <Editor/PolygonPrismMeshUtils.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 

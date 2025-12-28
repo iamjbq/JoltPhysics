@@ -3,7 +3,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/Math/Vector2.h>
-#include <poly2tri.h>
+// #include <poly2tri.h>
 
 namespace PolygonPrismMeshUtils
 {
