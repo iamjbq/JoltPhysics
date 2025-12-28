@@ -51,7 +51,7 @@ get_property(
         DIRECTORY
         PROPERTY COMPILE_OPTIONS
 )
-include(${pal_dir}/PAL_jolt_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # Temporarily disable CMake deprecation warnings from library with lower CMake version than O3DE
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
@@ -245,7 +245,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 ${gem_name}.Private.Object
                 Gem::CommonFeaturesAtom.Static
-		        Jolt::Jolt
+          Jolt::Jolt
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
     )
@@ -274,13 +274,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # This is to allow renaming of the gem to also cause
     # the CreateModuleClass_Gem_<gem-name> function which
     # is used to bootstrap the gem in monolithic builds to link to the new gem name
-#    ly_add_source_properties(
-#    SOURCES
-#        Source/Tools/JoltPhysicsEditorModule.cpp
-#    PROPERTY COMPILE_DEFINITIONS
-#        VALUES
-#            O3DE_GEM_NAME=${gem_name}
-#            O3DE_GEM_VERSION=${gem_version})
+    #    ly_add_source_properties(
+    #    SOURCES
+    #        Source/Tools/JoltPhysicsEditorModule.cpp
+    #    PROPERTY COMPILE_DEFINITIONS
+    #        VALUES
+    #            O3DE_GEM_NAME=${gem_name}
+    #            O3DE_GEM_VERSION=${gem_version})
 
     # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
