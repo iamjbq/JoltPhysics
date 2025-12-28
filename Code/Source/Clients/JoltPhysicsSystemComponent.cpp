@@ -286,22 +286,49 @@ namespace JoltPhysics
 
         if (m_joltSystem)
         {
-            // Basic default config for testing
-            // TODO: implement settings registry manager
             m_joltSystem->RegisterSystemInitializedEvent(m_onSystemInitializedHandler);
             m_joltSystem->RegisterSystemConfigurationChangedEvent(m_onSystemConfigChangedHandler);
 
-            const JoltSystemConfiguration defaultConfig = JoltSystemConfiguration::CreateDefault();
-            m_joltSystem->Initialize(&defaultConfig);
+            const JoltSettingsRegistryManager& registryManager = m_joltSystem->GetSettingsRegistryManager();
+            if (AZStd::optional<JoltSystemConfiguration> config = registryManager.LoadSystemConfiguration();
+                config.has_value())
+            {
+                m_joltSystem->Initialize(&(*config));
+            }
+            else //load defaults if there is no config
+            {
+                const JoltSystemConfiguration defaultConfig = JoltSystemConfiguration::CreateDefault();
+                m_joltSystem->Initialize(&defaultConfig);
 
-            // Default scene configuration for testing without settings
-            const AzPhysics::SceneConfiguration defaultSceneConfig = AzPhysics::SceneConfiguration::CreateDefault();
-            m_joltSystem->UpdateDefaultSceneConfiguration(defaultSceneConfig);
+                auto saveCallback = []([[maybe_unused]] const JoltSystemConfiguration& config, [[maybe_unused]] JoltSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("JoltPhysics", result == JoltSettingsRegistryManager::Result::Success,
+                        "Unable to save the default Jolt configuration.");
+                };
+                registryManager.SaveSystemConfiguration(defaultConfig, saveCallback);
+            }
 
-            AZ_Info("JoltSystemComponent", "Simulation activated")
+            //Load the DefaultSceneConfig
+            if (AZStd::optional<AzPhysics::SceneConfiguration> config = registryManager.LoadDefaultSceneConfiguration();
+                config.has_value())
+            {
+                m_joltSystem->UpdateDefaultSceneConfiguration((*config));
+            }
+            else //load defaults if there is no config
+            {
+                const AzPhysics::SceneConfiguration defaultConfig = AzPhysics::SceneConfiguration::CreateDefault();
+                m_joltSystem->UpdateDefaultSceneConfiguration(defaultConfig);
+
+                auto saveCallback = []([[maybe_unused]] const AzPhysics::SceneConfiguration& config, [[maybe_unused]] JoltSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("JoltPhysics", result == JoltSettingsRegistryManager::Result::Success,
+                        "Unable to save the default Scene configuration.");
+                };
+                registryManager.SaveDefaultSceneConfiguration(defaultConfig, saveCallback);
+            }
         }
 
-        AZ_Info("JoltSystemComponent", "JoltSystem was null")
+        
         m_materialManager = AZStd::make_unique<MaterialManager>();
         m_materialManager->Init();
     }
