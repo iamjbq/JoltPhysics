@@ -50,20 +50,20 @@ namespace JoltPhysics
 	    switch (broadPhase)
 	    {
 			case JoltBroadPhaseLayer::Static:
-	    		return (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character));
+	    		return 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character);
 
 			case JoltBroadPhaseLayer::Dynamic:
-	    		return (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Static)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Trigger));
+	    		return 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Static) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Trigger);
 
 	    	case JoltBroadPhaseLayer::Trigger:
-	    		return (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character));
+	    		return 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character);
 
 		    // Queries should not interact with anything
 		    case JoltBroadPhaseLayer::Query:
 	    		return 0;
 
 			case JoltBroadPhaseLayer::Character:
-	    		return (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Static)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character)) | (1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Trigger));
+	    		return 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Static) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Character) | 1 << static_cast<AZ::u8>(JoltBroadPhaseLayer::Trigger);
 
 		    default: ;
 	    }
@@ -104,9 +104,9 @@ namespace JoltPhysics
 		}
 
 	#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-		[[nodiscard]] const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
+		[[nodiscard]] const char* GetBroadPhaseLayerName([[maybe_unused]] JPH::BroadPhaseLayer inLayer) const override
 		{
-			switch (auto layer = static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer)))
+			switch ([[maybe_unused]] auto layer = static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer)))
 			{
 			case JoltBroadPhaseLayer::Static:
 				return "Static";

@@ -67,11 +67,17 @@ namespace JoltPhysics
 
         AzPhysics::Scene* GetDefaultScene();
 
+        JPH::Shape* CreateJoltShapeFromConfig(
+            const Physics::ColliderConfiguration& colliderConfiguration,
+            const Physics::ShapeConfiguration& shapeConfiguration,
+            AzPhysics::CollisionGroup& assignedCollisionGroup
+        );
+
         bool ComputeJoltShapeFromConfig(
             const Physics::ShapeConfiguration& shapeConfiguration,
             JPH::Shape::ShapeResult& outResult,
             AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
-        
+
         void CreateJoltShapeResultFromHeightField(
             Physics::HeightfieldShapeConfiguration& heightfieldConfig,
             JPH::Shape::ShapeResult& outResult,
@@ -81,12 +87,6 @@ namespace JoltPhysics
             const Physics::HeightfieldShapeConfiguration& heightfield,
             const size_t startCol, const size_t startRow,
             const size_t numColsToUpdate, const size_t numRowsToUpdate);
-
-        JPH::Shape* CreateJoltShapeFromConfig(
-            const Physics::ColliderConfiguration& colliderConfiguration,
-            const Physics::ShapeConfiguration& shapeConfiguration,
-            AzPhysics::CollisionGroup& assignedCollisionGroup
-        );
 
         AZ::u32 ConstructObjectLayer(
             const AzPhysics::CollisionLayer& assignedCollisionLayer,

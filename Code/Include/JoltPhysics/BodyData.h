@@ -55,7 +55,7 @@ namespace JoltPhysics
         bool IsValid() const;
 
     private:
-        using JoltBodyUniquePtr = AZStd::unique_ptr<JPH::Body, AZStd::function<void(JPH::Body*)> >;
+        using JoltBodyUniquePtr = AZStd::unique_ptr<JPH::Body, AZStd::function<void(JPH::Body*)>>;
 
         /// This is an arbitrary value used to verify the cast from JPH::uint64 mUserData on a Jolt Body to BodyData
         /// is safe. If m_sanity does not have this value, then it is not safe to use the casted pointer.

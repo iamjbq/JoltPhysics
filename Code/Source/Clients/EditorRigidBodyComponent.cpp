@@ -524,7 +524,7 @@ namespace JoltPhysics
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
         configuration.m_colliderAndShapeData = Internal::CreateCollisionShapes(GetEntity());
-        // TODO something breaks here
+
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_editorRigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);

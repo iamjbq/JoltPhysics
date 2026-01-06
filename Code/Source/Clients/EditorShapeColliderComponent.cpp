@@ -412,7 +412,7 @@ namespace JoltPhysics
         }
         else
         {
-            // it's not possible to create a perfectly 2d convex in PhysX, so the best we can do is a very thin box
+            // (fix) it's not possible to create a perfectly 2d convex in PhysX, so the best we can do is a very thin box
             const float zDim = AZ::GetMax(minDimension, 1e-3f * AZ::GetMin(xDim, yDim));
             const AZ::Vector3 boxDimensions(xDim, yDim, zDim);
 

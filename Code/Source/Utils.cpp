@@ -34,6 +34,7 @@
 #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <JoltPhysics/Utils.h>
@@ -136,6 +137,46 @@ namespace JoltPhysics
             return nullptr;
         }
 
+        JPH::Shape* CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
+                                              const Physics::ShapeConfiguration& shapeConfiguration,
+                                              AzPhysics::CollisionGroup& assignedCollisionGroup)
+        {
+            // We get the materials from the collider config here and extract them to set on a shape
+            // We can't set Jolt materials on base shapes because we need to know the type
+            AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
+            AZStd::vector<const JoltPhysicsMaterial*> joltMaterials(materials.size(), nullptr);
+            for (size_t materialIndex = 0; materialIndex < materials.size(); ++materialIndex)
+            {
+                joltMaterials[materialIndex] = materials[materialIndex]->GetJoltMaterial();
+            }
+
+            JPH::Shape::ShapeResult outResult;
+            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outResult, joltMaterials))
+            {
+                return nullptr;
+            }
+
+            if (outResult.HasError()) // This should never be true if the above condition passes
+            {
+                AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
+                return nullptr;
+            }
+            JPH::Shape* newShape = outResult.Get();
+            JPH::Ref<JPH::RotatedTranslatedShape> offsetShape = new JPH::RotatedTranslatedShape(
+                JoltMathConvert(colliderConfiguration.m_position),
+                JoltMathConvert(colliderConfiguration.m_rotation),
+                newShape);
+
+            offsetShape->AddRef();
+
+            // TODO: this really should be moved to out if possible
+            AzPhysics::CollisionGroup collisionGroup;
+            Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
+            assignedCollisionGroup = collisionGroup;
+
+            return offsetShape;
+        }
+
         bool ComputeJoltShapeFromConfig(
             const Physics::ShapeConfiguration& shapeConfiguration,
             JPH::Shape::ShapeResult& outResult,
@@ -158,7 +199,7 @@ namespace JoltPhysics
                         AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius)
                         return false;
                     }
-                    
+
                     JPH::SphereShapeSettings settings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
@@ -173,7 +214,7 @@ namespace JoltPhysics
                             AZStd::to_string(boxConfig.m_dimensions).c_str())
                         return false;
                     }
-                    
+
                     JPH::BoxShapeSettings settings(
                         JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale),
                         JPH::cDefaultConvexRadius,
@@ -202,7 +243,7 @@ namespace JoltPhysics
                             capsuleConfig.m_height, capsuleConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
-                    
+
                     JPH::CapsuleShapeSettings settings(halfHeight, radius, inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
@@ -224,7 +265,7 @@ namespace JoltPhysics
                     auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
 
                     CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult, inMaterials);
-                    
+
                     break;
                 }
             default:
@@ -352,41 +393,6 @@ namespace JoltPhysics
             }
 
             return heightSamples;
-        }
-
-        JPH::Shape* CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
-                                              const Physics::ShapeConfiguration& shapeConfiguration,
-                                              AzPhysics::CollisionGroup& assignedCollisionGroup)
-        {
-            // We get the materials from the collider config here and extract them to set on a shape
-            // We can't set Jolt materials on base shapes because we need to know the type
-            AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
-            AZStd::vector<const JoltPhysicsMaterial*> joltMaterials(materials.size(), nullptr);
-            for (size_t materialIndex = 0; materialIndex < materials.size(); ++materialIndex)
-            {
-                joltMaterials[materialIndex] = materials[materialIndex]->GetJoltMaterial();
-            }
-
-            JPH::Shape::ShapeResult outResult;
-            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outResult, joltMaterials))
-            {
-                return nullptr;
-            }
-            
-            if (outResult.HasError()) // This should never be true if the above condition passes
-            {
-                AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
-                return nullptr;
-            }
-            
-            JPH::Shape* newShape = outResult.Get();
-            newShape->AddRef();
-            
-            AzPhysics::CollisionGroup collisionGroup;
-            Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
-            assignedCollisionGroup = collisionGroup;
-            
-            return newShape;
         }
 
         // Called in AddShape
