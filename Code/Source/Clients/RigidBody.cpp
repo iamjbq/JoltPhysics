@@ -580,6 +580,7 @@ namespace JoltPhysics
             const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
             m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
         }
+        joltShape->SetInternalPhysicsSystem(m_owningSystem);
         joltShape->AttachedToActor(m_joltRigidBody);
         m_shapes.push_back(joltShape);
     }
@@ -609,6 +610,7 @@ namespace JoltPhysics
         m_shapes.erase(found);
     }
 
+    // TODO: Determine appropriate mass properties to reflect and set
     void RigidBody::UpdateMassProperties(
         [[maybe_unused]] AzPhysics::MassComputeFlags flags,
         [[maybe_unused]] const AZ::Vector3& centerOfMassOffsetOverride,
@@ -663,6 +665,7 @@ namespace JoltPhysics
         {
             AZ_Warning("RigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
         }
+        // TODO: When an eneity is duplicated in editor, this is somehow copied
         m_bodyUserData = BodyData(m_joltRigidBody);
         m_bodyUserData.SetRigidBody(this);
 

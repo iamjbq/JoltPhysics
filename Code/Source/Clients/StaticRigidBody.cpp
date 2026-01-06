@@ -105,6 +105,7 @@ namespace JoltPhysics
                 const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
                 m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltStaticBody->GetID(), newLayer);
             }
+            joltShape->SetInternalPhysicsSystem(m_owningSystem);
             joltShape->AttachedToActor(m_joltStaticBody);
             m_shapes.push_back(joltShape);
         }
