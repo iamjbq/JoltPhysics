@@ -13,6 +13,7 @@
 #include <Editor/ConfigurationWidget.h>
 #include <System/JoltSystem.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
+#include "EditorWindow.h"
 
 namespace JoltPhysics
 {
@@ -39,6 +40,10 @@ namespace JoltPhysics
                 this, &EditorWindow::SaveConfiguration);
         }
 
+        EditorWindow::~EditorWindow()
+        {
+        }
+        
         void EditorWindow::RegisterViewClass()
         {
             AzToolsFramework::ViewPaneOptions options;

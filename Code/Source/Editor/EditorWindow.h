@@ -45,6 +45,7 @@ namespace JoltPhysics
             static void RegisterViewClass();
 
             explicit EditorWindow(QWidget* parent = nullptr);
+            ~EditorWindow() override;
 
         private:
             static void SaveConfiguration(

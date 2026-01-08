@@ -33,6 +33,9 @@ FetchContent_Declare(
 # please always be really clear about what third parties your gem uses.
 message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 036ea7b (License: MIT)")
 
+# O3DE requires RTTI to be enabled for engine
+set(CPP_RTTI_ENABLED ON)
+
 # Compile flags for Jolt
 set(OBJECT_LAYER_BITS 32) # Number of bits to use in ObjectLayer. Can be 16 or 32.
 # When turning this option on, the library will be compiled in such a way to attempt to keep the simulation deterministic across platforms
