@@ -23,8 +23,6 @@ namespace JoltPhysics
 {
     class Material;
 
-    // TODO: These are called continuously in editor
-    // [Warning] (JoltPhysics::Shape) - RayCast not currently implemented
     class Shape
         : public Physics::Shape
         , public AZStd::enable_shared_from_this<Shape>

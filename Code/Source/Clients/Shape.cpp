@@ -1,17 +1,16 @@
 
 #include <Clients/Shape.h>
-#include <Utils.h>
-#include <JoltPhysics/Utils.h>
-
-#include <JoltPhysics/Material/JoltMaterial.h>
-#include "JoltPhysics/MathConversions.h"
 
 #include <Jolt/Physics/Body/Body.h>
 #include "Jolt/Physics/PhysicsSystem.h"
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
-
 #include "Jolt/Physics/Collision/CollisionCollectorImpl.h"
+
+#include <Utils.h>
+#include <JoltPhysics/Utils.h>
+#include <JoltPhysics/Material/JoltMaterial.h>
+#include "JoltPhysics/MathConversions.h"
 #include "JoltPhysics/BodyData.h"
 
 namespace JoltPhysics
