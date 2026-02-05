@@ -90,7 +90,7 @@ namespace JoltPhysics
         if (saveCallback)
         {
             saveCallback(config, Result::Failed);
-        } 
+        }
     }
 
     void JoltSettingsRegistryManager::SaveDefaultSceneConfiguration([[maybe_unused]] const AzPhysics::SceneConfiguration& config, const OnDefaultSceneConfigSaveComplete& saveCallback) const

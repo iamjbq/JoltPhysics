@@ -665,7 +665,7 @@ namespace JoltPhysics
         {
             AZ_Warning("RigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
         }
-        // TODO: When an eneity is duplicated in editor, this is somehow copied
+
         m_bodyUserData = BodyData(m_joltRigidBody);
         m_bodyUserData.SetRigidBody(this);
 

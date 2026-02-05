@@ -224,36 +224,34 @@ namespace JoltPhysics
                 return AzPhysics::SceneQueryHit();
             }
 
-            JPH::RRayCast inRay(
+            JPH::RayCast inRay(
                 JoltMathConvert(worldSpaceRequest.m_start),
                 JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
-                );
-            JPH::RayCastSettings rayCastSettings;
-            JPH::ClosestHitCollisionCollector<JPH::CastRayCollector> collector;
+            );
 
             // Convert the ray to center of mass space for the shape
-            // inRay.mOrigin -= m_joltShape->GetCenterOfMass();
+            inRay.mOrigin -= m_joltShape->GetCenterOfMass();
 
-            m_attachedSystem->GetNarrowPhaseQuery().CastRay(inRay, rayCastSettings, collector);
+            JPH::RayCastResult hitResult;
 
-            if (collector.HadHit())
+            if (m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), hitResult))
             {
                 // TODO: put this in a convenience function
                 AzPhysics::SceneQueryHit returnHit;
 
-                returnHit.m_distance = worldSpaceRequest.m_distance * collector.mHit.mFraction;
+                returnHit.m_distance = worldSpaceRequest.m_distance * hitResult.mFraction;
                 returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Distance;
 
-                JPH::Vec3 hitPosition = m_attachedSystem->GetBodyInterface().GetWorldTransform(collector.mHit.mBodyID).GetTranslation();
+                JPH::Vec3 hitPosition = m_attachedSystem->GetBodyInterface().GetWorldTransform(hitResult.mBodyID).GetTranslation();
                 returnHit.m_position = JoltMathConvert(hitPosition);
                 returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Position;
 
-                JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(collector.mHit.mBodyID);
-                JPH::Vec3 hitNormal = transformedShape.GetWorldSpaceSurfaceNormal(collector.mHit.mSubShapeID2, hitPosition);
+                JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(hitResult.mBodyID);
+                JPH::Vec3 hitNormal = transformedShape.GetWorldSpaceSurfaceNormal(hitResult.mSubShapeID2, hitPosition);
                 returnHit.m_normal = JoltMathConvert(hitNormal);
                 returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
 
-                const auto* bodyData = reinterpret_cast<BodyData*>(m_attachedSystem->GetBodyInterface().GetUserData(collector.mHit.mBodyID));
+                const auto* bodyData = reinterpret_cast<BodyData*>(m_attachedSystem->GetBodyInterface().GetUserData(hitResult.mBodyID));
                 returnHit.m_bodyHandle = bodyData->GetBodyHandle();
                 if (returnHit.m_bodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
                 {
@@ -263,19 +261,18 @@ namespace JoltPhysics
                 returnHit.m_entityId = bodyData->GetEntityId();
                 if (returnHit.m_entityId.IsValid())
                 {
-                    AZ_Printf("Shape::RayCast", "Entity hit: %llu", returnHit.m_entityId)
                     returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::EntityId;
                 }
 
-                returnHit.m_shape = reinterpret_cast<JoltPhysics::Shape*>(m_attachedSystem->GetBodyInterface().GetShape(collector.mHit.mBodyID)->GetUserData());
+                returnHit.m_shape = reinterpret_cast<JoltPhysics::Shape*>(m_attachedSystem->GetBodyInterface().GetShape(hitResult.mBodyID)->GetUserData());
                 if (returnHit.m_shape != nullptr)
                 {
                     returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Shape;
                 }
 
-                if (!collector.mHit.mSubShapeID2.IsEmpty())
+                if (!hitResult.mSubShapeID2.IsEmpty())
                 {
-                    auto* joltMaterial = dynamic_cast<const JoltPhysicsMaterial*>(m_attachedSystem->GetBodyInterface().GetMaterial(collector.mHit.mBodyID, collector.mHit.mSubShapeID2));
+                    auto* joltMaterial = dynamic_cast<const JoltPhysicsMaterial*>(m_attachedSystem->GetBodyInterface().GetMaterial(hitResult.mBodyID, hitResult.mSubShapeID2));
                     returnHit.m_physicsMaterialId = static_cast<Physics::Material*>(joltMaterial->m_userData)->GetId();
                 }
                 else if (returnHit.m_shape != nullptr)
@@ -289,6 +286,9 @@ namespace JoltPhysics
 
                 return returnHit;
             }
+
+            AZ_Warning("Shape::RayCast", false, "No hit returned")
+            return AzPhysics::SceneQueryHit();
         }
 
         AZ_Warning("Shape::RayCast", false, "Jolt shape was null")
