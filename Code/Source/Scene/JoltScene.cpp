@@ -219,7 +219,6 @@ namespace JoltPhysics
             {
                 AZ::u32 activeRigidBodiesCount = 0;
                 activeRigidBodiesCount = m_physicsSystem->GetNumActiveBodies(JPH::EBodyType::RigidBody);
-                // AZ_Printf("JoltScene", "There are %d active bodies", activeRigidBodiesCount)
 
                 activeBodyHandles.reserve(activeRigidBodiesCount);
                 JPH::BodyIDVector activeRigidBodies;
@@ -229,7 +228,6 @@ namespace JoltPhysics
 
                 for (AZ::u32 i = 0; i < activeRigidBodiesCount; ++i)
                 {
-
                     if (auto* bodyData = reinterpret_cast<BodyData*>(m_bodyInterface->GetUserData(activeRigidBodies[i])))
                     {
                         activeBodyHandles.emplace_back(bodyData->GetBodyHandle());
@@ -326,7 +324,7 @@ namespace JoltPhysics
             }
             else
             {
-                //fill any free slots first before increasing the size of the simulatedBodies vector.
+                // Fill any free slots first before increasing the size of the simulatedBodies vector.
                 index = m_freeSceneSlots.front();
                 m_freeSceneSlots.pop();
                 AZ_Assert(index < m_simulatedBodies.size(), "JoltScene::AddSimulatedBody: Free simulated body index is out of bounds");
@@ -616,9 +614,8 @@ namespace JoltPhysics
         // if (!azrtti_istypeof<JoltPhysics::CharacterController>(body) &&
         //     !azrtti_istypeof<JoltPhysics::Ragdoll>(body) &&
         //     !azrtti_istypeof<JoltPhysics::ArticulationLink>(body))
-        if (body.GetNativePointer() != nullptr) // TODO: temp fix to test basic shapes first
+        if (auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer())) // TODO: temp fix to test basic shapes first
         {
-            auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer());
             AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
             {
                 m_bodyInterface->ActivateBody(joltBody->GetID());
@@ -643,9 +640,8 @@ namespace JoltPhysics
         // if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
         //     !azrtti_istypeof<PhysX::Ragdoll>(body) &&
         //     !azrtti_istypeof<PhysX::ArticulationLink>(body))
-        if (body.GetNativePointer()) // TODO: temp fix to test basic shapes first
+        if (auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer())) // TODO: temp fix to test basic shapes first
         {
-            auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer());
             AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
 
             {

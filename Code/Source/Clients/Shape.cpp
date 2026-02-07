@@ -8,10 +8,12 @@
 #include "Jolt/Physics/Collision/CollisionCollectorImpl.h"
 
 #include <Utils.h>
+#include <AzCore/Component/EntityBus.h>
 #include <JoltPhysics/Utils.h>
 #include <JoltPhysics/Material/JoltMaterial.h>
 #include "JoltPhysics/MathConversions.h"
 #include "JoltPhysics/BodyData.h"
+#include "System/JoltSystem.h"
 
 namespace JoltPhysics
 {
@@ -224,17 +226,28 @@ namespace JoltPhysics
                 return AzPhysics::SceneQueryHit();
             }
 
-            JPH::RayCast inRay(
+            // JPH::RayCast inRay(
+            //     JoltMathConvert(worldSpaceRequest.m_start),
+            //     JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
+            // );
+
+            // Convert the ray to center of mass space for the shape
+            // inRay.mOrigin -= m_joltShape->GetCenterOfMass();
+            // inRay.mOrigin -= JoltMathConvert(worldTransform.GetTranslation());
+
+            // JPH::RayCastResult hitResult;
+            // bool hadHit = m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), hitResult);
+
+            JPH::RRayCast inRay(
                 JoltMathConvert(worldSpaceRequest.m_start),
                 JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
             );
+            JPH::RayCastSettings rayCastSettings;
+            JPH::ClosestHitCollisionCollector<JPH::CastRayCollector> collector;
+            m_attachedSystem->GetNarrowPhaseQuery().CastRay(inRay, rayCastSettings, collector);
+            auto hitResult = collector.mHit;
 
-            // Convert the ray to center of mass space for the shape
-            inRay.mOrigin -= m_joltShape->GetCenterOfMass();
-
-            JPH::RayCastResult hitResult;
-
-            if (m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), hitResult))
+            if (collector.HadHit())
             {
                 // TODO: put this in a convenience function
                 AzPhysics::SceneQueryHit returnHit;
@@ -252,6 +265,10 @@ namespace JoltPhysics
                 returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
 
                 const auto* bodyData = reinterpret_cast<BodyData*>(m_attachedSystem->GetBodyInterface().GetUserData(hitResult.mBodyID));
+                if (!bodyData->IsValid())
+                {
+                    AZ_Warning("Shape::RayCast", false, "BodyData is not valid")
+                }
                 returnHit.m_bodyHandle = bodyData->GetBodyHandle();
                 if (returnHit.m_bodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
                 {
@@ -261,6 +278,7 @@ namespace JoltPhysics
                 returnHit.m_entityId = bodyData->GetEntityId();
                 if (returnHit.m_entityId.IsValid())
                 {
+                    AZ_Printf("Shape::RayCast", "Entity hit: %s", returnHit.m_entityId.ToString().c_str())
                     returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::EntityId;
                 }
 
@@ -284,6 +302,7 @@ namespace JoltPhysics
                     returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Material;
                 }
 
+                AZ_Printf("Shape::RayCast", "Hit")
                 return returnHit;
             }
 
