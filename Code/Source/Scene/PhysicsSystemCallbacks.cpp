@@ -29,7 +29,7 @@ namespace JoltPhysics
         else
         {
             // If it's not the default material we know it's a material that we created so we can cast it and get the values
-            const JoltPhysicsMaterial* userMat = static_cast<const JoltPhysicsMaterial*>(material);
+            const auto* userMat = dynamic_cast<const JoltPhysicsMaterial*>(material);
             outFriction = userMat->GetFriction();
             outFrictionCombine = azdynamic_cast<JoltPhysics::Material*>(Utils::GetUserData(userMat))->GetFrictionCombineMode();
             outRestitution = userMat->GetRestitution();
@@ -187,6 +187,11 @@ namespace JoltPhysics
         [[maybe_unused]] const JPH::SoftBodyManifold& inManifold)
     {
         // TODO: Figure out what needs to be done here
+    }
+
+    AzPhysics::CollisionEventList& JoltSoftBodyContactListener::GetQueuedCollisionEvents()
+    {
+        return m_queuedCollisionEvents;
     }
 
     // JoltBodyActivationListener

@@ -17,11 +17,11 @@ namespace JoltPhysics
     class JoltContactListener : public JPH::ContactListener
     {
     public:
-        virtual JPH::ValidateResult	OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult& inCollisionResult) override;
+        JPH::ValidateResult	OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult& inCollisionResult) override;
 
-        virtual void OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings) override;
-        virtual void OnContactPersisted(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings) override;
-        virtual void OnContactRemoved(const JPH::SubShapeIDPair& inSubShapePair) override;
+        void OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings) override;
+        void OnContactPersisted(const JPH::Body& inBody1, const JPH::Body& inBody2, const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings) override;
+        void OnContactRemoved(const JPH::SubShapeIDPair& inSubShapePair) override;
 
         /// Extract custom friction and restitution from a body and sub shape ID
         static void GetFrictionAndRestitution(const JPH::Body &inBody, const JPH::SubShapeID &inSubShapeID, float &outFriction, float &outRestitution, CombineMode& outFrictionCombine, CombineMode& outRestitutionCombine);
@@ -50,9 +50,9 @@ namespace JoltPhysics
     class JoltSoftBodyContactListener : public JPH::SoftBodyContactListener
     {
     public:
-        virtual JPH::SoftBodyValidateResult OnSoftBodyContactValidate(const JPH::Body& inSoftBody, const JPH::Body& inOtherBody, JPH::SoftBodyContactSettings& ioSettings) override;
+        JPH::SoftBodyValidateResult OnSoftBodyContactValidate(const JPH::Body& inSoftBody, const JPH::Body& inOtherBody, JPH::SoftBodyContactSettings& ioSettings) override;
 
-        virtual void OnSoftBodyContactAdded(const JPH::Body& inSoftBody, const JPH::SoftBodyManifold& inManifold) override;
+        void OnSoftBodyContactAdded(const JPH::Body& inSoftBody, const JPH::SoftBodyManifold& inManifold) override;
 
         //! Accessor to the queued Collision / trigger Events.
         AzPhysics::CollisionEventList& GetQueuedCollisionEvents();
@@ -67,8 +67,8 @@ namespace JoltPhysics
     class JoltBodyActivationListener : public JPH::BodyActivationListener
     {
     public:
-        virtual void OnBodyActivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override;
-        virtual void OnBodyDeactivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override;
+        void OnBodyActivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override;
+        void OnBodyDeactivated(const JPH::BodyID& inBodyID, JPH::uint64 inBodyUserData) override;
 
         
     };
