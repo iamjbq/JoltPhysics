@@ -25,9 +25,8 @@ namespace JoltPhysics
         {
             AZ::u64 collisionMask1 = m_collisionGroupMasks->at(inObject1 >> 16);
             AZ::u64 collisionMask2 = m_collisionGroupMasks->at(inObject2 >> 16);
-            const bool testVal = collisionMask1 & collisionLayer2 && collisionMask2 & collisionLayer1;
-            AZ_Printf("ObjectLayerPairFilterImpl::ShouldCollide", "%s", testVal ? "true" : "false");
-            return testVal;
+
+            return collisionMask1 & collisionLayer2 && collisionMask2 & collisionLayer1;
         }
         AZ_Warning("ObjectLayerPairFilterImpl", false, "JoltSystem pointer was null.")
         return false;

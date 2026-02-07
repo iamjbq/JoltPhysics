@@ -141,10 +141,9 @@ namespace JoltPhysics
 		{
 			// BroadPhase is stored as index in ObjectLayer
 			const AZ::u8 mask1 = static_cast<AZ::u8>(inLayer1);
-			const AZ::u8 mask2 = GetBroadPhaseCollisionMask(static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer2) - 1)); // TODO: one is being set as Query incorrectly
-			const bool testVal = (mask1 & mask2) != 0;
-			AZ_Printf("ObjectVsBroadPhaseLayerFilterImpl::ShouldCollide", "%s", testVal ? "true" : "false");
-			return testVal;
+			const AZ::u8 mask2 = GetBroadPhaseCollisionMask(static_cast<JoltBroadPhaseLayer>(static_cast<AZ::u8>(inLayer2) - 1));
+
+			return (mask1 & mask2) != 0;
 		}
 	};
 }
