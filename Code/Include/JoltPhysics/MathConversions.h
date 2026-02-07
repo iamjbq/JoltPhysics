@@ -40,6 +40,16 @@ AZ_FORCE_INLINE AZ::Quaternion JoltMathConvert(const JPH::Quat& inQuat)
     return AZ::Quaternion(inQuat.GetX(), inQuat.GetY(), inQuat.GetZ(), inQuat.GetW());
 }
 
+// Note that a JPH::Mat44 must convert to 3x3, usually from Inversed3x3()
+AZ_FORCE_INLINE AZ::Matrix3x3 JoltMathConvert(const JPH::Mat44& inMat)
+{
+    return AZ::Matrix3x3::CreateFromRows(
+        JoltMathConvert(inMat.GetAxisX()),
+        JoltMathConvert(inMat.GetAxisY()),
+        JoltMathConvert(inMat.GetAxisZ())
+        );
+}
+
 // Why is there only Jolt->AZ direction for this one?
 AZ_FORCE_INLINE AZ::Aabb JoltMathConvert(const JPH::AABox& bounds)
 {

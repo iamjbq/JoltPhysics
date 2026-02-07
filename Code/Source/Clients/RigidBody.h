@@ -49,9 +49,9 @@ namespace JoltPhysics
         AZ_CLASS_ALLOCATOR(RigidBody, AZ::SystemAllocator);
         AZ_RTTI(JoltPhysics::RigidBody, "{BC69F0A6-A0CE-4A33-B738-F1A267B6EDBF}", AzPhysics::RigidBody);
 
-        RigidBody();
+        RigidBody() = default;
         RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem);
-        ~RigidBody();
+        ~RigidBody() override;
 
         static void Reflect(AZ::ReflectContext* context);
 

@@ -215,6 +215,7 @@ namespace JoltPhysics
         m_attachedSystem = nullptr;
     }
 
+    // TODO: Sphere shapes are not returning hits, but detect static bodies through them?
     AzPhysics::SceneQueryHit Shape::RayCast(const AzPhysics::RayCastRequest& worldSpaceRequest,
         [[maybe_unused]] const AZ::Transform& worldTransform)
     {
@@ -225,18 +226,6 @@ namespace JoltPhysics
             {
                 return AzPhysics::SceneQueryHit();
             }
-
-            // JPH::RayCast inRay(
-            //     JoltMathConvert(worldSpaceRequest.m_start),
-            //     JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
-            // );
-
-            // Convert the ray to center of mass space for the shape
-            // inRay.mOrigin -= m_joltShape->GetCenterOfMass();
-            // inRay.mOrigin -= JoltMathConvert(worldTransform.GetTranslation());
-
-            // JPH::RayCastResult hitResult;
-            // bool hadHit = m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), hitResult);
 
             JPH::RRayCast inRay(
                 JoltMathConvert(worldSpaceRequest.m_start),
@@ -302,7 +291,6 @@ namespace JoltPhysics
                     returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Material;
                 }
 
-                AZ_Printf("Shape::RayCast", "Hit")
                 return returnHit;
             }
 

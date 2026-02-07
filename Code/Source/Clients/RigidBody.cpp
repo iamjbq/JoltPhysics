@@ -60,10 +60,6 @@ namespace JoltPhysics
         }
     }
 
-    RigidBody::RigidBody()
-    {
-    }
-
     RigidBody::RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem)
         : m_owningSystem(owningSystem)
         , m_startAsleep(configuration.m_startAsleep)
@@ -84,8 +80,8 @@ namespace JoltPhysics
         }
         m_shapes.clear();
 
-        // Invalidate user data so it sets m_joltStaticBody->userData to nullptr.
-        // It's appropriate to do this as m_joltStaticBody is a shared pointer, and
+        // Invalidate user data so it sets m_joltRigidBody->userData to nullptr.
+        // It's appropriate to do this as m_joltSRigidBody is a shared pointer, and
         // technically it could survive m_actorUserData life's span.
         m_bodyUserData.Invalidate();
     }
@@ -134,8 +130,8 @@ namespace JoltPhysics
     {
         if (m_joltRigidBody)
         {
-            JPH::Vec3 comWorld = m_owningSystem->GetBodyInterface().GetCenterOfMassPosition(m_joltRigidBody->GetID());
-            JPH::Vec3 worldTM = m_owningSystem->GetBodyInterface().GetWorldTransform(m_joltRigidBody->GetID()).GetTranslation();
+            const JPH::Vec3 comWorld = m_owningSystem->GetBodyInterface().GetCenterOfMassPosition(m_joltRigidBody->GetID());
+            const JPH::Vec3 worldTM = m_owningSystem->GetBodyInterface().GetWorldTransform(m_joltRigidBody->GetID()).GetTranslation();
             return JoltMathConvert(comWorld - worldTM);
         }
         return AZ::Vector3::CreateZero();
@@ -143,25 +139,48 @@ namespace JoltPhysics
 
     AZ::Matrix3x3 RigidBody::GetInertiaWorld() const
     {
-        AZ_Warning("RigidBody::GetInertiaWorld", false, "Not currently implemented")
+        if (m_joltRigidBody)
+        {
+            return JoltMathConvert(m_owningSystem->GetBodyInterface().GetInverseInertia(m_joltRigidBody->GetID()).Inversed3x3());
+        }
         return AZ::Matrix3x3::CreateZero();
     }
 
     AZ::Matrix3x3 RigidBody::GetInertiaLocal() const
     {
-        AZ_Warning("RigidBody::GetInertiaLocal", false, "Not currently implemented")
+        if (m_joltRigidBody)
+        {
+            JPH::BodyLockRead lock(m_owningSystem->GetBodyLockInterface(), m_joltRigidBody->GetID());
+            if (lock.Succeeded())
+            {
+                auto& body = lock.GetBody();
+                return JoltMathConvert(body.GetMotionProperties()->GetLocalSpaceInverseInertia().Inversed3x3());
+            }
+        }
+
         return AZ::Matrix3x3::CreateZero();
     }
 
     AZ::Matrix3x3 RigidBody::GetInverseInertiaWorld() const
     {
-        AZ_Warning("RigidBody::GetInverseInertiaWorld", false, "Not currently implemented")
+        if (m_joltRigidBody)
+        {
+            return JoltMathConvert(m_owningSystem->GetBodyInterface().GetInverseInertia(m_joltRigidBody->GetID()));
+        }
         return AZ::Matrix3x3::CreateZero();
     }
 
     AZ::Matrix3x3 RigidBody::GetInverseInertiaLocal() const
     {
-        AZ_Warning("RigidBody::GetInverseInertiaLocal", false, "Not currently implemented")
+        if (m_joltRigidBody)
+        {
+            JPH::BodyLockRead lock(m_owningSystem->GetBodyLockInterface(), m_joltRigidBody->GetID());
+            if (lock.Succeeded())
+            {
+                auto& body = lock.GetBody();
+                return JoltMathConvert(body.GetMotionProperties()->GetLocalSpaceInverseInertia());
+            }
+        }
         return AZ::Matrix3x3::CreateZero();
     }
 
