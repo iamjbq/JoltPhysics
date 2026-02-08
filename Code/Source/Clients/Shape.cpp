@@ -22,6 +22,7 @@ namespace JoltPhysics
         : m_collisionLayer(colliderConfiguration.m_collisionLayer)
     {
         m_shapeConfiguration = configuration.Clone();
+        m_isTrigger = colliderConfiguration.m_isTrigger;
 
         // m_collisionGroup gets set in utils function since the input is an ID and we use CollisionRequests to get the actual group
         if (JPH::Shape* newShape = Utils::CreateJoltShapeFromConfig(colliderConfiguration, configuration, m_collisionGroup))
@@ -338,6 +339,11 @@ namespace JoltPhysics
         [[maybe_unused]] const AZ::Aabb* optionalBounds) const
     {
         AZ_Warning("JoltPhysics::Shape", false, "GetGeometry not currently implemented")
+    }
+
+    bool Shape::GetIsTrigger() const
+    {
+        return m_isTrigger;
     }
 
     void Shape::SetInternalPhysicsSystem(JPH::PhysicsSystem* inSystem)

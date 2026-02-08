@@ -161,7 +161,10 @@ namespace JoltPhysics
                 AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
                 return nullptr;
             }
+
             JPH::Shape* newShape = outResult.Get();
+
+            // TODO: this could be a compound shape to accommodate multiple shape components
             JPH::Ref<JPH::RotatedTranslatedShape> offsetShape = new JPH::RotatedTranslatedShape(
                 JoltMathConvert(colliderConfiguration.m_position),
                 JoltMathConvert(colliderConfiguration.m_rotation),

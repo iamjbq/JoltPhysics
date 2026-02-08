@@ -67,6 +67,7 @@ namespace JoltPhysics
         AZStd::shared_ptr<Physics::ShapeConfiguration> GetShapeConfiguration() const override;
         void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds = nullptr) const override;
 
+        bool GetIsTrigger() const;
         void SetInternalPhysicsSystem(JPH::PhysicsSystem* inSystem);
 
     private:
@@ -83,6 +84,7 @@ namespace JoltPhysics
         AZStd::vector<AZStd::shared_ptr<JoltPhysics::Material>> m_materials;
         AzPhysics::CollisionLayer m_collisionLayer;
         AzPhysics::CollisionGroup m_collisionGroup;
+        bool m_isTrigger;
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         AZ::Crc32 m_tag;
         JPH::PhysicsSystem* m_attachedSystem = nullptr;

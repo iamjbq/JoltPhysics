@@ -50,6 +50,15 @@ AZ_FORCE_INLINE AZ::Matrix3x3 JoltMathConvert(const JPH::Mat44& inMat)
         );
 }
 
+AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Matrix3x3& inMat)
+{
+    JPH::Mat44 outMat = JPH::Mat44::sZero();
+    outMat.SetAxisX(JoltMathConvert(inMat.GetBasisX()));
+    outMat.SetAxisY(JoltMathConvert(inMat.GetBasisY()));
+    outMat.SetAxisZ(JoltMathConvert(inMat.GetBasisZ()));
+    return outMat;
+}
+
 // Why is there only Jolt->AZ direction for this one?
 AZ_FORCE_INLINE AZ::Aabb JoltMathConvert(const JPH::AABox& bounds)
 {

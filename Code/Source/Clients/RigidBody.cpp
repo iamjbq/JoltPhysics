@@ -598,7 +598,9 @@ namespace JoltPhysics
             auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
             const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
             m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
+            m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), joltShape->GetIsTrigger());
         }
+
         joltShape->SetInternalPhysicsSystem(m_owningSystem);
         joltShape->AttachedToActor(m_joltRigidBody);
         m_shapes.push_back(joltShape);
@@ -656,6 +658,7 @@ namespace JoltPhysics
         JPH::EmptyShapeSettings emptySettings;
         JPH::Shape* emptyShape = emptySettings.Create().Get();
 
+        // TODO: Need to decide course if collider is marked as sensor/trigger, then it won't participate in collision
         JPH::EMotionType motionType;
         if (configuration.m_kinematic)
         {
@@ -674,8 +677,32 @@ namespace JoltPhysics
             1 << 1 // Placeholder object layer until we set shape to get collider configuration
             );
 
+        newBody.mLinearVelocity = JoltMathConvert(configuration.m_initialLinearVelocity);
+        newBody.mAngularVelocity = JoltMathConvert(configuration.m_initialAngularVelocity);
+
+        if (!configuration.m_gravityEnabled)
+        {
+            newBody.mGravityFactor = 0.0f;
+        }
+        if (configuration.m_computeInertiaTensor)
+        {
+            newBody.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+            newBody.mMassPropertiesOverride.mMass = configuration.m_mass;
+        }
+        if (configuration.m_computeMass && configuration.m_computeInertiaTensor)
+        {
+            newBody.mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
+            newBody.mMassPropertiesOverride.mMass = configuration.m_mass;
+            newBody.mMassPropertiesOverride.mInertia = JoltMathConvert(configuration.m_inertiaTensor);
+        }
+        if (configuration.IsCcdEnabled())
+        {
+            // Performs secondary shape cast per update to prevent tunneling in high velocity collisions
+            newBody.mMotionQuality = JPH::EMotionQuality::LinearCast;
+        }
+
         m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
-        m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate);
+        m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate); // Body gets activated in Scene
 
         // TODO: For later optimization, have a way to buffer initial body additions at game start
         /// Note that if you need to add multiple bodies, use the AddBodiesPrepare/AddBodiesFinalize function.
