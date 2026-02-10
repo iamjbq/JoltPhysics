@@ -22,9 +22,6 @@ namespace JoltPhysics
     class Shape;
     class RigidBodyComponent;
 
-    // TODO: These are called continuously in editor
-    // [Warning] (RigidBody::GetCenterOfMassLocal) - Not currently implemented
-    // [Warning] (RigidBody::GetInertiaLocal) - Not currently implemented
     //! Jolt-specific settings which are not generic enough to be stored in the AzPhysics rigid body configuration.
     class RigidBodyConfiguration
     {
@@ -37,7 +34,9 @@ namespace JoltPhysics
 
         static void Reflect(AZ::ReflectContext* context);
 
-        // TODO: Determine if there is anything that needs to be here
+        AZ::u8 m_solverVelocityIterations = 0; //!< Higher values can improve stability at the cost of performance. 0 follows Jolt configuration value.
+        AZ::u8 m_solverPositionIterations = 0; //!< Higher values can improve stability at the cost of performance. 0 follows Jolt configuration value.
+        bool m_canSleep = true; //! Whether this body is allowed to sleep ever.
     };
 
     class RigidBody

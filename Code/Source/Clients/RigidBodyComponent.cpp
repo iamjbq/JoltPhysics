@@ -15,6 +15,8 @@
 #include <Clients/RigidBodyComponent.h>
 #include <Clients/Shape.h>
 
+#include "Jolt/Physics/PhysicsSystem.h"
+
 namespace JoltPhysics
 {
     class BehaviorRigidBodyNotificationBusHandler final
@@ -143,10 +145,10 @@ namespace JoltPhysics
         // Get necessary information from the components and fill up the configuration structure
         auto entityId = GetEntityId();
 
-        AZ::Transform lyTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(lyTransform, entityId, &AZ::TransformInterface::GetWorldTM);
-        m_configuration.m_position = lyTransform.GetTranslation();
-        m_configuration.m_orientation = lyTransform.GetRotation();
+        AZ::Transform bodyTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(bodyTransform, entityId, &AZ::TransformInterface::GetWorldTM);
+        m_configuration.m_position = bodyTransform.GetTranslation();
+        m_configuration.m_orientation = bodyTransform.GetRotation();
         m_configuration.m_entityId = entityId;
         m_configuration.m_debugName = GetEntity()->GetName();
     }
@@ -381,15 +383,17 @@ namespace JoltPhysics
     {
         if (auto* body = GetRigidBody())
         {
-            AZ_UNUSED(body)
-            // if (auto* pxRigidDynamic = static_cast<physx::PxRigidDynamic*>(body->GetNativePointer()))
-            // {
-            //     const AZ::u8 solverPositionIterations =
-            //         AZ::GetClamp<AZ::u8>(m_joltSpecificConfiguration.m_solverPositionIterations, 1, 255);
-            //     const AZ::u8 solverVelocityIterations =
-            //         AZ::GetClamp<AZ::u8>(m_joltSpecificConfiguration.m_solverVelocityIterations, 1, 255);
-            //     pxRigidDynamic->setSolverIterationCounts(solverPositionIterations, solverVelocityIterations);
-            // }
+            if (auto* joltBody = static_cast<JPH::Body*>(body->GetNativePointer()))
+            {
+                const AZ::u8 solverVelocityIterations =
+                    AZ::GetClamp<AZ::u8>(m_joltSpecificConfiguration.m_solverVelocityIterations, 0, 255);
+                const AZ::u8 solverPositionIterations =
+                    AZ::GetClamp<AZ::u8>(m_joltSpecificConfiguration.m_solverPositionIterations, 0, 255);
+
+                joltBody->GetMotionProperties()->SetNumVelocityStepsOverride(solverVelocityIterations);
+                joltBody->GetMotionProperties()->SetNumPositionStepsOverride(solverPositionIterations);
+                // TODO: set mallowSleeping on MotionProperties
+            }
         }
     }
 
