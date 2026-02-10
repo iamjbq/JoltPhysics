@@ -82,6 +82,7 @@ namespace JoltPhysics
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
     private:
         void UpdateCachedSamplePoints() const;
         void CreateStaticEditorCollider();

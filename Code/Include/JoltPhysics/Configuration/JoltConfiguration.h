@@ -1,4 +1,6 @@
+
 #pragma once
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
@@ -14,6 +16,7 @@ namespace JoltPhysics
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(JoltPhysics::JoltSystemConfiguration, "{C7B81915-F277-4286-8D26-46739260423D}")
+
         static void Reflect(AZ::ReflectContext* context);
 
         static JoltSystemConfiguration CreateDefault();

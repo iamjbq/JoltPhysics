@@ -233,34 +233,34 @@ namespace JoltPhysics
                         "When active, forces won't create rotation on the Z axis of the rigid body.")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled,
                         "CCD enabled", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
-                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global Jolt configuration.")
+                        "collision detection, particularly for fast moving rigid bodies.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCcdVisibility)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetCcdTooltip)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::CcdReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
-                        "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
-                        "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
-                    ->DataElement(
+                    // ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
+                    //     "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness.")
+                    //     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                    //     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+                    //     ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
+                    //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
+                    // ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
+                    // ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
+                    //     "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
+                    //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCcdEnabled)
+                    //     ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
 
+                    ->DataElement(
                         AZ::Edit::UIHandlers::Button,
                         &AzPhysics::RigidBodyConfiguration::m_configButton,
                         "",
-                        "Click here to open the Jolt Configuration window. Enable global CCD to enable component CCD editing.")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Open Jolt Configuration to Enable CCD")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsSceneCcdDisabled)
+                        "Click here to open the Jolt Configuration window.")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Open Jolt Configuration")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &IsSceneCcdDisabled)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenJoltConfigurationPane)
                     ->EndGroup()
 
@@ -286,7 +286,7 @@ namespace JoltPhysics
                     //     "Compute Mass", "When active, the mass of the rigid body is computed based on the volume and density values of its colliders.")
                     //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                     //     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    //
+
                     // ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_mass,
                     //     "Mass", "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
                     //     "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.")
@@ -298,12 +298,12 @@ namespace JoltPhysics
                     //     "Compute inertia", "When active, inertia is computed based on the mass and shape of the rigid body.")
                     //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                     //     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-
-                    // ->DataElement(Editor::InertiaHandler, &AzPhysics::RigidBodyConfiguration::m_inertiaTensor,
-                    //     "Inertia diagonal", "Inertia diagonal elements that specify an inertia tensor; determines the "
-                    //     "torque required to rotate the rigid body on each axis.")
-                    //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaVisibility)
-                    //     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
+                    //
+                    // // ->DataElement(Editor::InertiaHandler, &AzPhysics::RigidBodyConfiguration::m_inertiaTensor,
+                    // //     "Inertia diagonal", "Inertia diagonal elements that specify an inertia tensor; determines the "
+                    // //     "torque required to rotate the rigid body on each axis.")
+                    // //     ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaVisibility)
+                    // //     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_includeAllShapesInMassCalculation,
                         "Include non-simulated shapes in Mass",
@@ -473,9 +473,9 @@ namespace JoltPhysics
     }
 
     EditorRigidBodyComponent::EditorRigidBodyComponent(
-        const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& physxSpecificConfiguration)
+        const EditorRigidBodyConfiguration& configuration, const RigidBodyConfiguration& joltSpecificConfiguration)
         : m_config(configuration)
-        , m_joltSpecificConfig(physxSpecificConfiguration)
+        , m_joltSpecificConfig(joltSpecificConfiguration)
     {
         InitPhysicsTickHandler();
     }

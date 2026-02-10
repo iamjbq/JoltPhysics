@@ -16,7 +16,6 @@
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 
-#include <JoltPhysics/JoltPhysicsBus.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <Clients/DefaultWorldComponent.h>
 
@@ -35,7 +34,6 @@ namespace JoltPhysics
     class JoltPhysicsSystemComponent
         : public AZ::Component
         , public Physics::SystemRequestBus::Handler
-        // , public JoltPhysics::SystemRequestsBus::Handler
         , private Physics::CollisionRequestBus::Handler
         , public AZ::TickBus::Handler
     {
