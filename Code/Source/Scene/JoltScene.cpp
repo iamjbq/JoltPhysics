@@ -131,9 +131,16 @@ namespace JoltPhysics
         , m_sceneHandle(sceneHandle)
         , m_physicsSystemConfigChanged([this](const AzPhysics::SystemConfiguration* config)
         {
-            m_raycastBufferSize = config->m_raycastBufferSize;
-            m_shapecastBufferSize = config->m_shapecastBufferSize;
-            m_overlapBufferSize = config->m_overlapBufferSize;
+            const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(config);
+            m_raycastBufferSize = joltConfig->m_raycastBufferSize;
+            m_shapecastBufferSize = joltConfig->m_shapecastBufferSize;
+            m_overlapBufferSize = joltConfig->m_overlapBufferSize;
+
+            m_maxBodies = joltConfig->m_systemInitSettings.m_maxBodies;
+            m_numBodyMutexes = joltConfig->m_systemInitSettings.m_numBodyMutexes;
+            m_maxBodyPairs = joltConfig->m_systemInitSettings.m_maxBodyPairs;
+            m_maxContactConstraints = joltConfig->m_systemInitSettings.m_maxContactConstraints;
+            m_collisionSteps = joltConfig->m_systemInitSettings.m_collisionSteps; // caching this as it's used every update
         })
     {
 
@@ -594,10 +601,11 @@ namespace JoltPhysics
         if (JoltSystem* system = GetJoltSystem())
         {
             m_physicsSystem->Init(
-                cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints,
+                m_maxBodies, m_numBodyMutexes, m_maxBodyPairs, m_maxContactConstraints,
                 system->GetBroadPhaseLayerInterface(), system->GetObjectVsBroadPhaseLayerFilter(), system->GetObjectLayerPairFilter()
             );
 
+            // TODO: maybe wrap these in a single sdk struct or something
             m_physicsSystem->SetContactListener(&m_contactListener);
             m_physicsSystem->SetBodyActivationListener(&m_activationListener);
             m_physicsSystem->SetGravity(JoltMathConvert(m_gravity));

@@ -92,7 +92,7 @@ namespace JoltPhysics
         JoltSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
         AzPhysics::SceneList m_sceneList;
-        AZStd::queue<AzPhysics::SceneIndex> m_freeSceneSlots; //when a scene is removed cache its index here to be used for the next add.
+        AZStd::queue<AzPhysics::SceneIndex> m_freeSceneSlots; // when a scene is removed cache its index here to be used for the next add.
 
         float m_accumulatedTime = 0.0f;
 
@@ -103,10 +103,6 @@ namespace JoltPhysics
             Shutdown
         };
         State m_state = State::Uninitialized;
-
-        // 10 MB is given in HelloWorld example, but this is ~268 MB
-        // TODO: Add physics init variables to settings registry
-        [[maybe_unused]] const unsigned int cAllocationArenaSize = 256 * 1024 * 1024;
 
         JoltPhysicsMaterial* m_defaultMaterial = nullptr;
 
