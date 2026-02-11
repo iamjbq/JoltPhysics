@@ -33,7 +33,7 @@ namespace JoltPhysics
             m_propertyEditor->AddInstance(&m_joltSystemConfiguration);
             m_propertyEditor->AddInstance(&m_defaultSceneConfiguration);
             // m_propertyEditor->AddInstance(&m_debugDisplayData);
-            // m_propertyEditor->AddInstance(&m_joltSystemConfiguration.m_windConfiguration);
+            m_propertyEditor->AddInstance(&m_joltSystemConfiguration.m_systemInitSettings);
             m_propertyEditor->InvalidateAll();
             blockSignals(false);
         }
