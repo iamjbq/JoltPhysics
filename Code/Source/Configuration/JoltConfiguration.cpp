@@ -49,8 +49,11 @@ namespace JoltPhysics
                         "MaxContactConstraints", "Number of collisions between bodies that can be handled each update.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_collisionSteps,
                         "CollisionSteps", "Number of collision steps to perform each update.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_allocationArenaSize,
                         "AllocationArenaSize", "Maximum memory to allocate per physics update.")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " MB")
+
                     ;
             }
         }

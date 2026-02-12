@@ -144,16 +144,14 @@ namespace JoltPhysics
 
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
-        auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorRigidBodyConfiguration, AzPhysics::RigidBodyConfiguration>()
                 ->Version(1)
                 ->Field("Debug Draw Center of Mass", &EditorRigidBodyConfiguration::m_centerOfMassDebugDraw)
             ;
 
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (editContext)
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<AzPhysics::RigidBodyConfiguration>(
                     "Jolt Rigid Body Configuration", "")

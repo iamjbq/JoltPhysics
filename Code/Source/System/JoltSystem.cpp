@@ -141,7 +141,7 @@ namespace JoltPhysics
         // TODO: fix JoltAllocator as static_buffer_allocator
         // TODO: fix JoltJobSystem. No jobs available bug
         // m_allocator = AZStd::make_unique<JoltAzAllocatorCallback>();
-        m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(m_systemConfig.m_systemInitSettings.m_allocationArenaSize);
+        m_allocator = AZStd::make_unique<JPH::TempAllocatorImpl>(m_systemConfig.m_systemInitSettings.m_allocationArenaSize * MBToBytes);
         // m_jobSystem = AZStd::make_unique<JoltJobSystemThreaded>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
         m_jobSystem = AZStd::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, AZStd::thread::hardware_concurrency() - 1);
 

@@ -95,8 +95,7 @@ namespace JoltPhysics
 
     void RigidBody::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RigidBody>()
                 ->Version(1)

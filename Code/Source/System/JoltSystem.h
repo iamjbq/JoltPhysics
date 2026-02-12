@@ -27,6 +27,8 @@ namespace JPH
 
 namespace JoltPhysics
 {
+    constexpr unsigned int MBToBytes = 1024 * 1024; // To convert allocator arena size for system Init
+
     class JoltJobSystemThreaded;
     class JoltPhysicsMaterial;
 

@@ -129,25 +129,41 @@ namespace JoltPhysics
         : Scene(config)
         , m_config(config)
         , m_sceneHandle(sceneHandle)
-        , m_physicsSystemConfigChanged([this](const AzPhysics::SystemConfiguration* config)
+        , m_physicsSystemConfigChanged([this](const AzPhysics::SystemConfiguration* sysConfig)
         {
-            const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(config);
-            m_raycastBufferSize = joltConfig->m_raycastBufferSize;
-            m_shapecastBufferSize = joltConfig->m_shapecastBufferSize;
-            m_overlapBufferSize = joltConfig->m_overlapBufferSize;
+            const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(sysConfig);
 
             m_maxBodies = joltConfig->m_systemInitSettings.m_maxBodies;
             m_numBodyMutexes = joltConfig->m_systemInitSettings.m_numBodyMutexes;
             m_maxBodyPairs = joltConfig->m_systemInitSettings.m_maxBodyPairs;
             m_maxContactConstraints = joltConfig->m_systemInitSettings.m_maxContactConstraints;
-            m_collisionSteps = joltConfig->m_systemInitSettings.m_collisionSteps; // caching this as it's used every update
+            m_collisionSteps = joltConfig->m_systemInitSettings.m_collisionSteps;
+
+            m_raycastBufferSize = joltConfig->m_raycastBufferSize;
+            m_shapecastBufferSize = joltConfig->m_shapecastBufferSize;
+            m_overlapBufferSize = joltConfig->m_overlapBufferSize;
         })
     {
 
+        // Setup Jolt physics system variables
         if (JoltSystem* system = GetJoltSystem())
         {
+            const JoltSystemConfiguration& joltConfig = system->GetJoltConfiguration();
+
+            m_maxBodies = joltConfig.m_systemInitSettings.m_maxBodies;
+            m_numBodyMutexes = joltConfig.m_systemInitSettings.m_numBodyMutexes;
+            m_maxBodyPairs = joltConfig.m_systemInitSettings.m_maxBodyPairs;
+            m_maxContactConstraints = joltConfig.m_systemInitSettings.m_maxContactConstraints;
+            m_collisionSteps = joltConfig.m_systemInitSettings.m_collisionSteps; // caching this as it's used every update
+
+            m_raycastBufferSize = joltConfig.m_raycastBufferSize;
+            m_shapecastBufferSize = joltConfig.m_shapecastBufferSize;
+            m_overlapBufferSize = joltConfig.m_overlapBufferSize;
+
             m_jobSystem = system->GetJoltJobSystem();
             m_tempAllocator = system->GetJoltAllocator();
+
+            system->RegisterSystemConfigurationChangedEvent(m_physicsSystemConfigChanged);
         }
 
         m_physicsSystem = AZStd::make_unique<JPH::PhysicsSystem>();
@@ -631,8 +647,7 @@ namespace JoltPhysics
 
             if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
             {
-                auto rigidBody = azdynamic_cast<JoltPhysics::RigidBody*>(&body);
-                if (rigidBody->ShouldStartAsleep())
+                if (const auto rigidBody = azdynamic_cast<JoltPhysics::RigidBody*>(&body); rigidBody->ShouldStartAsleep())
                 {
                     rigidBody->ForceAsleep();
                 }

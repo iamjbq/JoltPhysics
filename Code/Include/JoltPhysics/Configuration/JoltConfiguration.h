@@ -12,7 +12,6 @@ namespace AZ
 
 namespace JoltPhysics
 {
-    // TODO: These aren't reflected in editor yet
     //! This class holds the default values required to initialize Jolt.
     //! It also contains the default collision steps per physics update call and allocation size.
     //! The physics update requires a static buffer allocator to be set with a max allocation size.
@@ -49,8 +48,8 @@ namespace JoltPhysics
 
         //! Maximum memory allocation for static buffer used during each physics update call.
         //! Used during PhysicsSystem::Initialize
-        //! For now, default is set ~268 MB = 256 * 1024 * 1024.
-        unsigned int m_allocationArenaSize = 268435456;
+        //! Value is in MB and converted to binary bytes (1024 * 1024).
+        unsigned int m_allocationArenaSize = 32;
 
         bool operator==(const SystemInitSettings& other) const;
         bool operator!=(const SystemInitSettings& other) const;
