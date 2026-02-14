@@ -132,7 +132,8 @@ namespace JoltPhysics
         , m_physicsSystemConfigChanged([this](const AzPhysics::SystemConfiguration* sysConfig)
         {
             const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(sysConfig);
-
+            m_cachedSystemConfig = AZStd::move(*joltConfig);
+            // TODO: use cached config instead of more member variables
             m_maxBodies = joltConfig->m_systemInitSettings.m_maxBodies;
             m_numBodyMutexes = joltConfig->m_systemInitSettings.m_numBodyMutexes;
             m_maxBodyPairs = joltConfig->m_systemInitSettings.m_maxBodyPairs;
@@ -149,7 +150,8 @@ namespace JoltPhysics
         if (JoltSystem* system = GetJoltSystem())
         {
             const JoltSystemConfiguration& joltConfig = system->GetJoltConfiguration();
-
+            m_cachedSystemConfig = AZStd::move(joltConfig);
+            // TODO: use cached config instead of more member variables
             m_maxBodies = joltConfig.m_systemInitSettings.m_maxBodies;
             m_numBodyMutexes = joltConfig.m_systemInitSettings.m_numBodyMutexes;
             m_maxBodyPairs = joltConfig.m_systemInitSettings.m_maxBodyPairs;
@@ -616,8 +618,29 @@ namespace JoltPhysics
     {
         if (JoltSystem* system = GetJoltSystem())
         {
+            // Setting user-defined settings for Physics System
+            JPH::PhysicsSettings settings;
+            settings.mNumVelocitySteps = m_cachedSystemConfig.m_systemInitSettings.m_numVelocitySteps;
+            settings.mNumPositionSteps = m_cachedSystemConfig.m_systemInitSettings.m_numPositionSteps;
+            settings.mAllowSleeping = m_cachedSystemConfig.m_systemInitSettings.m_allowSleeping;
+            settings.mTimeBeforeSleep = m_cachedSystemConfig.m_systemInitSettings.m_timeBeforeSleep;
+            settings.mPointVelocitySleepThreshold = m_cachedSystemConfig.m_systemInitSettings.m_pointVelocitySleepThreshold;
+            settings.mDeterministicSimulation = m_cachedSystemConfig.m_systemInitSettings.m_deterministicSimulation;
+            settings.mSpeculativeContactDistance = m_cachedSystemConfig.m_systemInitSettings.m_speculativeContactDistance;
+            settings.mPenetrationSlop = m_cachedSystemConfig.m_systemInitSettings.m_penetrationSlop;
+            settings.mBaumgarte = m_cachedSystemConfig.m_systemInitSettings.m_baumgarte;
+            settings.mUseBodyPairContactCache = m_cachedSystemConfig.m_systemInitSettings.m_useBodyPairContactCache;
+            settings.mBodyPairCacheMaxDeltaPositionSq = AZStd::pow(m_cachedSystemConfig.m_systemInitSettings.m_bodyPairCacheMaxDeltaPosition, 2);
+            settings.mBodyPairCacheCosMaxDeltaRotationDiv2 = m_cachedSystemConfig.m_systemInitSettings.m_bodyPairCacheCosMaxDeltaRotation / 2.0f;
+            settings.mMinVelocityForRestitution = m_config.m_bounceThresholdVelocity;
+
+            m_physicsSystem->SetPhysicsSettings(settings);
+
             m_physicsSystem->Init(
-                m_maxBodies, m_numBodyMutexes, m_maxBodyPairs, m_maxContactConstraints,
+                m_cachedSystemConfig.m_systemInitSettings.m_maxBodies,
+                m_cachedSystemConfig.m_systemInitSettings.m_numBodyMutexes,
+                m_cachedSystemConfig.m_systemInitSettings.m_maxBodyPairs,
+                m_cachedSystemConfig.m_systemInitSettings.m_maxContactConstraints,
                 system->GetBroadPhaseLayerInterface(), system->GetObjectVsBroadPhaseLayerFilter(), system->GetObjectLayerPairFilter()
             );
 

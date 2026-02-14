@@ -8,13 +8,9 @@
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 
 #include <Scene/PhysicsSystemCallbacks.h>
+#include <JoltPhysics/Configuration/JoltConfiguration.h>
 
 #include <Jolt/Jolt.h>
-
-namespace JoltPhysics
-{
-    class JoltAllocator;
-}
 
 namespace JPH
 {
@@ -27,6 +23,7 @@ namespace JPH
 
 namespace JoltPhysics
 {
+    class JoltAllocator;
     class JoltJobSystemThreaded;
     class JoltAzAllocatorCallback;
 
@@ -133,6 +130,7 @@ namespace JoltPhysics
 
         AzPhysics::SceneConfiguration m_config;
         AzPhysics::SceneHandle m_sceneHandle;
+        JoltSystemConfiguration m_cachedSystemConfig;
 
         // Delta time for the current simulation sub-step
         float m_currentDeltaTime = 0.0f;
