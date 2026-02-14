@@ -630,7 +630,7 @@ namespace JoltPhysics
             settings.mPenetrationSlop = m_cachedSystemConfig.m_systemInitSettings.m_penetrationSlop;
             settings.mBaumgarte = m_cachedSystemConfig.m_systemInitSettings.m_baumgarte;
             settings.mUseBodyPairContactCache = m_cachedSystemConfig.m_systemInitSettings.m_useBodyPairContactCache;
-            settings.mBodyPairCacheMaxDeltaPositionSq = AZStd::pow(m_cachedSystemConfig.m_systemInitSettings.m_bodyPairCacheMaxDeltaPosition, 2);
+            settings.mBodyPairCacheMaxDeltaPositionSq = AZStd::pow(m_cachedSystemConfig.m_systemInitSettings.m_bodyPairCacheMaxDeltaPosition, 2.0f);
             settings.mBodyPairCacheCosMaxDeltaRotationDiv2 = m_cachedSystemConfig.m_systemInitSettings.m_bodyPairCacheCosMaxDeltaRotation / 2.0f;
             settings.mMinVelocityForRestitution = m_config.m_bounceThresholdVelocity;
 
