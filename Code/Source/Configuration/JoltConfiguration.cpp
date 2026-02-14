@@ -49,7 +49,7 @@ namespace JoltPhysics
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SystemInitSettings>("Jolt System Init Settings", "Initialization and system update settings.")
+                editContext->Class<SystemInitSettings>("Jolt", "Initialization and system update settings.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Simulation")
