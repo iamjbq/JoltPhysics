@@ -19,19 +19,19 @@ endif()
 
 # JoltPhysics Release Version
 set(JOLTPHYSICS_GIT_REPO "https://github.com/jrouwe/JoltPhysics")
-set(JOLTPHYSICS_GIT_TAG "v5.4.0")
+set(JOLTPHYSICS_GIT_TAG "v5.5.0")
 
 # Add JoltPhysics dependency
 include(FetchContent)
 FetchContent_Declare(
         JoltPhysics
         GIT_REPOSITORY ${JOLTPHYSICS_GIT_REPO}
-        GIT_TAG ${JOLTPHYSICS_GIT_TAG} # main branch as of Sept 27, 2025
+        GIT_TAG ${JOLTPHYSICS_GIT_TAG} # main branch as of Dec 28, 2025
         SOURCE_SUBDIR "Build"
 )
 
 # please always be really clear about what third parties your gem uses.
-message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 036ea7b (License: MIT)")
+message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 23dadd0 (License: MIT)")
 
 # O3DE requires RTTI to be enabled for engine
 set(CPP_RTTI_ENABLED ON)
