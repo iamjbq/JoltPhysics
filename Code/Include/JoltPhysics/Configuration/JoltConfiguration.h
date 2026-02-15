@@ -84,10 +84,10 @@ namespace JoltPhysics
         bool m_useBodyPairContactCache = true;
 
         //! Maximum relative delta position for body pairs to be able to reuse collision results from last frame (units: meter^2)
-        float m_bodyPairCacheMaxDeltaPosition = 0.001f; ///< 1 mm //TODO: needs to be value * value for m^2
+        float m_bodyPairCacheMaxDeltaPosition = 0.001f; ///< 1 mm
 
         //! Maximum relative delta orientation for body pairs to be able to reuse collision results from last frame, stored as cos(max angle / 2)
-        float m_bodyPairCacheCosMaxDeltaRotation = 2.0f; ///< cos(2 degrees) //TODO: needs to be divided by 2 before setting
+        float m_bodyPairCacheCosMaxDeltaRotation = 2.0f; ///< cos(2 degrees)
 
         //! Maximum memory allocation for static buffer used during each physics update call.
         //! Used during PhysicsSystem::Initialize

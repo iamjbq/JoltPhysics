@@ -9,10 +9,11 @@
 #include "Jolt/Core/FixedSizeFreeList.h"
 #include "Jolt/Core/JobSystemWithBarrier.h"
 
-#include <System/JoltAllocator.h>
-
 namespace JoltPhysics
 {
+    //! Named system allocator specifically for Jolt job system work.
+    AZ_CHILD_ALLOCATOR_WITH_NAME(JoltAllocator, "JoltAllocator", "{3B69EBB9-A4A3-4E3A-97D2-17B3536D6578}", AZ::SystemAllocator);
+
     class JoltJobSystemThreaded
         : public JPH::JobSystemWithBarrier
     {

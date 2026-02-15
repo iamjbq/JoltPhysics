@@ -102,17 +102,16 @@ namespace JoltPhysics
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Limits")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_maxBodies,
-                        "MaxBodies", "Maximum bodies per physics scene.")
+                        "Max Bodies", "Maximum bodies per physics scene.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_numBodyMutexes,
-                        "NumBodyMutexes", "Number of mutexes to protect bodies from concurrent access.")
+                        "Number of Body Mutexes", "Number of mutexes to protect bodies from concurrent access.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_maxBodyPairs,
-                        "MaxBodyPairs", "Number of body pairs that can be queued at any time.")
+                        "Max Body Pairs", "Number of body pairs that can be queued at any time.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_maxContactConstraints,
-                        "MaxContactConstraints", "Number of collisions between bodies that can be handled each update.")
+                        "Max Contact Constraints", "Number of collisions between bodies that can be handled each update.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_allocationArenaSize,
-                        "AllocationArenaSize", "Maximum memory to allocate per physics update.")
+                        "Allocation Arena Size", "Maximum memory to allocate per physics update.")
                         ->Attribute(AZ::Edit::Attributes::Suffix, " MB")
-
                     ;
             }
         }
