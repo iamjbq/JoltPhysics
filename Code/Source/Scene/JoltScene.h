@@ -25,7 +25,6 @@ namespace JoltPhysics
 {
     class JoltAllocator;
     class JoltJobSystemThreaded;
-    class JoltAzAllocatorCallback;
 
     //! The Jolt implementation of a Physics Scene.
     //! Functionally it operates similar to a PhysX Scene, but under the hood is a Jolt Physics System
@@ -97,7 +96,7 @@ namespace JoltPhysics
             void IncreaseCapacity(size_t extraSize);
             void Clear();
             void Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction);
-            void ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, JoltScene* joltScene);
+            void ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, JPH::PhysicsSystem* joltSystem);
 
         private:
             AZStd::unordered_set<AzPhysics::SimulatedBodyIndex> m_uniqueIndices;

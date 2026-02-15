@@ -34,6 +34,13 @@
 
 namespace JoltPhysics
 {
+    AZ_CVAR_EXTERNED(bool, jolt_batchTransformSync);
+
+    AZ_CVAR(bool, jolt_parallelTransformSync, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Multithreaded transform update for rigid bodies. "
+        "Only relevant if batched transform update is enabled.");
+    AZ_CVAR(size_t, jolt_parallelTransformSyncBatchSize, 250, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "How many rigid bodies should be processed per task");
+
     namespace Internal
     {
         bool AddShape(AZStd::variant<AzPhysics::RigidBody*, AzPhysics::StaticRigidBody*> simulatedBody, const AzPhysics::ShapeVariantData& shapeData)
@@ -133,7 +140,7 @@ namespace JoltPhysics
         {
             const auto* joltConfig = azdynamic_cast<const JoltSystemConfiguration*>(sysConfig);
             m_cachedSystemConfig = AZStd::move(*joltConfig);
-            // TODO: use cached config instead of more member variables
+
             m_maxBodies = joltConfig->m_systemInitSettings.m_maxBodies;
             m_numBodyMutexes = joltConfig->m_systemInitSettings.m_numBodyMutexes;
             m_maxBodyPairs = joltConfig->m_systemInitSettings.m_maxBodyPairs;
@@ -151,7 +158,7 @@ namespace JoltPhysics
         {
             const JoltSystemConfiguration& joltConfig = system->GetJoltConfiguration();
             m_cachedSystemConfig = AZStd::move(joltConfig);
-            // TODO: use cached config instead of more member variables
+
             m_maxBodies = joltConfig.m_systemInitSettings.m_maxBodies;
             m_numBodyMutexes = joltConfig.m_systemInitSettings.m_numBodyMutexes;
             m_maxBodyPairs = joltConfig.m_systemInitSettings.m_maxBodyPairs;
@@ -304,7 +311,7 @@ namespace JoltPhysics
         }
     }
 
-    AzPhysics::SimulatedBodyHandle JoltScene::AddSimulatedBody([[maybe_unused]] const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig)
+    AzPhysics::SimulatedBodyHandle JoltScene::AddSimulatedBody(const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig)
     {
         // TODO: Missing character config, ragdoll, articulation
 
@@ -413,9 +420,31 @@ namespace JoltPhysics
         return results;
     }
 
-    void JoltScene::RemoveSimulatedBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle& bodyHandle)
+    void JoltScene::RemoveSimulatedBody(AzPhysics::SimulatedBodyHandle& bodyHandle)
     {
-        // TODO: Incomplete
+        if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            return;
+        }
+
+        AzPhysics::SimulatedBodyIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(bodyHandle);
+        if (index < m_simulatedBodies.size()
+            && m_simulatedBodies[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(bodyHandle))
+        {
+            if (m_simulatedBodies[index].second->m_simulating)
+            {
+                // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event)
+                DisableSimulationOfBodyInternal(*m_simulatedBodies[index].second);
+            }
+
+            m_simulatedBodyRemovedEvent.Signal(m_sceneHandle, bodyHandle);
+
+            m_deferredDeletions.push_back(m_simulatedBodies[index].second);
+            m_simulatedBodies[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
+            m_freeSceneSlots.push(index);
+
+            bodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        }
     }
 
     void JoltScene::RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles)
@@ -426,7 +455,7 @@ namespace JoltPhysics
         }
     }
 
-    void JoltScene::EnableSimulationOfBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle)
+    void JoltScene::EnableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle)
     {
         if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -450,7 +479,7 @@ namespace JoltPhysics
         }
     }
 
-    void JoltScene::DisableSimulationOfBody([[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle)
+    void JoltScene::DisableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle)
     {
         if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -554,7 +583,7 @@ namespace JoltPhysics
     }
 
     // Not sure if this has an equivalent in Jolt
-    void JoltScene::SuppressCollisionEvents([[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA, [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleB)
+    void JoltScene::SuppressCollisionEvents(const AzPhysics::SimulatedBodyHandle& bodyHandleA, const AzPhysics::SimulatedBodyHandle& bodyHandleB)
     {
         AzPhysics::SimulatedBody* bodyA = GetSimulatedBodyFromHandle(bodyHandleA);
         AzPhysics::SimulatedBody* bodyB = GetSimulatedBodyFromHandle(bodyHandleB);
@@ -566,7 +595,7 @@ namespace JoltPhysics
     }
 
     // Not sure if this has an equivalent in Jolt
-    void JoltScene::UnsuppressCollisionEvents([[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA, [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleB)
+    void JoltScene::UnsuppressCollisionEvents(const AzPhysics::SimulatedBodyHandle& bodyHandleA, const AzPhysics::SimulatedBodyHandle& bodyHandleB)
     {
         AzPhysics::SimulatedBody* bodyA = GetSimulatedBodyFromHandle(bodyHandleA);
         AzPhysics::SimulatedBody* bodyB = GetSimulatedBodyFromHandle(bodyHandleB);
@@ -604,14 +633,86 @@ namespace JoltPhysics
     {
         AZ_PROFILE_SCOPE(Physics, "Jolt::FlushTransformSync");
 
-        [[maybe_unused]] auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
+        auto transformSync = [this](AzPhysics::SimulatedBodyIndex bodyIndex)
         {
             if (bodyIndex < m_simulatedBodies.size() && m_simulatedBodies[bodyIndex].second)
             {
                 m_simulatedBodies[bodyIndex].second->SyncTransform(m_accumulatedDeltaTime);
             }
         };
-        // TODO: complete
+
+        if (jolt_parallelTransformSync)
+        {
+            m_queuedActiveBodyIndices.ApplyParallel(transformSync, m_physicsSystem.get());
+        }
+        else
+        {
+            m_queuedActiveBodyIndices.Apply(transformSync);
+        }
+
+        m_queuedActiveBodyIndices.Clear();
+        m_accumulatedDeltaTime = 0.0f;
+    }
+
+    void JoltScene::QueuedActiveBodyIndices::Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction)
+    {
+        AZStd::for_each(m_packedIndices.begin(), m_packedIndices.end(), applyFunction);
+    }
+
+    void JoltScene::QueuedActiveBodyIndices::ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, JPH::PhysicsSystem* joltSystem)
+    {
+        AZ::TaskGraph taskGraph("Parallel Sync");
+        AZ::TaskGraphEvent finishEvent("Parallel sync event");
+
+        {
+            AZ_PROFILE_SCOPE(Physics, "Sync Setup");
+
+            size_t batchSize = jolt_parallelTransformSyncBatchSize;
+            size_t fullSize = m_packedIndices.size();
+            for (size_t i = 0; i < fullSize; i += batchSize)
+            {
+                AZ::TaskDescriptor taskDescriptor{"SyncTask", "Physics"};
+                taskGraph.AddTask(
+                    taskDescriptor,
+                    [start = i, end = AZStd::min(i + batchSize, fullSize), &applyFunction, joltSystem, this]()
+                    {
+                        AZ_PROFILE_SCOPE(Physics, "Sync Task");
+                        AZ_UNUSED(joltSystem)
+                        // Note: It is important to keep the scene locked for read for the entire task execution.
+                        // Otherwise the functions reading data from the rigid body will have to lock it locally.
+                        // This causes a huge amount of context switches making the execution of each task ~20x slower.
+                        // TODO: system is only here to lock read
+
+                        for (size_t batchIndex = start; batchIndex < end; ++batchIndex)
+                        {
+                            applyFunction(m_packedIndices[batchIndex]);
+                        }
+                    });
+            }
+
+            taskGraph.Submit(&finishEvent);
+        }
+
+        finishEvent.Wait();
+    }
+
+    void JoltScene::QueuedActiveBodyIndices::Insert(AzPhysics::SimulatedBodyIndex bodyIndex)
+    {
+        if (m_uniqueIndices.insert(bodyIndex).second)
+        {
+            m_packedIndices.emplace_back(bodyIndex);
+        }
+    }
+
+    void JoltScene::QueuedActiveBodyIndices::IncreaseCapacity(size_t extraSize)
+    {
+        m_packedIndices.reserve(m_packedIndices.size() + extraSize);
+    }
+
+    void JoltScene::QueuedActiveBodyIndices::Clear()
+    {
+        m_uniqueIndices.clear();
+        m_packedIndices.clear();
     }
 
     void JoltScene::InitializeJoltSystem()
@@ -691,7 +792,7 @@ namespace JoltPhysics
             AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
 
             {
-                m_bodyInterface->DeactivateBody(joltBody->GetID());
+                m_bodyInterface->RemoveBody(joltBody->GetID());
             }
         }
         body.m_simulating = false;

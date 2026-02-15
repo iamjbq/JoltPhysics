@@ -172,7 +172,6 @@ namespace JoltPhysics
 
             offsetShape->AddRef();
 
-            // TODO: this really should be moved to out if possible
             AzPhysics::CollisionGroup collisionGroup;
             Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
             assignedCollisionGroup = collisionGroup;

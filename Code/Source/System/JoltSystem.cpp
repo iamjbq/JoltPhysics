@@ -33,6 +33,11 @@
 
 namespace JoltPhysics
 {
+    AZ_CVAR(bool, jolt_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Batch entity transform syncs for the entire simulation pass. "
+        "True: Sync entity transform once per Simulate call. "
+        "False: Sync entity transform for every simulation sub-step.");
+
     AZ_CLASS_ALLOCATOR_IMPL(JoltSystem, AZ::SystemAllocator)
 
     // Disable common warnings triggered by Jolt, you can use JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store and restore the warning state
@@ -197,6 +202,27 @@ namespace JoltPhysics
             }
         };
 
+#ifdef ENABLE_JOLT_TIMESTEP_WARNING
+        if (FrameTimeWarning::NumSamples < FrameTimeWarning::MaxSamples)
+        {
+            FrameTimeWarning::NumSamples++;
+            if (deltaTime > m_systemConfig.m_maxTimestep)
+            {
+                FrameTimeWarning::NumSamplesOverLimit++;
+                FrameTimeWarning::LostTime += deltaTime - m_systemConfig.m_maxTimestep;
+            }
+        }
+        else
+        {
+            AZ_Warning("PhysXSystem", !jolt_reportTimestepWarnings || FrameTimeWarning::NumSamplesOverLimit <= 0,
+                "[%d] of [%d] frames had a deltatime over the Max physics timestep[%.6f]. Jolt timestep was clamped on those frames, losing [%.6f] seconds.",
+                FrameTimeWarning::NumSamplesOverLimit, FrameTimeWarning::NumSamples, m_systemConfig.m_maxTimestep, FrameTimeWarning::LostTime);
+            FrameTimeWarning::NumSamples = 0;
+            FrameTimeWarning::NumSamplesOverLimit = 0;
+            FrameTimeWarning::LostTime = 0.0f;
+        }
+#endif
+
         deltaTime = AZ::GetClamp(deltaTime, 0.0f, m_systemConfig.m_maxTimestep);
 
         AZ_Assert(m_systemConfig.m_fixedTimestep >= 0.0f, "JoltSystem - fixed timestep is negative.");
@@ -221,6 +247,18 @@ namespace JoltPhysics
             m_preSimulateEvent.Signal(tickTime);
 
             simulateScenes(tickTime);
+        }
+
+        if (jolt_batchTransformSync)
+        {
+            for (auto& scenePtr : m_sceneList)
+            {
+                if (scenePtr != nullptr && scenePtr->IsEnabled())
+                {
+                    auto* joltScene = azdynamic_cast<JoltScene*>(scenePtr.get());
+                    joltScene->FlushTransformSync();
+                }
+            }
         }
 
         m_postSimulateEvent.Signal(tickTime);
