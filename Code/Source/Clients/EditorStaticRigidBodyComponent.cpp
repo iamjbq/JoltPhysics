@@ -18,7 +18,7 @@ namespace JoltPhysics
                 constexpr const char* ToolTip = "The entity behaves as a non-movable rigid body in Jolt.";
                 constexpr const char* HelpPageURL = "https://jrouwe.github.io/JoltPhysics/class_body.html";
 
-                editContext->Class<EditorStaticRigidBodyComponent>("Jolt Static Rigid Body", ToolTip)
+                editContext->Class<EditorStaticRigidBodyComponent>("Static Rigid Body", ToolTip)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXStaticRigidBody.svg")

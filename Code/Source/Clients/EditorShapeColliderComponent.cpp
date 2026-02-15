@@ -79,7 +79,7 @@ namespace JoltPhysics
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorShapeColliderComponent>(
-                    "Jolt Shape Collider", "Create a Jolt collider using a shape provided by a Shape component.")
+                    "Shape Collider", "Create a Jolt collider using a shape provided by a Shape component.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")

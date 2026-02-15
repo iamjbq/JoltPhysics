@@ -154,7 +154,7 @@ namespace JoltPhysics
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<AzPhysics::RigidBodyConfiguration>(
-                    "Jolt Rigid Body Configuration", "")
+                    "Rigid Body Configuration", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -311,7 +311,7 @@ namespace JoltPhysics
                     ;
 
                 editContext->Class<EditorRigidBodyConfiguration>(
-                    "Jolt Rigid Body Configuration", "")
+                    "Rigid Body Configuration", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -431,7 +431,7 @@ namespace JoltPhysics
             if (editContext)
             {
                 editContext->Class<EditorRigidBodyComponent>(
-                    "Jolt Dynamic Rigid Body", "The entity behaves as a movable rigid body in Jolt.")
+                    "Dynamic Rigid Body", "The entity behaves as a movable rigid body in Jolt.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
