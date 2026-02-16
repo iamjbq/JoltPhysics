@@ -80,7 +80,7 @@ namespace JoltPhysics
         {
             for (auto shape : m_shapes)
             {
-                // We may need to mark on m_joltStaticBody that it is to be deleted
+                // We may need to mark on m_joltBody that it is to be deleted
                 // TODO: Set body shape to EmptyShape again?
                 shape->DetachedFromActor();
             }

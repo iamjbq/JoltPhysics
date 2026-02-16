@@ -12,13 +12,13 @@
 namespace JoltPhysics
 {
     //! Named system allocator specifically for Jolt job system work.
-    AZ_CHILD_ALLOCATOR_WITH_NAME(JoltAllocator, "JoltAllocator", "{3B69EBB9-A4A3-4E3A-97D2-17B3536D6578}", AZ::SystemAllocator);
+    // AZ_CHILD_ALLOCATOR_WITH_NAME(JoltAllocator, "JoltAllocator", "{3B69EBB9-A4A3-4E3A-97D2-17B3536D6578}", AZ::SystemAllocator);
 
     class JoltJobSystemThreaded
         : public JPH::JobSystemWithBarrier
     {
     public:
-        AZ_CLASS_ALLOCATOR(JoltJobSystemThreaded, JoltAllocator);
+        AZ_CLASS_ALLOCATOR(JoltJobSystemThreaded, AZ::SystemAllocator);
 
         JoltJobSystemThreaded(JPH::uint inMaxJobs, JPH::uint inMaxBarriers, int inNumThreads = -1);
         JoltJobSystemThreaded() = default;

@@ -5,6 +5,8 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Matrix3x3.h>
+
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Math/Vec3.h>
