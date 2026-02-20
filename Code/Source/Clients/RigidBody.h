@@ -49,7 +49,7 @@ namespace JoltPhysics
         AZ_RTTI(JoltPhysics::RigidBody, "{BC69F0A6-A0CE-4A33-B738-F1A267B6EDBF}", AzPhysics::RigidBody);
 
         RigidBody() = default;
-        RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem);
+        RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem, AZStd::vector<AZStd::shared_ptr<Shape>>& colliderShapes);
         ~RigidBody() override;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -129,7 +129,7 @@ namespace JoltPhysics
             const float massOverride = 1.0f) override;
 
     private:
-        void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration);
+        void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration, AZStd::vector<AZStd::shared_ptr<Shape>>& colliderShapes);
 
         void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
         void SetInertia(const AZ::Matrix3x3& inertia);

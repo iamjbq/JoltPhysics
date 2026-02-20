@@ -22,10 +22,10 @@ namespace JoltPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(JoltPhysics::StaticRigidBody, AZ::SystemAllocator);
 
-    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem)
-        : m_owningSystem(owningSystem)
+    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem, AZStd::vector<AZStd::shared_ptr<Shape>>& colliderShapes)
+        : m_owningSystem(&owningSystem)
     {
-        CreateJoltBody(configuration);
+        CreateJoltBody(configuration, colliderShapes);
     }
 
     StaticRigidBody::~StaticRigidBody()
@@ -47,24 +47,40 @@ namespace JoltPhysics
         m_bodyUserData.Invalidate();
     }
 
-    void StaticRigidBody::CreateJoltBody(const AzPhysics::StaticRigidBodyConfiguration& configuration)
+    void StaticRigidBody::CreateJoltBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, AZStd::vector<AZStd::shared_ptr<Shape>>& colliderShapes)
     {
         if (m_joltStaticBody != nullptr)
         {
             AZ_Warning("Jolt Static Rigid Body", false, "Trying to create Jolt static rigid actor when it's already created");
             return;
         }
-        // We can't crate a Body without a shape. This will be replaced in AddShape()
-        JPH::EmptyShapeSettings emptySettings;
-        JPH::Shape* emptyShape = emptySettings.Create().Get();
 
-        auto newBody = JPH::BodyCreationSettings(
-            emptyShape,
-            JoltMathConvert(configuration.m_position),
-            JoltMathConvert(configuration.m_orientation),
-            JPH::EMotionType::Static,
-            1 << 1 // Placeholder object layer until we set shape to get collider configuration
-            );
+        if (colliderShapes.size() == 0)
+        {
+            AZ_Warning("Jolt Rigid Body", false, "No collider shapes were found");
+        }
+
+        auto shape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(colliderShapes[0]);
+
+        if (!shape)
+        {
+            AZ_Error("Jolt Static Rigid Body", false, "Trying to add a shape of unknown type");
+            return;
+        }
+
+        shape->SetInternalPhysicsSystem(m_owningSystem);
+        shape->AttachedToActor(m_joltStaticBody);
+        m_shapes = colliderShapes;
+
+        constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
+        const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
+
+        JPH::BodyCreationSettings newBody;
+        newBody.SetShape(static_cast<JPH::Shape*>(colliderShapes[0]->GetNativePointer()));
+        newBody.mPosition = JoltMathConvert(configuration.m_position);
+        newBody.mRotation = JoltMathConvert(configuration.m_orientation);
+        newBody.mMotionType = JPH::EMotionType::Static,
+        newBody.mObjectLayer = newLayer;
 
         m_joltStaticBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
         m_owningSystem->GetBodyInterface().AddBody(m_joltStaticBody->GetID(), JPH::EActivation::DontActivate);
@@ -73,6 +89,7 @@ namespace JoltPhysics
         {
             AZ_Warning("StaticRigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
         }
+
         m_bodyUserData = BodyData(m_joltStaticBody);
         m_bodyUserData.SetRigidBodyStatic(this);
 

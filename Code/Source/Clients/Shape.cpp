@@ -25,11 +25,11 @@ namespace JoltPhysics
         m_isTrigger = colliderConfiguration.m_isTrigger;
 
         // m_collisionGroup gets set in utils function since the input is an ID and we use CollisionRequests to get the actual group
-        if (JPH::Shape* newShape = Utils::CreateJoltShapeFromConfig(colliderConfiguration, configuration, m_collisionGroup))
+        if (JPH::Ref<JPH::Shape> newShape = Utils::CreateJoltShapeFromConfig(colliderConfiguration, configuration, m_collisionGroup))
         {
             m_joltShape = JoltShapeUniquePtr(newShape, AZStd::bind(&Shape::ReleaseJoltShape, this, newShape));
-            m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
-            
+            m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
+
             m_tag = AZ::Crc32(colliderConfiguration.m_tag);
         }
 
@@ -39,7 +39,7 @@ namespace JoltPhysics
     {
         m_joltShape = JoltShapeUniquePtr(nativeShape, AZStd::bind(&Shape::ReleaseJoltShape, this, nativeShape));
         m_joltShape->AddRef();
-        m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
+        m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
     }
 
     Shape::~Shape()
@@ -57,7 +57,7 @@ namespace JoltPhysics
     {
         if (m_joltShape)
         {
-            m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
+            m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
         }
     }
 
@@ -70,7 +70,7 @@ namespace JoltPhysics
 
         if (m_joltShape)
         {
-            m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
+            m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
         }
 
         return *this;
@@ -405,6 +405,11 @@ namespace JoltPhysics
         if (!m_attachedBody->GetID().IsInvalid())
         {
             auto* bodyData = reinterpret_cast<BodyData*>(m_attachedBody->GetUserData());
+            if (!bodyData->IsValid())
+            {
+                AZ_Warning("Shape::GetScene", false, "BodyData is not valid")
+                return nullptr;
+            }
             return azrtti_cast<JoltScene*>(bodyData->GetSimulatedBody()->GetScene());
         }
         return nullptr;

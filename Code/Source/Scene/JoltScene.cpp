@@ -43,56 +43,40 @@ namespace JoltPhysics
 
     namespace Internal
     {
-        bool AddShape(AZStd::variant<AzPhysics::RigidBody*, AzPhysics::StaticRigidBody*> simulatedBody, const AzPhysics::ShapeVariantData& shapeData)
+        bool CreateShape(const AzPhysics::ShapeVariantData& shapeData, AZStd::vector<AZStd::shared_ptr<Shape>>& outShapes)
         {
+            // single config data set
             if (const auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
             {
-                bool shapeAdded = false;
+                // bool shapeAdded = false;
                 auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderPair->first), *(shapeColliderPair->second));
-                AZStd::visit([shapePtr, &shapeAdded](auto&& body)
-                    {
-                        if (shapePtr->GetNativePointer())
-                        {
-                            body->AddShape(shapePtr);
-                            shapeAdded = true;
-                        }
-                    }, simulatedBody);
-                return shapeAdded;
+                outShapes.push_back(shapePtr);
+                return true;
             }
+            // Vector of shape config data
             if (const auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
-                bool shapeAdded = false;
+                // bool shapeAdded = false;
                 for (const auto& shapeColliderConfigs : *shapeColliderPairList)
                 {
                     auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
-                    AZStd::visit([shapePtr, &shapeAdded](auto&& body)
-                    {
-                        if (shapePtr->GetNativePointer())
-                        {
-                            body->AddShape(shapePtr);
-                            shapeAdded = true;
-                        }
-                    }, simulatedBody);
+                    outShapes.push_back(shapePtr);
                 }
-                return shapeAdded;
+                return true;
             }
+            // An existing shape
             if (const auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {
                 auto shapePtr = *shape;
-                AZStd::visit([shapePtr](auto&& body)
-                {
-                    body->AddShape(shapePtr);
-                }, simulatedBody);
+                outShapes.push_back(azdynamic_cast<Shape*>(shapePtr));
                 return true;
             }
+            // Vector of existing shapes
             else if (const auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
             {
                 for (auto shapePtr : *shapeList)
                 {
-                    AZStd::visit([shapePtr](auto&& body)
-                    {
-                        body->AddShape(shapePtr);
-                    }, simulatedBody);
+                    outShapes.push_back(azdynamic_cast<Shape*>(shapePtr));
                 }
                 return true;
             }
@@ -102,30 +86,40 @@ namespace JoltPhysics
         template<class SimulatedBodyType, class ConfigurationType>
         AzPhysics::SimulatedBody* CreateSimulatedBody(const ConfigurationType* configuration, AZ::Crc32& crc, JPH::PhysicsSystem& inSystem)
         {
-            auto* newBody = aznew SimulatedBodyType(*configuration, &inSystem);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
-                AZ_Warning("JoltScene::CreateSimulatedBody", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+                AZStd::vector<AZStd::shared_ptr<Shape>> colliderShapes;
+                const bool result = CreateShape(configuration->m_colliderAndShapeData, colliderShapes);
+                AZ_Warning("JoltScene::CreateSimulatedBody", result, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+
+                auto* newBody = aznew SimulatedBodyType(*configuration, inSystem, colliderShapes);
+
+                crc = AZ::Crc32(newBody, sizeof(*newBody));
+                return newBody;
             }
-            crc = AZ::Crc32(newBody, sizeof(*newBody));
-            return newBody;
+            return nullptr;
         }
 
         AzPhysics::SimulatedBody* CreateRigidBody(const AzPhysics::RigidBodyConfiguration* configuration, AZ::Crc32& crc, JPH::PhysicsSystem& inSystem)
         {
-            auto* newBody = aznew RigidBody(*configuration, &inSystem);
+            // TODO: reverse order of creation to Shape->Body->SetShape
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
-                AZ_Warning("JoltScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
-            }
-            const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
-            newBody->UpdateMassProperties(flags, configuration->m_centerOfMassOffset,
+                AZStd::vector<AZStd::shared_ptr<Shape>> colliderShapes;
+                const bool result = CreateShape(configuration->m_colliderAndShapeData, colliderShapes);
+                AZ_Warning("JoltScene", result, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+
+                auto* newBody = aznew RigidBody(*configuration, inSystem, colliderShapes);
+
+                // TODO: this can be moved into the body likely
+                const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
+                newBody->UpdateMassProperties(flags, configuration->m_centerOfMassOffset,
                 configuration->m_inertiaTensor, configuration->m_mass);
 
-            crc = AZ::Crc32(newBody, sizeof(*newBody));
-            return newBody;
+                crc = AZ::Crc32(newBody, sizeof(*newBody));
+                return newBody;
+            }
+            return nullptr;
         }
 
     }
@@ -370,7 +364,7 @@ namespace JoltPhysics
             newBody->m_bodyHandle = newBodyHandle;
             m_simulatedBodyAddedEvent.Signal(m_sceneHandle, newBodyHandle);
 
-            // TODO: In Jolt I think we need to add shapes
+            // TODO: Add bodies to queue for adding every StartSimulation step
             // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
             // if (simulatedBodyConfig->m_startSimulationEnabled)
             // {
