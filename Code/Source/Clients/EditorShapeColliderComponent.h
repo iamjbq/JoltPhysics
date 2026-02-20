@@ -46,7 +46,7 @@ namespace JoltPhysics
         AZStd::vector<AZ::Vector3> m_cachedSamplePoints; //!< Stores a cache of points sampled from the shape interior.
         bool m_cachedSamplePointsDirty = true; //!< Marks whether the cached sample points need to be recalculated.
     };
-    // TODO: offset translation is not picked up in body shape
+
     //! Editor Jolt Shape Collider Component.
     //! This component is used together with a shape component, and uses the shape information contained in that
     //! component to create geometry in the Jolt simulation.

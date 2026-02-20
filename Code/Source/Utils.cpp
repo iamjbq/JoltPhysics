@@ -49,6 +49,139 @@ namespace JoltPhysics
 {
     namespace Utils
     {
+        bool CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration,
+            JPH::ShapeSettings& shapeSettings)
+        {
+            if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
+            {
+                AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
+                    AZStd::to_string(shapeConfiguration.m_scale).c_str());
+                return false;
+            }
+
+            auto shapeType = shapeConfiguration.GetShapeType();
+
+            switch (shapeType)
+            {
+            case Physics::ShapeType::Sphere:
+            {
+                const Physics::SphereShapeConfiguration& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
+                if (sphereConfig.m_radius <= 0.0f)
+                {
+                    AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius);
+                    return false;
+                }
+                pxGeometry.storeAny(physx::PxSphereGeometry(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement()));
+                break;
+            }
+            case Physics::ShapeType::Box:
+            {
+                const Physics::BoxShapeConfiguration& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
+                if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
+                {
+                    AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for box dimensions %s",
+                        AZStd::to_string(boxConfig.m_dimensions).c_str());
+                    return false;
+                }
+                pxGeometry.storeAny(physx::PxBoxGeometry(PxMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale)));
+                break;
+            }
+            case Physics::ShapeType::Capsule:
+            {
+                const Physics::CapsuleShapeConfiguration& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
+                float height = capsuleConfig.m_height * capsuleConfig.m_scale.GetZ();
+                float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(), capsuleConfig.m_scale.GetY());
+
+                if (height <= 0.0f || radius <= 0.0f)
+                {
+                    AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
+                        capsuleConfig.m_height, capsuleConfig.m_radius);
+                    return false;
+                }
+
+                float halfHeight = 0.5f * height - radius;
+                if (halfHeight <= 0.0f)
+                {
+                    AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in capsule configuration (height: %f, radius: %f)",
+                        capsuleConfig.m_height, capsuleConfig.m_radius);
+                    halfHeight = std::numeric_limits<float>::epsilon();
+                }
+                pxGeometry.storeAny(physx::PxCapsuleGeometry(radius, halfHeight));
+                break;
+            }
+            case Physics::ShapeType::Native:
+            {
+                const Physics::NativeShapeConfiguration& nativeShapeConfig = static_cast<const Physics::NativeShapeConfiguration&>(shapeConfiguration);
+                AZ::Vector3 scale = nativeShapeConfig.m_nativeShapeScale * nativeShapeConfig.m_scale;
+                physx::PxBase* meshData = reinterpret_cast<physx::PxBase*>(nativeShapeConfig.m_nativeShapePtr);
+                return MeshDataToPxGeometry(meshData, pxGeometry, scale);
+            }
+            case Physics::ShapeType::CookedMesh:
+            {
+                const Physics::CookedMeshShapeConfiguration& constCookedMeshShapeConfig =
+                    static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
+
+                // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                // native mesh pointer that gets stored in the configuration.
+                Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+                    const_cast<Physics::CookedMeshShapeConfiguration&>(constCookedMeshShapeConfig);
+
+                physx::PxBase* nativeMeshObject = nullptr;
+
+                // Use the cached mesh object if it is there, otherwise create one and save in the shape configuration
+                if (cookedMeshShapeConfig.GetCachedNativeMesh())
+                {
+                    nativeMeshObject = static_cast<physx::PxBase*>(cookedMeshShapeConfig.GetCachedNativeMesh());
+                }
+                else
+                {
+                    nativeMeshObject = CreateNativeMeshObjectFromCookedData(
+                        cookedMeshShapeConfig.GetCookedMeshData(),
+                        cookedMeshShapeConfig.GetMeshType());
+
+                    if (nativeMeshObject)
+                    {
+                        cookedMeshShapeConfig.SetCachedNativeMesh(nativeMeshObject);
+                    }
+                    else
+                    {
+                        AZ_Warning("Jolt Rigid Body", false,
+                            "Unable to create a mesh object from the CookedMeshShapeConfiguration buffer. "
+                            "Please check if the data was cooked correctly.");
+                        return false;
+                    }
+                }
+
+                return MeshDataToPxGeometry(nativeMeshObject, pxGeometry, cookedMeshShapeConfig.m_scale);
+            }
+            case Physics::ShapeType::PhysicsAsset:
+            {
+                AZ_Assert(false,
+                    "CreatePxGeometryFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
+                    "Please iterate over m_colliderShapes in the asset and call this function for each of them.");
+                return false;
+            }
+            case Physics::ShapeType::Heightfield:
+            {
+                const Physics::HeightfieldShapeConfiguration& constHeightfieldConfig =
+                    static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+
+                // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                // native heightfield pointer that gets stored in the configuration.
+                Physics::HeightfieldShapeConfiguration& heightfieldConfig =
+                    const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+
+                CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
+                break;
+            }
+            default:
+                AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType);
+                return false;
+            }
+
+            return true;
+        }
+
         AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(
             const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale)
         {
@@ -69,6 +202,106 @@ namespace JoltPhysics
             }
 
             return shapeConfig;
+        }
+
+        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateConvexFromPrimitive(
+            const Physics::ColliderConfiguration& colliderConfig,
+            const Physics::ShapeConfiguration& primitiveShapeConfig, AZ::u8 subdivisionLevel, const AZ::Vector3& scale)
+        {
+            AZ::u8 subdivisionLevelClamped = AZ::GetClamp(subdivisionLevel, MinCapsuleSubdivisionLevel, MaxCapsuleSubdivisionLevel);
+
+            auto applyColliderOffset = [&colliderConfig](const AZ::Vector3 point) {
+                return colliderConfig.m_rotation.TransformVector(point) + colliderConfig.m_position;
+            };
+
+            auto shapeType = primitiveShapeConfig.GetShapeType();
+            switch (shapeType)
+            {
+            case Physics::ShapeType::Box:
+            {
+                auto boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(primitiveShapeConfig);
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(8);
+                const float x = 0.5f * boxConfig.m_dimensions.GetX();
+                const float y = 0.5f * boxConfig.m_dimensions.GetY();
+                const float z = 0.5f * boxConfig.m_dimensions.GetZ();
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, +z)));
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Capsule:
+            {
+                auto capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(2 * numLayers * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(0.5f * capsuleConfig.m_height)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-0.5f * capsuleConfig.m_height)));
+                for (AZ::u8 layerIndex = 0; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = (layerIndex + 1) * AZ::Constants::HalfPi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = capsuleConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = 0.5f * capsuleConfig.m_height + capsuleConfig.m_radius * (AZ::Cos(theta) - 1.0f);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), -layerHeight)));
+                    }
+                }
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Sphere:
+            {
+                auto sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = 2 * subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve((numLayers - 1) * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(sphereConfig.m_radius)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-sphereConfig.m_radius)));
+
+                for (AZ::u8 layerIndex = 1; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = layerIndex * AZ::Constants::Pi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = sphereConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = sphereConfig.m_radius * AZ::Cos(theta);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                    }
+                }
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::CookedMesh:
+                return static_cast<const Physics::CookedMeshShapeConfiguration&>(primitiveShapeConfig);
+            default:
+                AZ_Error("Jolt Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
+                return {};
+            }
+        }
+
+        bool IsPrimitiveShape(const Physics::ShapeConfiguration& shapeConfig)
+        {
+            const Physics::ShapeType shapeType = shapeConfig.GetShapeType();
+            return
+                shapeType == Physics::ShapeType::Box ||
+                shapeType == Physics::ShapeType::Capsule ||
+                shapeType == Physics::ShapeType::Sphere;
         }
 
         // Returns a point list of the frustum extents based on the supplied frustum parameters.
@@ -137,9 +370,9 @@ namespace JoltPhysics
             return nullptr;
         }
 
-        JPH::Shape* CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
-                                              const Physics::ShapeConfiguration& shapeConfiguration,
-                                              AzPhysics::CollisionGroup& assignedCollisionGroup)
+        JPH::Ref<JPH::Shape> CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
+                                                       const Physics::ShapeConfiguration& shapeConfiguration,
+                                                       AzPhysics::CollisionGroup& assignedCollisionGroup)
         {
             // We get the materials from the collider config here and extract them to set on a shape
             // We can't set Jolt materials on base shapes because we need to know the type
@@ -150,38 +383,36 @@ namespace JoltPhysics
                 joltMaterials[materialIndex] = materials[materialIndex]->GetJoltMaterial();
             }
 
-            JPH::Shape::ShapeResult outResult;
-            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outResult, joltMaterials))
+            JPH::Ref<JPH::Shape> outShape;
+            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outShape, joltMaterials))
             {
                 return nullptr;
             }
 
-            if (outResult.HasError()) // This should never be true if the above condition passes
+            if (!outShape.GetPtr()) // This should never be true if the above condition passes
             {
                 AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
                 return nullptr;
             }
 
-            JPH::Shape* newShape = outResult.Get();
-
-            // TODO: this could be a compound shape to accommodate multiple shape components
-            JPH::Ref<JPH::RotatedTranslatedShape> offsetShape = new JPH::RotatedTranslatedShape(
+            JPH::Ref offsetShape = aznew JPH::RotatedTranslatedShape(
                 JoltMathConvert(colliderConfiguration.m_position),
                 JoltMathConvert(colliderConfiguration.m_rotation),
-                newShape);
+                outShape);
 
             offsetShape->AddRef();
 
+            // TODO: This can be moved out, it doesn't depend on anything
             AzPhysics::CollisionGroup collisionGroup;
             Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
             assignedCollisionGroup = collisionGroup;
 
-            return offsetShape;
+            return offsetShape.GetPtr();
         }
 
         bool ComputeJoltShapeFromConfig(
             const Physics::ShapeConfiguration& shapeConfiguration,
-            JPH::Shape::ShapeResult& outResult,
+            JPH::Ref<JPH::Shape>& outShape,
             AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
         {
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
@@ -204,7 +435,7 @@ namespace JoltPhysics
 
                     JPH::SphereShapeSettings settings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
+                    outShape = settings.Create().Get();
                     break;
                 }
             case Physics::ShapeType::Box:
@@ -222,7 +453,7 @@ namespace JoltPhysics
                         JPH::cDefaultConvexRadius,
                         inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
+                    outShape = settings.Create().Get();
                     break;
                 }
             case Physics::ShapeType::Capsule:
@@ -248,7 +479,7 @@ namespace JoltPhysics
 
                     JPH::CapsuleShapeSettings settings(halfHeight, radius, inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
+                    outShape = settings.Create().Get();
                     break;
                 }
             case Physics::ShapeType::PhysicsAsset:
@@ -260,13 +491,14 @@ namespace JoltPhysics
                 }
             case Physics::ShapeType::Heightfield:
                 {
-                    const auto& constHeightfieldConfig = dynamic_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
-
-                    // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
-                    // native heightfield pointer that gets stored in the configuration.
-                    auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
-
-                    CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult, inMaterials);
+                    // TODO: this will need to be refactored for the outShape
+                    // const auto& constHeightfieldConfig = dynamic_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+                    //
+                    // // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                    // // native heightfield pointer that gets stored in the configuration.
+                    // auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+                    //
+                    // CreateJoltShapeResultFromHeightField(heightfieldConfig, outShape, inMaterials);
 
                     break;
                 }

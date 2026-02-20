@@ -40,6 +40,14 @@ set(FILES
         Source/Clients/Shape.h
 		Source/Clients/BaseColliderComponent.cpp
 		Source/Clients/BaseColliderComponent.h
+		Source/Clients/BoxColliderComponent.cpp
+		Source/Clients/BoxColliderComponent.h
+		Source/Clients/CapsuleColliderComponent.cpp
+		Source/Clients/CapsuleColliderComponent.h
+		Source/Clients/SphereColliderComponent.cpp
+		Source/Clients/SphereColliderComponent.h
+		Source/Clients/SimpleShapeColliderComponent.cpp
+		Source/Clients/SimpleShapeColliderComponent.h
 		Source/Clients/ShapeColliderComponent.cpp
 		Source/Clients/ShapeColliderComponent.h
 
