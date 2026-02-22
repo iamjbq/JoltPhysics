@@ -313,21 +313,15 @@ namespace JoltPhysics
 
     void EditorSimpleShapeColliderComponent::Init()
     {
-        // O3DE_DEPRECATION_NOTICE(GHI-14718)
-        // If initial value is PhysicsAsset, default to Box and update the UI.
-        // To be removed when m_shapeType intial value is changed to Box with GHI-14718.
-        if (m_proxyShapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset)
+        m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
+        // Primitive colliders can only have one material slot.
+        if (m_configuration.m_materialSlots.GetSlotsCount() > 1)
         {
-            m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
-            // Primitive colliders can only have one material slot.
-            if (m_configuration.m_materialSlots.GetSlotsCount() > 1)
-            {
-                m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
-            }
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+            m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
         }
+        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
     }
 
     void EditorSimpleShapeColliderComponent::Activate()
@@ -592,10 +586,9 @@ namespace JoltPhysics
         const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
         if (m_proxyShapeConfiguration.IsCylinderConfig())
         {
-            physx::PxGeometryHolder pxGeometryHolder;
-            Utils::CreatePxGeometryFromConfig(
-                m_proxyShapeConfiguration.m_cylinder.m_configuration, pxGeometryHolder); // this will cause the native mesh to be cached
-
+            JPH::Ref<JPH::ShapeSettings> shapeSettings = Utils::CreateJoltShapeSettingsFromConfig(m_proxyShapeConfiguration.m_cylinder.m_configuration);
+            // Utils::CreatePxGeometryFromConfig(
+            //     m_proxyShapeConfiguration.m_cylinder.m_configuration, pxGeometryHolder); // this will cause the native mesh to be cached
             m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.m_cylinder.m_configuration, shapeIndex);
         }
         else if (!m_hasNonUniformScale)
@@ -608,8 +601,9 @@ namespace JoltPhysics
                 m_proxyShapeConfiguration.m_subdivisionLevel, m_proxyShapeConfiguration.GetCurrent().m_scale);
             if (m_scaledPrimitive.has_value())
             {
-                physx::PxGeometryHolder pxGeometryHolder;
-                Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
+                JPH::Ref<JPH::ShapeSettings> shapeSettings = Utils::CreateJoltShapeSettingsFromConfig(m_scaledPrimitive.value());
+                // physx::PxGeometryHolder pxGeometryHolder;
+                // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
                 m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
             }
         }

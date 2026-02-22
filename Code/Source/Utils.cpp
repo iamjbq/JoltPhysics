@@ -23,6 +23,7 @@
 #include <AzFramework/Physics/CollisionBus.h>
 
 #include <Jolt/Jolt.h>
+#include <Jolt/Core/Reference.h>
 #include "Jolt/Math/Vec3.h"
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include "Jolt/Physics/Collision/Shape/Shape.h"
@@ -43,20 +44,19 @@
 #include <JoltPhysics/EditorColliderComponentRequestBus.h>
 #include <System/JoltSystem.h>
 #include <Clients/Shape.h>
+
 #include <Utils.h>
 
 namespace JoltPhysics
 {
     namespace Utils
     {
-        bool CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration,
-            JPH::ShapeSettings& shapeSettings)
+        JPH::Ref<JPH::ShapeSettings> CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration)
         {
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
                 AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
                     AZStd::to_string(shapeConfiguration.m_scale).c_str());
-                return false;
             }
 
             auto shapeType = shapeConfiguration.GetShapeType();
@@ -65,30 +65,26 @@ namespace JoltPhysics
             {
             case Physics::ShapeType::Sphere:
             {
-                const Physics::SphereShapeConfiguration& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
+                const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
                 if (sphereConfig.m_radius <= 0.0f)
                 {
                     AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius);
-                    return false;
                 }
-                pxGeometry.storeAny(physx::PxSphereGeometry(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement()));
-                break;
+                return new JPH::SphereShapeSettings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement());
             }
             case Physics::ShapeType::Box:
             {
-                const Physics::BoxShapeConfiguration& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
+                const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
                 if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
                 {
                     AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for box dimensions %s",
                         AZStd::to_string(boxConfig.m_dimensions).c_str());
-                    return false;
                 }
-                pxGeometry.storeAny(physx::PxBoxGeometry(PxMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale)));
-                break;
+                return new JPH::BoxShapeSettings(JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale));
             }
             case Physics::ShapeType::Capsule:
             {
-                const Physics::CapsuleShapeConfiguration& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
+                const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
                 float height = capsuleConfig.m_height * capsuleConfig.m_scale.GetZ();
                 float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(), capsuleConfig.m_scale.GetY());
 
@@ -96,7 +92,6 @@ namespace JoltPhysics
                 {
                     AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
                         capsuleConfig.m_height, capsuleConfig.m_radius);
-                    return false;
                 }
 
                 float halfHeight = 0.5f * height - radius;
@@ -106,15 +101,16 @@ namespace JoltPhysics
                         capsuleConfig.m_height, capsuleConfig.m_radius);
                     halfHeight = std::numeric_limits<float>::epsilon();
                 }
-                pxGeometry.storeAny(physx::PxCapsuleGeometry(radius, halfHeight));
-                break;
+                return new JPH::CapsuleShapeSettings(halfHeight, radius);
             }
             case Physics::ShapeType::Native:
             {
-                const Physics::NativeShapeConfiguration& nativeShapeConfig = static_cast<const Physics::NativeShapeConfiguration&>(shapeConfiguration);
+                const auto& nativeShapeConfig = static_cast<const Physics::NativeShapeConfiguration&>(shapeConfiguration);
                 AZ::Vector3 scale = nativeShapeConfig.m_nativeShapeScale * nativeShapeConfig.m_scale;
-                physx::PxBase* meshData = reinterpret_cast<physx::PxBase*>(nativeShapeConfig.m_nativeShapePtr);
-                return MeshDataToPxGeometry(meshData, pxGeometry, scale);
+                AZ_UNUSED(scale)
+                // physx::PxBase* meshData = reinterpret_cast<physx::PxBase*>(nativeShapeConfig.m_nativeShapePtr);
+                // return MeshDataToPxGeometry(meshData, pxGeometry, scale);
+                return nullptr;
             }
             case Physics::ShapeType::CookedMesh:
             {
@@ -125,41 +121,42 @@ namespace JoltPhysics
                 // native mesh pointer that gets stored in the configuration.
                 Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
                     const_cast<Physics::CookedMeshShapeConfiguration&>(constCookedMeshShapeConfig);
-
-                physx::PxBase* nativeMeshObject = nullptr;
-
-                // Use the cached mesh object if it is there, otherwise create one and save in the shape configuration
-                if (cookedMeshShapeConfig.GetCachedNativeMesh())
-                {
-                    nativeMeshObject = static_cast<physx::PxBase*>(cookedMeshShapeConfig.GetCachedNativeMesh());
-                }
-                else
-                {
-                    nativeMeshObject = CreateNativeMeshObjectFromCookedData(
-                        cookedMeshShapeConfig.GetCookedMeshData(),
-                        cookedMeshShapeConfig.GetMeshType());
-
-                    if (nativeMeshObject)
-                    {
-                        cookedMeshShapeConfig.SetCachedNativeMesh(nativeMeshObject);
-                    }
-                    else
-                    {
-                        AZ_Warning("Jolt Rigid Body", false,
-                            "Unable to create a mesh object from the CookedMeshShapeConfiguration buffer. "
-                            "Please check if the data was cooked correctly.");
-                        return false;
-                    }
-                }
-
-                return MeshDataToPxGeometry(nativeMeshObject, pxGeometry, cookedMeshShapeConfig.m_scale);
+                AZ_UNUSED(cookedMeshShapeConfig)
+                // physx::PxBase* nativeMeshObject = nullptr;
+                //
+                // // Use the cached mesh object if it is there, otherwise create one and save in the shape configuration
+                // if (cookedMeshShapeConfig.GetCachedNativeMesh())
+                // {
+                //     nativeMeshObject = static_cast<physx::PxBase*>(cookedMeshShapeConfig.GetCachedNativeMesh());
+                // }
+                // else
+                // {
+                //     nativeMeshObject = CreateNativeMeshObjectFromCookedData(
+                //         cookedMeshShapeConfig.GetCookedMeshData(),
+                //         cookedMeshShapeConfig.GetMeshType());
+                //
+                //     if (nativeMeshObject)
+                //     {
+                //         cookedMeshShapeConfig.SetCachedNativeMesh(nativeMeshObject);
+                //     }
+                //     else
+                //     {
+                //         AZ_Warning("Jolt Rigid Body", false,
+                //             "Unable to create a mesh object from the CookedMeshShapeConfiguration buffer. "
+                //             "Please check if the data was cooked correctly.");
+                //         return false;
+                //     }
+                // }
+                //
+                // return MeshDataToPxGeometry(nativeMeshObject, pxGeometry, cookedMeshShapeConfig.m_scale);
+                return nullptr;
             }
             case Physics::ShapeType::PhysicsAsset:
             {
                 AZ_Assert(false,
                     "CreatePxGeometryFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
                     "Please iterate over m_colliderShapes in the asset and call this function for each of them.");
-                return false;
+                return nullptr;
             }
             case Physics::ShapeType::Heightfield:
             {
@@ -170,16 +167,15 @@ namespace JoltPhysics
                 // native heightfield pointer that gets stored in the configuration.
                 Physics::HeightfieldShapeConfiguration& heightfieldConfig =
                     const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
-
-                CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
-                break;
+                AZ_UNUSED(heightfieldConfig)
+                // CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
+                // break;
+                return nullptr;
             }
             default:
                 AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType);
-                return false;
+                return nullptr;
             }
-
-            return true;
         }
 
         AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(

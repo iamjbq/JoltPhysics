@@ -7,18 +7,13 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#include <PhysX/MeshAsset.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
-#include <PhysX/Debug/PhysXDebugInterface.h>
+// #include <PhysX/MeshAsset.h>
+#include <JoltPhysics/Debug/JoltDebugConfiguration.h>
+#include <JoltPhysics/Debug/JoltDebugInterface.h>
 
 namespace AZ
 {
     class ReflectContext;
-}
-
-namespace physx
-{
-    class PxBase;
 }
 
 namespace JoltPhysics
@@ -147,9 +142,9 @@ namespace JoltPhysics
                 AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
                 const AZ::Vector3& meshScale = AZ::Vector3::CreateOne()) const;
 
-            void BuildTriangleMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const;
-
-            void BuildConvexMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const;
+            // void BuildTriangleMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const;
+            //
+            // void BuildConvexMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const;
 
             AZStd::string GetEntityName() const;
 
@@ -167,7 +162,7 @@ namespace JoltPhysics
 
             mutable AZStd::vector<GeometryData> m_geometry;
 
-            Jolt::Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangedEvent;
+            JoltPhysics::Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangedEvent;
         };
     } // namespace DebugDraw
 } // namespace JoltPhysics

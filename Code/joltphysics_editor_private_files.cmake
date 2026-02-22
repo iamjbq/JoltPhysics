@@ -43,6 +43,8 @@ set(FILES
     Source/Editor/JoltEditorMaterialAsset.h
     Source/Editor/JoltEditorMaterialAssetBuilder.cpp
     Source/Editor/JoltEditorMaterialAssetBuilder.h
+    Source/Editor/DebugDraw.cpp
+    Source/Editor/DebugDraw.h
 
     Source/Editor/EditorWindow.ui
     Source/Editor/EditorWindow.cpp

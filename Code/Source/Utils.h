@@ -29,6 +29,7 @@ namespace JPH
 {
     class Shape;
     class BroadPhaseLayer;
+    class ShapeSettings;
 }
 
 namespace JoltPhysics
@@ -43,7 +44,7 @@ namespace JoltPhysics
 
     namespace Utils
     {
-        bool CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration, JPH::ShapeSettings& shapeSettings);
+        JPH::Ref<JPH::ShapeSettings> CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration);
 
         //! Creates a Jolt cooked mesh config from the given points.
         //!

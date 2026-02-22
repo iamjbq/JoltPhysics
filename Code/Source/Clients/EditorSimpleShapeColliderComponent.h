@@ -19,6 +19,8 @@
 #include <JoltPhysics/ColliderShapeBus.h>
 #include <JoltPhysics/EditorColliderComponentRequestBus.h>
 
+#include <Editor/DebugDraw.h>
+
 namespace AzPhysics
 {
     class SceneInterface;

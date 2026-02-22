@@ -24,4 +24,3 @@ namespace JoltPhysics
         void UpdateScaleForShapeConfigs() override;
     };
 } // JoltPhysics
-H

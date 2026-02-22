@@ -3,6 +3,7 @@
 #include <AzCore/std/optional.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
+#include <JoltPhysics/Debug/JoltDebugConfiguration.h>
 
 namespace JoltPhysics
 {
@@ -17,7 +18,7 @@ namespace JoltPhysics
         };
         using OnJoltConfigSaveComplete = AZStd::function<void(const JoltSystemConfiguration&, Result)>;
         using OnDefaultSceneConfigSaveComplete = AZStd::function<void(const AzPhysics::SceneConfiguration&, Result)>;
-        // using OnPhysXDebugConfigSaveComplete = AZStd::function<void(const Debug::DebugConfiguration&, Result)>;
+        using OnJoltDebugConfigSaveComplete = AZStd::function<void(const Debug::DebugConfiguration&, Result)>;
 
         JoltSettingsRegistryManager();
         virtual ~JoltSettingsRegistryManager() = default;
@@ -32,7 +33,7 @@ namespace JoltPhysics
 
         //! Load the Jolt Debug Configuration from the Settings Registry
         //! @return Returns true if successful.
-        // virtual AZStd::optional<Debug::DebugConfiguration> LoadDebugConfiguration() const;
+        virtual AZStd::optional<Debug::DebugConfiguration> LoadDebugConfiguration() const;
 
         //! Save the Jolt Configuration from the Settings Registry
         //! @return Returns true if successful. When not in Editor, always returns false.
@@ -44,7 +45,7 @@ namespace JoltPhysics
 
         //! Save the Jolt Debug Configuration from the Settings Registry
         //! @return Returns true if successful. When not in Editor, always returns false.
-        // virtual void SaveDebugConfiguration(const Debug::DebugConfiguration& config, const OnPhysXDebugConfigSaveComplete& saveCallback) const;
+        virtual void SaveDebugConfiguration(const Debug::DebugConfiguration& config, const OnJoltDebugConfigSaveComplete& saveCallback) const;
 
     protected:
         AZStd::string m_settingsRegistryPath;

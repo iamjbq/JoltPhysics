@@ -13,10 +13,9 @@ namespace JoltPhysics
 
     JoltSettingsRegistryManager::JoltSettingsRegistryManager()
     {
-        // TODO: implement debug config
         m_settingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/JoltSystemConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
         m_defaultSceneConfigSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/DefaultSceneConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-        // m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/Debug/JoltDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
+        m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/" JOLT_SETREG_GEM_NAME "/Debug/JoltDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
     }
 
     AZStd::optional<JoltSystemConfiguration> JoltSettingsRegistryManager::LoadSystemConfiguration() const
@@ -62,27 +61,27 @@ namespace JoltPhysics
         return AZStd::nullopt;
     }
 
-    // AZStd::optional<Debug::DebugConfiguration> JoltSettingsRegistryManager::LoadDebugConfiguration() const
-    // {
-    //     Debug::DebugConfiguration systemConfig;
-    //
-    //     bool configurationRead = false;
-    //
-    //     AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
-    //     if (settingsRegistry)
-    //     {
-    //         configurationRead = settingsRegistry->GetObject(systemConfig, m_debugSettingsRegistryPath);
-    //     }
-    //
-    //     if (configurationRead)
-    //     {
-    //         AZ_TracePrintf("PhysXSystem", R"(Debug::DebugConfiguration was read from settings registry at pointer path)"
-    //             R"( "%s)" "\n",
-    //             m_debugSettingsRegistryPath.c_str());
-    //         return systemConfig;
-    //     }
-    //     return AZStd::nullopt;
-    // }
+    AZStd::optional<Debug::DebugConfiguration> JoltSettingsRegistryManager::LoadDebugConfiguration() const
+    {
+        Debug::DebugConfiguration systemConfig;
+
+        bool configurationRead = false;
+
+        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
+        {
+            configurationRead = settingsRegistry->GetObject(systemConfig, m_debugSettingsRegistryPath);
+        }
+
+        if (configurationRead)
+        {
+            AZ_TracePrintf("JoltSystem", R"(Debug::DebugConfiguration was read from settings registry at pointer path)"
+                R"( "%s)" "\n",
+                m_debugSettingsRegistryPath.c_str());
+            return systemConfig;
+        }
+        return AZStd::nullopt;
+    }
 
     void JoltSettingsRegistryManager::SaveSystemConfiguration([[maybe_unused]] const JoltSystemConfiguration& config, const OnJoltConfigSaveComplete& saveCallback) const
     {
@@ -102,12 +101,12 @@ namespace JoltPhysics
         }
     }
 
-    // void JoltSettingsRegistryManager::SaveDebugConfiguration([[maybe_unused]] const Debug::DebugConfiguration& config, const OnPhysXDebugConfigSaveComplete& saveCallback) const
-    // {
-    //     //PhysXEditorSettingsRegistryManager will implement, as saving is editor only currently.
-    //     if (saveCallback)
-    //     {
-    //         saveCallback(config, Result::Failed);
-    //     }
-    // }
+    void JoltSettingsRegistryManager::SaveDebugConfiguration([[maybe_unused]] const Debug::DebugConfiguration& config, const OnJoltDebugConfigSaveComplete& saveCallback) const
+    {
+        //JoltEditorSettingsRegistryManager will implement, as saving is editor only currently.
+        if (saveCallback)
+        {
+            saveCallback(config, Result::Failed);
+        }
+    }
 } // JoltPhysics
