@@ -49,9 +49,7 @@ set(FILES
 		Source/Clients/CapsuleColliderComponent.h
 		Source/Clients/SphereColliderComponent.cpp
 		Source/Clients/SphereColliderComponent.h
-		Source/Clients/SimpleShapeColliderComponent.cpp
-		Source/Clients/SimpleShapeColliderComponent.h
-		Source/Clients/ShapeColliderComponent.cpp
+        Source/Clients/ShapeColliderComponent.cpp
 		Source/Clients/ShapeColliderComponent.h
 
 		Source/Debug/JoltDebug.cpp
