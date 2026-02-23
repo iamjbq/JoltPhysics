@@ -7,34 +7,34 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Math/SimdMath.h>
+// #include <AzCore/Component/TransformBus.h>
+// #include <AzCore/Math/SimdMath.h>
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
-#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+// #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
-#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
+// #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
-#include <AzFramework/Physics/CollisionBus.h>
+// #include <AzFramework/Physics/CollisionBus.h>
 
-#include <Jolt/Jolt.h>
-#include "Jolt/Math/Vec3.h"
-#include <Jolt/Physics/Collision/ObjectLayer.h>
-#include "Jolt/Physics/Collision/Shape/Shape.h"
-#include "Jolt/Physics/Collision/Shape/BoxShape.h"
-#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
-#include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
-#include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
-#include "Jolt/Physics/Collision/Shape/MeshShape.h"
-#include "Jolt/Physics/Collision/Shape/PlaneShape.h"
-#include "Jolt/Physics/Collision/Shape/SphereShape.h"
-#include "Jolt/Physics/SoftBody/SoftBodyShape.h"
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+// #include <Jolt/Jolt.h>
+// #include "Jolt/Math/Vec3.h"
+// // #include <Jolt/Physics/Collision/ObjectLayer.h>
+// #include "Jolt/Physics/Collision/Shape/Shape.h"
+// #include "Jolt/Physics/Collision/Shape/BoxShape.h"
+// #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+// // #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
+// #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
+// // #include "Jolt/Physics/Collision/Shape/MeshShape.h"
+// // #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
+// #include "Jolt/Physics/Collision/Shape/SphereShape.h"
+// // #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
+// #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <JoltPhysics/Utils.h>
@@ -43,12 +43,140 @@
 #include <JoltPhysics/EditorColliderComponentRequestBus.h>
 #include <System/JoltSystem.h>
 #include <Clients/Shape.h>
+
 #include <Utils.h>
 
 namespace JoltPhysics
 {
     namespace Utils
     {
+        // JPH::ShapeSettings* CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration)
+        // {
+        //     if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
+        //     {
+        //         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
+        //             AZStd::to_string(shapeConfiguration.m_scale).c_str());
+        //     }
+        //
+        //     auto shapeType = shapeConfiguration.GetShapeType();
+        //
+        //     switch (shapeType)
+        //     {
+        //     case Physics::ShapeType::Sphere:
+        //     {
+        //         const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
+        //         if (sphereConfig.m_radius <= 0.0f)
+        //         {
+        //             AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius);
+        //         }
+        //         return new JPH::SphereShapeSettings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement());
+        //     }
+        //     case Physics::ShapeType::Box:
+        //     {
+        //         const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
+        //         if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
+        //         {
+        //             AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for box dimensions %s",
+        //                 AZStd::to_string(boxConfig.m_dimensions).c_str());
+        //         }
+        //         return new JPH::BoxShapeSettings(JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale));
+        //     }
+        //     case Physics::ShapeType::Capsule:
+        //     {
+        //         const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
+        //         float height = capsuleConfig.m_height * capsuleConfig.m_scale.GetZ();
+        //         float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(), capsuleConfig.m_scale.GetY());
+        //
+        //         if (height <= 0.0f || radius <= 0.0f)
+        //         {
+        //             AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
+        //                 capsuleConfig.m_height, capsuleConfig.m_radius);
+        //         }
+        //
+        //         float halfHeight = 0.5f * height - radius;
+        //         if (halfHeight <= 0.0f)
+        //         {
+        //             AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in capsule configuration (height: %f, radius: %f)",
+        //                 capsuleConfig.m_height, capsuleConfig.m_radius);
+        //             halfHeight = std::numeric_limits<float>::epsilon();
+        //         }
+        //         return new JPH::CapsuleShapeSettings(halfHeight, radius);
+        //     }
+        //     case Physics::ShapeType::Native:
+        //     {
+        //         const auto& nativeShapeConfig = static_cast<const Physics::NativeShapeConfiguration&>(shapeConfiguration);
+        //         AZ::Vector3 scale = nativeShapeConfig.m_nativeShapeScale * nativeShapeConfig.m_scale;
+        //         AZ_UNUSED(scale)
+        //         // physx::PxBase* meshData = reinterpret_cast<physx::PxBase*>(nativeShapeConfig.m_nativeShapePtr);
+        //         // return MeshDataToPxGeometry(meshData, pxGeometry, scale);
+        //         return nullptr;
+        //     }
+        //     case Physics::ShapeType::CookedMesh:
+        //     {
+        //         const Physics::CookedMeshShapeConfiguration& constCookedMeshShapeConfig =
+        //             static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
+        //
+        //         // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+        //         // native mesh pointer that gets stored in the configuration.
+        //         Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+        //             const_cast<Physics::CookedMeshShapeConfiguration&>(constCookedMeshShapeConfig);
+        //         AZ_UNUSED(cookedMeshShapeConfig)
+        //         // physx::PxBase* nativeMeshObject = nullptr;
+        //         //
+        //         // // Use the cached mesh object if it is there, otherwise create one and save in the shape configuration
+        //         // if (cookedMeshShapeConfig.GetCachedNativeMesh())
+        //         // {
+        //         //     nativeMeshObject = static_cast<physx::PxBase*>(cookedMeshShapeConfig.GetCachedNativeMesh());
+        //         // }
+        //         // else
+        //         // {
+        //         //     nativeMeshObject = CreateNativeMeshObjectFromCookedData(
+        //         //         cookedMeshShapeConfig.GetCookedMeshData(),
+        //         //         cookedMeshShapeConfig.GetMeshType());
+        //         //
+        //         //     if (nativeMeshObject)
+        //         //     {
+        //         //         cookedMeshShapeConfig.SetCachedNativeMesh(nativeMeshObject);
+        //         //     }
+        //         //     else
+        //         //     {
+        //         //         AZ_Warning("Jolt Rigid Body", false,
+        //         //             "Unable to create a mesh object from the CookedMeshShapeConfiguration buffer. "
+        //         //             "Please check if the data was cooked correctly.");
+        //         //         return false;
+        //         //     }
+        //         // }
+        //         //
+        //         // return MeshDataToPxGeometry(nativeMeshObject, pxGeometry, cookedMeshShapeConfig.m_scale);
+        //         return nullptr;
+        //     }
+        //     case Physics::ShapeType::PhysicsAsset:
+        //     {
+        //         AZ_Assert(false,
+        //             "CreatePxGeometryFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
+        //             "Please iterate over m_colliderShapes in the asset and call this function for each of them.");
+        //         return nullptr;
+        //     }
+        //     case Physics::ShapeType::Heightfield:
+        //     {
+        //         const Physics::HeightfieldShapeConfiguration& constHeightfieldConfig =
+        //             static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+        //
+        //         // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+        //         // native heightfield pointer that gets stored in the configuration.
+        //         Physics::HeightfieldShapeConfiguration& heightfieldConfig =
+        //             const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+        //         AZ_UNUSED(heightfieldConfig)
+        //         // CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
+        //         // break;
+        //         return nullptr;
+        //     }
+        //     default:
+        //         AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType);
+        //         return nullptr;
+        //     }
+        // }
+
         AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(
             const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale)
         {
@@ -69,6 +197,106 @@ namespace JoltPhysics
             }
 
             return shapeConfig;
+        }
+
+        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateConvexFromPrimitive(
+            const Physics::ColliderConfiguration& colliderConfig,
+            const Physics::ShapeConfiguration& primitiveShapeConfig, AZ::u8 subdivisionLevel, const AZ::Vector3& scale)
+        {
+            AZ::u8 subdivisionLevelClamped = AZ::GetClamp(subdivisionLevel, MinCapsuleSubdivisionLevel, MaxCapsuleSubdivisionLevel);
+
+            auto applyColliderOffset = [&colliderConfig](const AZ::Vector3 point) {
+                return colliderConfig.m_rotation.TransformVector(point) + colliderConfig.m_position;
+            };
+
+            auto shapeType = primitiveShapeConfig.GetShapeType();
+            switch (shapeType)
+            {
+            case Physics::ShapeType::Box:
+            {
+                auto boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(primitiveShapeConfig);
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(8);
+                const float x = 0.5f * boxConfig.m_dimensions.GetX();
+                const float y = 0.5f * boxConfig.m_dimensions.GetY();
+                const float z = 0.5f * boxConfig.m_dimensions.GetZ();
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, +z)));
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Capsule:
+            {
+                auto capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(2 * numLayers * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(0.5f * capsuleConfig.m_height)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-0.5f * capsuleConfig.m_height)));
+                for (AZ::u8 layerIndex = 0; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = (layerIndex + 1) * AZ::Constants::HalfPi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = capsuleConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = 0.5f * capsuleConfig.m_height + capsuleConfig.m_radius * (AZ::Cos(theta) - 1.0f);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), -layerHeight)));
+                    }
+                }
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Sphere:
+            {
+                auto sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = 2 * subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve((numLayers - 1) * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(sphereConfig.m_radius)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-sphereConfig.m_radius)));
+
+                for (AZ::u8 layerIndex = 1; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = layerIndex * AZ::Constants::Pi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = sphereConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = sphereConfig.m_radius * AZ::Cos(theta);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                    }
+                }
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::CookedMesh:
+                return static_cast<const Physics::CookedMeshShapeConfiguration&>(primitiveShapeConfig);
+            default:
+                AZ_Error("Jolt Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
+                return {};
+            }
+        }
+
+        bool IsPrimitiveShape(const Physics::ShapeConfiguration& shapeConfig)
+        {
+            const Physics::ShapeType shapeType = shapeConfig.GetShapeType();
+            return
+                shapeType == Physics::ShapeType::Box ||
+                shapeType == Physics::ShapeType::Capsule ||
+                shapeType == Physics::ShapeType::Sphere;
         }
 
         // Returns a point list of the frustum extents based on the supplied frustum parameters.
@@ -138,8 +366,7 @@ namespace JoltPhysics
         }
 
         JPH::Shape* CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
-                                              const Physics::ShapeConfiguration& shapeConfiguration,
-                                              AzPhysics::CollisionGroup& assignedCollisionGroup)
+                                                       const Physics::ShapeConfiguration& shapeConfiguration)
         {
             // We get the materials from the collider config here and extract them to set on a shape
             // We can't set Jolt materials on base shapes because we need to know the type
@@ -164,7 +391,6 @@ namespace JoltPhysics
 
             JPH::Shape* newShape = outResult.Get();
 
-            // TODO: this could be a compound shape to accommodate multiple shape components
             JPH::Ref<JPH::RotatedTranslatedShape> offsetShape = new JPH::RotatedTranslatedShape(
                 JoltMathConvert(colliderConfiguration.m_position),
                 JoltMathConvert(colliderConfiguration.m_rotation),
@@ -172,11 +398,7 @@ namespace JoltPhysics
 
             offsetShape->AddRef();
 
-            AzPhysics::CollisionGroup collisionGroup;
-            Physics::CollisionRequestBus::BroadcastResult(collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
-            assignedCollisionGroup = collisionGroup;
-
-            return offsetShape;
+            return offsetShape.GetPtr();
         }
 
         bool ComputeJoltShapeFromConfig(
@@ -260,13 +482,14 @@ namespace JoltPhysics
                 }
             case Physics::ShapeType::Heightfield:
                 {
-                    const auto& constHeightfieldConfig = dynamic_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
-
-                    // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
-                    // native heightfield pointer that gets stored in the configuration.
-                    auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
-
-                    CreateJoltShapeResultFromHeightField(heightfieldConfig, outResult, inMaterials);
+                    // TODO: this will need to be refactored for the outShape
+                    // const auto& constHeightfieldConfig = dynamic_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+                    //
+                    // // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                    // // native heightfield pointer that gets stored in the configuration.
+                    // auto& heightfieldConfig = const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+                    //
+                    // CreateJoltShapeResultFromHeightField(heightfieldConfig, outShape, inMaterials);
 
                     break;
                 }
@@ -278,57 +501,57 @@ namespace JoltPhysics
             return true;
         }
 
-        void CreateJoltShapeResultFromHeightField(
-            Physics::HeightfieldShapeConfiguration& heightfieldConfig,
-            JPH::Shape::ShapeResult& outResult,
-            [[maybe_unused]] AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
-        {
-            const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
-
-            const size_t numCols = heightfieldConfig.GetNumColumnVertices();
-            const size_t numRows = heightfieldConfig.GetNumRowVertices();
-
-            const float rowScale = gridSpacing.GetX();
-            const float colScale = gridSpacing.GetY();
-
-            // Temp
-            AZ_UNUSED(rowScale)
-            AZ_UNUSED(colScale)
-            // Temp
-
-            const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
-            const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
-            const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
-
-            // We're making the assumption right now that the min/max bounds are centered around 0.
-            AZ_Assert(
-                AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
-                "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.")
-
-            AZ_Assert(
-                maxHeightBounds >= minHeightBounds,
-                "Max height bounds is less than min height bounds, the height conversions below will be incorrect.")
-
-            // Jolt quantizes float height values into uin16 internally, so we only need to worry about converting floats
-
-            if (auto cachedHeightField = static_cast<JPH::HeightFieldShape*>(heightfieldConfig.GetCachedNativeHeightfield()))
-            {
-                outResult.Clear();
-                outResult.Set(cachedHeightField);
-                return;
-            }
-
-            AZStd::vector<float> joltHeightSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
-
-            // TODO: Determine how or if we can set HeightField offset or scale in O3DE
-            // TODO: Add material indices and material list
-            JPH::HeightFieldShapeSettings settings(
-                joltHeightSamples.data(),
-                JPH::Vec3::sZero(),
-                JPH::Vec3::sOne(),
-                static_cast<JPH::uint32>(joltHeightSamples.size()));
-            outResult = settings.Create();
-        }
+        // void CreateJoltShapeResultFromHeightField(
+        //     Physics::HeightfieldShapeConfiguration& heightfieldConfig,
+        //     JPH::Shape::ShapeResult& outResult,
+        //     [[maybe_unused]] AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
+        // {
+        //     const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
+        //
+        //     const size_t numCols = heightfieldConfig.GetNumColumnVertices();
+        //     const size_t numRows = heightfieldConfig.GetNumRowVertices();
+        //
+        //     const float rowScale = gridSpacing.GetX();
+        //     const float colScale = gridSpacing.GetY();
+        //
+        //     // Temp
+        //     AZ_UNUSED(rowScale)
+        //     AZ_UNUSED(colScale)
+        //     // Temp
+        //
+        //     const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
+        //     const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
+        //     const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
+        //
+        //     // We're making the assumption right now that the min/max bounds are centered around 0.
+        //     AZ_Assert(
+        //         AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
+        //         "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.")
+        //
+        //     AZ_Assert(
+        //         maxHeightBounds >= minHeightBounds,
+        //         "Max height bounds is less than min height bounds, the height conversions below will be incorrect.")
+        //
+        //     // Jolt quantizes float height values into uin16 internally, so we only need to worry about converting floats
+        //
+        //     if (auto cachedHeightField = static_cast<JPH::HeightFieldShape*>(heightfieldConfig.GetCachedNativeHeightfield()))
+        //     {
+        //         outResult.Clear();
+        //         outResult.Set(cachedHeightField);
+        //         return;
+        //     }
+        //
+        //     AZStd::vector<float> joltHeightSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
+        //
+        //     // TODO: Determine how or if we can set HeightField offset or scale in O3DE
+        //     // TODO: Add material indices and material list
+        //     JPH::HeightFieldShapeSettings settings(
+        //         joltHeightSamples.data(),
+        //         JPH::Vec3::sZero(),
+        //         JPH::Vec3::sOne(),
+        //         static_cast<JPH::uint32>(joltHeightSamples.size()));
+        //     outResult = settings.Create();
+        // }
 
         AZStd::vector<float> ConvertHeightfieldSamples(const Physics::HeightfieldShapeConfiguration& heightfield,
             const size_t startCol, const size_t startRow, const size_t numColsToUpdate, const size_t numRowsToUpdate)
@@ -459,91 +682,95 @@ namespace JoltPhysics
         //     const ::Physics::ColliderConfiguration& colliderConfiguration
         // )
         // {
-        //     const float boundsInflationFactor = 1.0f;
-        //     AZ::Transform overallTransformNoScale = GetColliderWorldTransform(worldTransform,
-        //         colliderConfiguration.m_position, colliderConfiguration.m_rotation);
-        //     overallTransformNoScale.ExtractUniformScale();
+        //
         //     const physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(geometryHolder.any(),
         //         PxMathConvert(overallTransformNoScale),
         //         boundsInflationFactor);
         //     return PxMathConvert(bounds);
         // }
 
-        // AZ::Aabb GetColliderAabb(const AZ::Transform& worldTransform,
-        //     bool hasNonUniformScale,
-        //     AZ::u8 subdivisionLevel,
-        //     const ::Physics::ShapeConfiguration& shapeConfiguration,
-        //     const ::Physics::ColliderConfiguration& colliderConfiguration)
-        // {
-        //     const AZ::Aabb worldPosAabb = AZ::Aabb::CreateFromPoint(worldTransform.GetTranslation());
-        //     physx::PxGeometryHolder geometryHolder;
-        //     bool isAssetShape = shapeConfiguration.GetShapeType() == Physics::ShapeType::PhysicsAsset;
-        //
-        //     if (!isAssetShape)
-        //     {
-        //         if (!hasNonUniformScale)
-        //         {
-        //             if (CreatePxGeometryFromConfig(shapeConfiguration, geometryHolder))
-        //             {
-        //                 return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfiguration);
-        //             }
-        //         }
-        //         else
-        //         {
-        //             auto convexPrimitive = Utils::CreateConvexFromPrimitive(colliderConfiguration, shapeConfiguration, subdivisionLevel, shapeConfiguration.m_scale);
-        //             if (convexPrimitive.has_value())
-        //             {
-        //                 if (CreatePxGeometryFromConfig(convexPrimitive.value(), geometryHolder))
-        //                 {
-        //                     Physics::ColliderConfiguration colliderConfigurationNoOffset = colliderConfiguration;
-        //                     colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
-        //                     colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
-        //                     return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfigurationNoOffset);
-        //                 }
-        //             }
-        //         }
-        //         return worldPosAabb;
-        //     }
-        //     else
-        //     {
-        //         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfig =
-        //             static_cast<const Physics::PhysicsAssetShapeConfiguration&>(shapeConfiguration);
-        //
-        //         if (!physicsAssetConfig.m_asset.IsReady())
-        //         {
-        //             return worldPosAabb;
-        //         }
-        //
-        //         AzPhysics::ShapeColliderPairList colliderShapes;
-        //         GetColliderShapeConfigsFromAsset(physicsAssetConfig,
-        //             colliderConfiguration,
-        //             hasNonUniformScale,
-        //             subdivisionLevel,
-        //             colliderShapes);
-        //
-        //         if (colliderShapes.empty())
-        //         {
-        //             return worldPosAabb;
-        //         }
-        //
-        //         AZ::Aabb aabb = AZ::Aabb::CreateNull();
-        //         for (const auto& colliderShape : colliderShapes)
-        //         {
-        //             if (colliderShape.second &&
-        //                 CreatePxGeometryFromConfig(*colliderShape.second, geometryHolder))
-        //             {
-        //                 aabb.AddAabb(
-        //                     GetPxGeometryAabb(geometryHolder, worldTransform, *colliderShape.first)
-        //                 );
-        //             }
-        //             else
-        //             {
-        //                 return worldPosAabb;
-        //             }
-        //         }
-        //         return aabb;
-        //     }
-        // }
+        AZ::Aabb GetColliderAabb(const AZ::Transform& worldTransform,
+            bool hasNonUniformScale,
+            AZ::u8 subdivisionLevel,
+            const ::Physics::ShapeConfiguration& shapeConfiguration,
+            const ::Physics::ColliderConfiguration& colliderConfiguration)
+        {
+            const AZ::Aabb worldPosAabb = AZ::Aabb::CreateFromPoint(worldTransform.GetTranslation());
+            // physx::PxGeometryHolder geometryHolder;
+            bool isAssetShape = shapeConfiguration.GetShapeType() == Physics::ShapeType::PhysicsAsset;
+
+            if (!isAssetShape)
+            {
+                if (!hasNonUniformScale)
+                {
+                    if (JPH::Ref<JPH::Shape> shape = CreateJoltShapeFromConfig(colliderConfiguration, shapeConfiguration))
+                    {
+                        JPH::Mat44 comTransform = JPH::Mat44::sRotationTranslation(
+                                JoltMathConvert(worldTransform.GetRotation()),
+                                JoltMathConvert(worldTransform.GetTranslation())
+                                );
+                        JPH::Vec3 scale = JoltMathConvert(shapeConfiguration.m_scale);
+                        return JoltMathConvert(shape->GetWorldSpaceBounds(comTransform, scale));
+                    }
+                }
+                else
+                {
+                    auto convexPrimitive = Utils::CreateConvexFromPrimitive(colliderConfiguration, shapeConfiguration, subdivisionLevel, shapeConfiguration.m_scale);
+                    if (convexPrimitive.has_value())
+                    {
+                        // TODO: For now we aren't working with meshes
+                        // if (CreatePxGeometryFromConfig(convexPrimitive.value(), geometryHolder))
+                        // {
+                        //     Physics::ColliderConfiguration colliderConfigurationNoOffset = colliderConfiguration;
+                        //     colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+                        //     colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
+                        //     return GetPxGeometryAabb(geometryHolder, worldTransform, colliderConfigurationNoOffset);
+                        // }
+                    }
+                }
+                return worldPosAabb;
+            }
+            else
+            {
+                const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfig =
+                    static_cast<const Physics::PhysicsAssetShapeConfiguration&>(shapeConfiguration);
+
+                if (!physicsAssetConfig.m_asset.IsReady())
+                {
+                    return worldPosAabb;
+                }
+
+                AzPhysics::ShapeColliderPairList colliderShapes;
+                GetColliderShapeConfigsFromAsset(physicsAssetConfig,
+                    colliderConfiguration,
+                    hasNonUniformScale,
+                    subdivisionLevel,
+                    colliderShapes);
+
+                if (colliderShapes.empty())
+                {
+                    return worldPosAabb;
+                }
+
+                // TODO: We aren't currently working with any assets
+                AZ::Aabb aabb = AZ::Aabb::CreateNull();
+                // for (const auto& colliderShape : colliderShapes)
+                // {
+                //     if (colliderShape.second &&
+                //         CreatePxGeometryFromConfig(*colliderShape.second, geometryHolder))
+                //     {
+                //         aabb.AddAabb(
+                //             GetPxGeometryAabb(geometryHolder, worldTransform, *colliderShape.first)
+                //         );
+                //     }
+                //     else
+                //     {
+                //         return worldPosAabb;
+                //     }
+                // }
+                return aabb;
+            }
+        }
 
         // bool TriggerColliderExists(AZ::EntityId entityId)
         // {

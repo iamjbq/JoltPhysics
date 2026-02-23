@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
@@ -38,8 +39,8 @@ namespace JoltPhysics
 
     using EditorColliderComponentRequestBus = AZ::EBus<EditorColliderComponentRequests>;
 
-    //! Request bus for colliders using primitive shapes.
-    class EditorPrimitiveColliderComponentRequests
+    //! Request bus for colliders using simple shapes.
+    class EditorSimpleColliderComponentRequests
         : public AZ::EntityComponentBus
     {
     public:
@@ -104,7 +105,7 @@ namespace JoltPhysics
         virtual AZ::u8 GetCylinderSubdivisionCount() const = 0;
     };
 
-    using EditorPrimitiveColliderComponentRequestBus = AZ::EBus<EditorPrimitiveColliderComponentRequests>;
+    using EditorSimpleColliderComponentRequestBus = AZ::EBus<EditorSimpleColliderComponentRequests>;
 
     //! Request bus for colliders using Jolt mesh assets.
     class EditorMeshColliderComponentRequests

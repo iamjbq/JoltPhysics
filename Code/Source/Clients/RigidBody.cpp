@@ -24,6 +24,7 @@
 
 #include "Jolt/Physics/Body/BodyLock.h"
 #include "Jolt/Physics/Collision/Shape/EmptyShape.h"
+#include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 
 namespace JoltPhysics
 {
@@ -67,8 +68,8 @@ namespace JoltPhysics
         }
     }
 
-    RigidBody::RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem)
-        : m_owningSystem(owningSystem)
+    RigidBody::RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem)
+        : m_owningSystem(&owningSystem)
         , m_startAsleep(configuration.m_startAsleep)
     {
         CreateJoltBody(configuration);
@@ -101,6 +102,163 @@ namespace JoltPhysics
                 ->Version(1)
             ;
         }
+    }
+
+    void RigidBody::CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration)
+    {
+        if (m_joltRigidBody != nullptr)
+        {
+            AZ_Warning("Jolt Rigid Body", false, "Trying to create Jolt rigid actor when it's already created");
+            return;
+        }
+        // We can't crate a Body without a shape. This will be replaced in AddShape()
+        JPH::EmptyShapeSettings emptySettings;
+        JPH::Shape* emptyShape = emptySettings.Create().Get();
+
+        JPH::EMotionType motionType;
+        if (configuration.m_kinematic)
+        {
+            motionType = JPH::EMotionType::Kinematic;
+        }
+        else
+        {
+            motionType = JPH::EMotionType::Dynamic;
+        }
+
+        JPH::BodyCreationSettings newBody;
+        newBody.SetShape(emptyShape);
+        newBody.mPosition = JoltMathConvert(configuration.m_position);
+        newBody.mRotation = JoltMathConvert(configuration.m_orientation);
+        newBody.mMotionType = motionType;
+        newBody.mObjectLayer = 1 << 1; // Placeholder object layer until we set shape to get collider configuration
+        newBody.mLinearVelocity = JoltMathConvert(configuration.m_initialLinearVelocity);
+        newBody.mAngularVelocity = JoltMathConvert(configuration.m_initialAngularVelocity);
+
+        if (!configuration.m_gravityEnabled)
+        {
+            newBody.mGravityFactor = 0.0f;
+        }
+        if (configuration.m_computeInertiaTensor)
+        {
+            newBody.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+            newBody.mMassPropertiesOverride.mMass = configuration.m_mass;
+        }
+        if (configuration.m_computeMass && configuration.m_computeInertiaTensor)
+        {
+            newBody.mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
+            newBody.mMassPropertiesOverride.mMass = configuration.m_mass;
+            newBody.mMassPropertiesOverride.mInertia = JoltMathConvert(configuration.m_inertiaTensor);
+        }
+        if (configuration.IsCcdEnabled())
+        {
+            // Performs secondary shape cast per update to prevent tunneling in high velocity collisions
+            newBody.mMotionQuality = JPH::EMotionQuality::LinearCast;
+        }
+
+        m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
+        m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate); // TODO: Add to body queue that gets Added per StartSimulation step
+
+        // Note that if you need to add multiple bodies, use the AddBodiesPrepare/AddBodiesFinalize function.
+        // Adding many bodies, one at a time, results in a really inefficient broadphase until PhysicsSystem::OptimizeBroadPhase is called or when PhysicsSystem::Update rebuilds the tree!
+        if (m_joltRigidBody == nullptr)
+        {
+            AZ_Warning("RigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
+        }
+
+        m_bodyUserData = BodyData(m_joltRigidBody);
+        m_bodyUserData.SetRigidBody(this);
+
+        m_bodyUserData.SetEntityId(configuration.m_entityId);
+
+        m_debugName = configuration.m_debugName;
+    }
+
+    void RigidBody::AddShape(AZStd::shared_ptr<Physics::Shape> shape)
+    {
+        if (!m_joltRigidBody || !shape)
+        {
+            return;
+        }
+
+        auto joltShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
+
+        if (!joltShape)
+        {
+            AZ_Error("Jolt Rigid Body", false, "Trying to add a shape of unknown type. Name: %s", GetName().c_str());
+            return;
+        }
+
+        if (!joltShape->GetNativePointer())
+        {
+            AZ_Error("Jolt Rigid Body", false, "Trying to add a shape with no valid JPH::Shape. Name: %s", GetName().c_str());
+            return;
+        }
+
+        if (static_cast<JPH::Shape*>(shape->GetNativePointer())->GetType() == JPH::EShapeType::Mesh && !IsKinematic())
+        {
+            AZ_Error("Jolt", false, "Cannot use mesh geometry on a dynamic object: %s", GetName().c_str());
+            return;
+        }
+
+        {
+            m_owningSystem->GetBodyInterface().SetShape(
+                m_joltRigidBody->GetID(),
+                static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
+                true,
+                JPH::EActivation::DontActivate
+                );
+
+            // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
+            auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
+            const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
+            m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
+            m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), joltShape->GetIsTrigger());
+        }
+
+        joltShape->SetInternalPhysicsSystem(m_owningSystem);
+        joltShape->AttachedToActor(m_joltRigidBody);
+        m_shapes.push_back(joltShape);
+    }
+
+    void RigidBody::RemoveShape([[maybe_unused]] AZStd::shared_ptr<Physics::Shape> shape)
+    {
+        if (!m_joltRigidBody || !shape)
+        {
+            return;
+        }
+
+        auto joltShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
+
+        if (!joltShape)
+        {
+            AZ_Error("Jolt Rigid Body", false, "Trying to remove a shape of unknown type. Name: %s", GetName().c_str());
+            return;
+        }
+
+        const auto found = AZStd::find(m_shapes.begin(), m_shapes.end(), shape);
+        if (found == m_shapes.end())
+        {
+            AZ_Warning("JoltPhysics::RigidBody", false, "Shape has not been attached to this rigid body: %s", GetName().c_str());
+            return;
+        }
+
+        m_shapes.erase(found);
+    }
+
+    // TODO: Determine appropriate mass properties to reflect and set
+    void RigidBody::UpdateMassProperties(
+        [[maybe_unused]] AzPhysics::MassComputeFlags flags,
+        [[maybe_unused]] const AZ::Vector3& centerOfMassOffsetOverride,
+        [[maybe_unused]] const AZ::Matrix3x3& inertiaTensorOverride,
+        [[maybe_unused]] const float massOverride)
+    {
+        const bool computeCenterOfMass = AzPhysics::MassComputeFlags::COMPUTE_COM == (flags & AzPhysics::MassComputeFlags::COMPUTE_COM);
+        const bool computeInertiaTensor = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
+        const bool computeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
+        const bool needsCompute = computeCenterOfMass || computeInertiaTensor || computeMass;
+        AZ_UNUSED(needsCompute);
+        const bool includeAllShapesInMassCalculation = AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
+        AZ_UNUSED(includeAllShapesInMassCalculation)
     }
 
     AZ::u32 RigidBody::GetShapeCount() const
@@ -563,166 +721,5 @@ namespace JoltPhysics
     const AZStd::string& RigidBody::GetName() const
     {
         return m_debugName;
-    }
-
-    void RigidBody::AddShape(AZStd::shared_ptr<Physics::Shape> shape)
-    {
-        if (!m_joltRigidBody || !shape)
-        {
-            return;
-        }
-
-        auto joltShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
-
-        if (!joltShape)
-        {
-            AZ_Error("Jolt Rigid Body", false, "Trying to add a shape of unknown type. Name: %s", GetName().c_str());
-            return;
-        }
-
-        if (!joltShape->GetNativePointer())
-        {
-            AZ_Error("Jolt Rigid Body", false, "Trying to add a shape with no valid JPH::Shape. Name: %s", GetName().c_str());
-            return;
-        }
-
-        if (static_cast<JPH::Shape*>(shape->GetNativePointer())->GetType() == JPH::EShapeType::Mesh && !IsKinematic())
-        {
-            AZ_Error("Jolt", false, "Cannot use mesh geometry on a dynamic object: %s", GetName().c_str());
-            return;
-        }
-
-        {
-            m_owningSystem->GetBodyInterface().SetShape(
-                m_joltRigidBody->GetID(),
-                static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
-                true,
-                JPH::EActivation::DontActivate
-                );
-
-            // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
-            auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
-            const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
-            m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
-            m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), joltShape->GetIsTrigger());
-        }
-
-        joltShape->SetInternalPhysicsSystem(m_owningSystem);
-        joltShape->AttachedToActor(m_joltRigidBody);
-        m_shapes.push_back(joltShape);
-    }
-
-    void RigidBody::RemoveShape([[maybe_unused]] AZStd::shared_ptr<Physics::Shape> shape)
-    {
-        if (!m_joltRigidBody || !shape)
-        {
-            return;
-        }
-
-        auto joltShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
-
-        if (!joltShape)
-        {
-            AZ_Error("Jolt Rigid Body", false, "Trying to remove a shape of unknown type. Name: %s", GetName().c_str());
-            return;
-        }
-
-        const auto found = AZStd::find(m_shapes.begin(), m_shapes.end(), shape);
-        if (found == m_shapes.end())
-        {
-            AZ_Warning("JoltPhysics::RigidBody", false, "Shape has not been attached to this rigid body: %s", GetName().c_str());
-            return;
-        }
-
-        m_shapes.erase(found);
-    }
-
-    // TODO: Determine appropriate mass properties to reflect and set
-    void RigidBody::UpdateMassProperties(
-        [[maybe_unused]] AzPhysics::MassComputeFlags flags,
-        [[maybe_unused]] const AZ::Vector3& centerOfMassOffsetOverride,
-        [[maybe_unused]] const AZ::Matrix3x3& inertiaTensorOverride,
-        [[maybe_unused]] const float massOverride)
-    {
-        const bool computeCenterOfMass = AzPhysics::MassComputeFlags::COMPUTE_COM == (flags & AzPhysics::MassComputeFlags::COMPUTE_COM);
-        const bool computeInertiaTensor = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
-        const bool computeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
-        const bool needsCompute = computeCenterOfMass || computeInertiaTensor || computeMass;
-        AZ_UNUSED(needsCompute);
-        const bool includeAllShapesInMassCalculation = AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
-        AZ_UNUSED(includeAllShapesInMassCalculation)
-    }
-
-    void RigidBody::CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration)
-    {
-        if (m_joltRigidBody != nullptr)
-        {
-            AZ_Warning("Jolt Rigid Body", false, "Trying to create Jolt rigid actor when it's already created");
-            return;
-        }
-        // We can't crate a Body without a shape. This will be replaced in AddShape()
-        JPH::EmptyShapeSettings emptySettings;
-        JPH::Shape* emptyShape = emptySettings.Create().Get();
-
-        // TODO: Need to decide course if collider is marked as sensor/trigger, then it won't participate in collision
-        JPH::EMotionType motionType;
-        if (configuration.m_kinematic)
-        {
-            motionType = JPH::EMotionType::Kinematic;
-        }
-        else
-        {
-            motionType = JPH::EMotionType::Dynamic;
-        }
-
-        auto newBody = JPH::BodyCreationSettings(
-            emptyShape,
-            JoltMathConvert(configuration.m_position),
-            JoltMathConvert(configuration.m_orientation),
-            motionType,
-            1 << 1 // Placeholder object layer until we set shape to get collider configuration
-            );
-
-        newBody.mLinearVelocity = JoltMathConvert(configuration.m_initialLinearVelocity);
-        newBody.mAngularVelocity = JoltMathConvert(configuration.m_initialAngularVelocity);
-
-        if (!configuration.m_gravityEnabled)
-        {
-            newBody.mGravityFactor = 0.0f;
-        }
-        if (configuration.m_computeInertiaTensor)
-        {
-            newBody.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
-            newBody.mMassPropertiesOverride.mMass = configuration.m_mass;
-        }
-        if (configuration.m_computeMass && configuration.m_computeInertiaTensor)
-        {
-            newBody.mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
-            newBody.mMassPropertiesOverride.mMass = configuration.m_mass;
-            newBody.mMassPropertiesOverride.mInertia = JoltMathConvert(configuration.m_inertiaTensor);
-        }
-        if (configuration.IsCcdEnabled())
-        {
-            // Performs secondary shape cast per update to prevent tunneling in high velocity collisions
-            newBody.mMotionQuality = JPH::EMotionQuality::LinearCast;
-        }
-
-        m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
-        m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate); // Body gets activated in Scene
-
-        // TODO: For later optimization, have a way to buffer initial body additions at game start
-        /// Note that if you need to add multiple bodies, use the AddBodiesPrepare/AddBodiesFinalize function.
-        /// Adding many bodies, one at a time, results in a really inefficient broadphase until PhysicsSystem::OptimizeBroadPhase is called or when PhysicsSystem::Update rebuilds the tree!
-        if (m_joltRigidBody == nullptr)
-        {
-            AZ_Warning("RigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
-        }
-
-        m_bodyUserData = BodyData(m_joltRigidBody);
-        m_bodyUserData.SetRigidBody(this);
-
-        m_bodyUserData.SetEntityId(configuration.m_entityId);
-
-        m_debugName = configuration.m_debugName;
     }
 }

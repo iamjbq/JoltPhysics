@@ -8,6 +8,7 @@
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
 #include <Configuration/JoltSettingsRegistryManager.h>
+#include <Debug/JoltDebug.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <Scene/JoltSceneInterface.h>
 #include <System/CollisionLayerFilters.h>

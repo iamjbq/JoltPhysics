@@ -182,55 +182,55 @@ namespace JoltPhysics
             Internal::GetConfigurationSaveCallback(Internal::WriteDocumentToString(configDoc), postSaveCallback));
     }
 
-    // void JoltEditorSettingsRegistryManager::SaveDebugConfiguration(const Debug::DebugConfiguration& config, const OnJoltDebugConfigSaveComplete& saveCallback) const
-    // {
-    //     if (!m_initialized)
-    //     {
-    //         AZ_Warning("JoltSystemEditor", false, "Unable to save Jolt configurations. Jolt Editor Settings Registry Manager could not initialize");
-    //         if (saveCallback)
-    //         {
-    //             saveCallback(config, Result::Failed);
-    //         }
-    //         return;
-    //     }
-    //
-    //     // Save configuration to source folder when in edit mode.
-    //     // Use the SourceControl API to make sure the .setreg files
-    //     // Are checked out from source control or are writable before attempting to save it
-    //     // The SourceControlCommandBus callbacks must be used as checking out a file is an asynchronous
-    //     // operation that doesn't complete immediately
-    //     bool sourceControlActive{};
-    //     AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlActive,
-    //         &AzToolsFramework::SourceControlConnectionRequests::IsActive);
-    //     // If Source Control is active then use it to check out the file before saving
-    //     // otherwise query the file info and save only if the file is not read-only
-    //     auto SourceControlSaveCallback = [sourceControlActive](AzToolsFramework::SourceControlCommands* sourceControlCommands,
-    //         const char* filePath, const AzToolsFramework::SourceControlResponseCallback& configurationSaveCallback)
-    //     {
-    //         if (sourceControlActive)
-    //         {
-    //             sourceControlCommands->RequestEdit(filePath, true, configurationSaveCallback);
-    //         }
-    //         else
-    //         {
-    //             sourceControlCommands->GetFileInfo(filePath, configurationSaveCallback);
-    //         }
-    //     };
-    //
-    //     // Save Jolt debug Configuration Settings Registry file
-    //     rapidjson::Document debugConfigurationDocument;
-    //     rapidjson::Value& debugConfigurationValue = rapidjson::CreateValueByPointer(debugConfigurationDocument, rapidjson::Pointer(m_debugSettingsRegistryPath.c_str()));
-    //     AZ::JsonSerialization::Store(debugConfigurationValue, debugConfigurationDocument.GetAllocator(), config);
-    //
-    //     auto postSaveCallback = [config, saveCallback](bool result)
-    //     {
-    //         if (saveCallback)
-    //         {
-    //             saveCallback(config, result ? Result::Success : Result::Failed);
-    //         }
-    //     };
-    //     AzToolsFramework::SourceControlCommandBus::Broadcast(SourceControlSaveCallback,
-    //         m_debugConfigurationFilePath.c_str(),
-    //         Internal::GetConfigurationSaveCallback(Internal::WriteDocumentToString(debugConfigurationDocument), postSaveCallback));
-    // }
+    void JoltEditorSettingsRegistryManager::SaveDebugConfiguration(const Debug::DebugConfiguration& config, const OnJoltDebugConfigSaveComplete& saveCallback) const
+    {
+        if (!m_initialized)
+        {
+            AZ_Warning("JoltSystemEditor", false, "Unable to save Jolt configurations. Jolt Editor Settings Registry Manager could not initialize");
+            if (saveCallback)
+            {
+                saveCallback(config, Result::Failed);
+            }
+            return;
+        }
+
+        // Save configuration to source folder when in edit mode.
+        // Use the SourceControl API to make sure the .setreg files
+        // Are checked out from source control or are writable before attempting to save it
+        // The SourceControlCommandBus callbacks must be used as checking out a file is an asynchronous
+        // operation that doesn't complete immediately
+        bool sourceControlActive{};
+        AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlActive,
+            &AzToolsFramework::SourceControlConnectionRequests::IsActive);
+        // If Source Control is active then use it to check out the file before saving
+        // otherwise query the file info and save only if the file is not read-only
+        auto SourceControlSaveCallback = [sourceControlActive](AzToolsFramework::SourceControlCommands* sourceControlCommands,
+            const char* filePath, const AzToolsFramework::SourceControlResponseCallback& configurationSaveCallback)
+        {
+            if (sourceControlActive)
+            {
+                sourceControlCommands->RequestEdit(filePath, true, configurationSaveCallback);
+            }
+            else
+            {
+                sourceControlCommands->GetFileInfo(filePath, configurationSaveCallback);
+            }
+        };
+
+        // Save Jolt debug Configuration Settings Registry file
+        rapidjson::Document debugConfigurationDocument;
+        rapidjson::Value& debugConfigurationValue = rapidjson::CreateValueByPointer(debugConfigurationDocument, rapidjson::Pointer(m_debugSettingsRegistryPath.c_str()));
+        AZ::JsonSerialization::Store(debugConfigurationValue, debugConfigurationDocument.GetAllocator(), config);
+
+        auto postSaveCallback = [config, saveCallback](bool result)
+        {
+            if (saveCallback)
+            {
+                saveCallback(config, result ? Result::Success : Result::Failed);
+            }
+        };
+        AzToolsFramework::SourceControlCommandBus::Broadcast(SourceControlSaveCallback,
+            m_debugConfigurationFilePath.c_str(),
+            Internal::GetConfigurationSaveCallback(Internal::WriteDocumentToString(debugConfigurationDocument), postSaveCallback));
+    }
 } // JoltPhysics

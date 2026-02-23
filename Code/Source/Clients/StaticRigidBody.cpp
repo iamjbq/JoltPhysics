@@ -22,8 +22,8 @@ namespace JoltPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(JoltPhysics::StaticRigidBody, AZ::SystemAllocator);
 
-    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem)
-        : m_owningSystem(owningSystem)
+    StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem)
+        : m_owningSystem(&owningSystem)
     {
         CreateJoltBody(configuration);
     }
@@ -58,13 +58,12 @@ namespace JoltPhysics
         JPH::EmptyShapeSettings emptySettings;
         JPH::Shape* emptyShape = emptySettings.Create().Get();
 
-        auto newBody = JPH::BodyCreationSettings(
-            emptyShape,
-            JoltMathConvert(configuration.m_position),
-            JoltMathConvert(configuration.m_orientation),
-            JPH::EMotionType::Static,
-            1 << 1 // Placeholder object layer until we set shape to get collider configuration
-            );
+        JPH::BodyCreationSettings newBody;
+        newBody.SetShape(emptyShape);
+        newBody.mPosition = JoltMathConvert(configuration.m_position);
+        newBody.mRotation = JoltMathConvert(configuration.m_orientation);
+        newBody.mMotionType = JPH::EMotionType::Static,
+        newBody.mObjectLayer = 1 << 1; // Placeholder object layer until we set shape to get collider configuration
 
         m_joltStaticBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
         m_owningSystem->GetBodyInterface().AddBody(m_joltStaticBody->GetID(), JPH::EActivation::DontActivate);
@@ -73,6 +72,7 @@ namespace JoltPhysics
         {
             AZ_Warning("StaticRigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
         }
+
         m_bodyUserData = BodyData(m_joltStaticBody);
         m_bodyUserData.SetRigidBodyStatic(this);
 

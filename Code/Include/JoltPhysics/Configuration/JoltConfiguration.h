@@ -5,6 +5,8 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
+#include <JoltPhysics/Debug/JoltDebugConfiguration.h>
+
 namespace AZ
 {
     class ReflectContext;

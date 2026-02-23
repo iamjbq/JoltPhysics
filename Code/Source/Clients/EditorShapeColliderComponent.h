@@ -10,6 +10,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <JoltPhysics/ColliderShapeBus.h>
+#include <Editor/DebugDraw.h>
 // #include <Editor/PolygonPrismMeshUtils.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
@@ -46,7 +47,7 @@ namespace JoltPhysics
         AZStd::vector<AZ::Vector3> m_cachedSamplePoints; //!< Stores a cache of points sampled from the shape interior.
         bool m_cachedSamplePointsDirty = true; //!< Marks whether the cached sample points need to be recalculated.
     };
-    // TODO: offset translation is not picked up in body shape
+
     //! Editor Jolt Shape Collider Component.
     //! This component is used together with a shape component, and uses the shape information contained in that
     //! component to create geometry in the Jolt simulation.
@@ -54,7 +55,7 @@ namespace JoltPhysics
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AZ::TransformNotificationBus::Handler
-        // , protected DebugDraw::DisplayCallback
+        , protected DebugDraw::DisplayCallback
         , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private JoltPhysics::ColliderShapeRequestBus::Handler
         , protected AzPhysics::SimulatedBodyComponentRequestsBus::Handler
@@ -132,9 +133,9 @@ namespace JoltPhysics
         // LmbrCentral::ShapeComponentNotificationBus
         void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason) override;
 
-        // // DisplayCallback
-        // void Display(const AzFramework::ViewportInfo& viewportInfo,
-        //     AzFramework::DebugDisplayRequests& debugDisplay) const override;
+        // DisplayCallback
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
         // ColliderShapeRequestBus
         AZ::Aabb GetColliderShapeAabb() override;
@@ -145,7 +146,7 @@ namespace JoltPhysics
         void UpdateTranslationOffset();
 
         Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
-        // DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
+        DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
         AzPhysics::SceneInterface* m_sceneInterface = nullptr;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::SimulatedBodyHandle m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!< Handle to the body in the editor physics scene if there is no rigid body component.

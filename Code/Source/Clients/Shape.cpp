@@ -8,7 +8,10 @@
 #include "Jolt/Physics/Collision/CollisionCollectorImpl.h"
 
 #include <Utils.h>
+
+#include <AzFramework/Physics/CollisionBus.h>
 #include <AzCore/Component/EntityBus.h>
+
 #include <JoltPhysics/Utils.h>
 #include <JoltPhysics/Material/JoltMaterial.h>
 #include "JoltPhysics/MathConversions.h"
@@ -23,23 +26,24 @@ namespace JoltPhysics
     {
         m_shapeConfiguration = configuration.Clone();
         m_isTrigger = colliderConfiguration.m_isTrigger;
-
-        // m_collisionGroup gets set in utils function since the input is an ID and we use CollisionRequests to get the actual group
-        if (JPH::Shape* newShape = Utils::CreateJoltShapeFromConfig(colliderConfiguration, configuration, m_collisionGroup))
+        JPH::Shape* newShape = Utils::CreateJoltShapeFromConfig(colliderConfiguration, configuration);
+        if (newShape)
         {
             m_joltShape = JoltShapeUniquePtr(newShape, AZStd::bind(&Shape::ReleaseJoltShape, this, newShape));
-            m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
-            
+            m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
+
+            Physics::CollisionRequestBus::BroadcastResult(m_collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, colliderConfiguration.m_collisionGroupId);
+
             m_tag = AZ::Crc32(colliderConfiguration.m_tag);
         }
-
+        AZ_Warning("JoltPhysics::Shape", false, "New shape creation failed")
     }
 
     Shape::Shape(JPH::Shape* nativeShape)
     {
         m_joltShape = JoltShapeUniquePtr(nativeShape, AZStd::bind(&Shape::ReleaseJoltShape, this, nativeShape));
         m_joltShape->AddRef();
-        m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
+        m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
     }
 
     Shape::~Shape()
@@ -57,7 +61,7 @@ namespace JoltPhysics
     {
         if (m_joltShape)
         {
-            m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
+            m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
         }
     }
 
@@ -70,7 +74,7 @@ namespace JoltPhysics
 
         if (m_joltShape)
         {
-            m_joltShape->SetUserData(reinterpret_cast<uintptr_t>(this));
+            m_joltShape->SetUserData(reinterpret_cast<AZ::u64>(this));
         }
 
         return *this;
@@ -405,6 +409,11 @@ namespace JoltPhysics
         if (!m_attachedBody->GetID().IsInvalid())
         {
             auto* bodyData = reinterpret_cast<BodyData*>(m_attachedBody->GetUserData());
+            if (!bodyData->IsValid())
+            {
+                AZ_Warning("Shape::GetScene", false, "BodyData is not valid")
+                return nullptr;
+            }
             return azrtti_cast<JoltScene*>(bodyData->GetSimulatedBody()->GetScene());
         }
         return nullptr;

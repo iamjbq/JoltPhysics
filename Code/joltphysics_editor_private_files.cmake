@@ -4,6 +4,8 @@ set(FILES
 
     Source/Clients/ComponentDescriptors.cpp
     Source/Clients/ComponentDescriptors.h
+    Source/Clients/EditorPrimitiveShapeColliderComponent.cpp
+    Source/Clients/EditorPrimitiveShapeColliderComponent.h
     Source/Clients/EditorShapeColliderComponent.cpp
     Source/Clients/EditorShapeColliderComponent.h
     Source/Clients/EditorStaticRigidBodyComponent.cpp
@@ -17,12 +19,32 @@ set(FILES
     Source/Clients/JoltPhysicsEditorSystemComponent.cpp
     Source/Clients/JoltPhysicsEditorSystemComponent.h
 
+    Source/Editor/ComponentModes/JoltSubComponentModeBase.h
+    Source/Editor/ColliderComponentMode.cpp
+    Source/Editor/ColliderComponentMode.h
+    Source/Editor/ColliderComponentModeBus.h
+    Source/Editor/ColliderAssetScaleMode.cpp
+    Source/Editor/ColliderAssetScaleMode.h
+    Source/Editor/ColliderBoxMode.cpp
+    Source/Editor/ColliderBoxMode.h
+    Source/Editor/ColliderCapsuleMode.cpp
+    Source/Editor/ColliderCapsuleMode.h
+    Source/Editor/ColliderCylinderMode.cpp
+    Source/Editor/ColliderCylinderMode.h
+    Source/Editor/ColliderOffsetMode.cpp
+    Source/Editor/ColliderOffsetMode.h
+    Source/Editor/ColliderRotationMode.cpp
+    Source/Editor/ColliderRotationMode.h
+    Source/Editor/ColliderSphereMode.cpp
+    Source/Editor/ColliderSphereMode.h
     Source/Editor/EditorComponentDescriptors.cpp
     Source/Editor/EditorComponentDescriptors.h
     Source/Editor/JoltEditorMaterialAsset.cpp
     Source/Editor/JoltEditorMaterialAsset.h
     Source/Editor/JoltEditorMaterialAssetBuilder.cpp
     Source/Editor/JoltEditorMaterialAssetBuilder.h
+    Source/Editor/DebugDraw.cpp
+    Source/Editor/DebugDraw.h
 
     Source/Editor/EditorWindow.ui
     Source/Editor/EditorWindow.cpp

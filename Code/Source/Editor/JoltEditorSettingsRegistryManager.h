@@ -15,7 +15,7 @@ namespace JoltPhysics
         // JoltSystemSettingsRegistry ...
         void SaveSystemConfiguration(const JoltSystemConfiguration& config, const OnJoltConfigSaveComplete& saveCallback) const override;
         void SaveDefaultSceneConfiguration(const AzPhysics::SceneConfiguration& config, const OnDefaultSceneConfigSaveComplete& saveCallback) const override;
-        // void SaveDebugConfiguration(const Debug::DebugConfiguration& config, const OnJoltDebugConfigSaveComplete& saveCallback) const override;
+        void SaveDebugConfiguration(const Debug::DebugConfiguration& config, const OnJoltDebugConfigSaveComplete& saveCallback) const override;
 
     private:
         AZ::IO::FixedMaxPath m_joltConfigurationFilePath = "Registry/joltsystemconfiguration.setreg";

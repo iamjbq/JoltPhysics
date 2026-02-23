@@ -16,6 +16,9 @@ set(FILES
 		Include/JoltPhysics/ColliderShapeBus.h
 		Include/JoltPhysics/NativeTypeIdentifiers.h
 
+		Include/JoltPhysics/Debug/JoltDebugConfiguration.h
+		Include/JoltPhysics/Debug/JoltDebugInterface.h
+
         Source/JoltPhysicsModule.cpp
         Source/JoltPhysicsModule.h
 		Source/Utils.cpp
@@ -40,8 +43,20 @@ set(FILES
         Source/Clients/Shape.h
 		Source/Clients/BaseColliderComponent.cpp
 		Source/Clients/BaseColliderComponent.h
+		Source/Clients/BoxColliderComponent.cpp
+		Source/Clients/BoxColliderComponent.h
+		Source/Clients/CapsuleColliderComponent.cpp
+		Source/Clients/CapsuleColliderComponent.h
+		Source/Clients/SphereColliderComponent.cpp
+		Source/Clients/SphereColliderComponent.h
+		Source/Clients/SimpleShapeColliderComponent.cpp
+		Source/Clients/SimpleShapeColliderComponent.h
 		Source/Clients/ShapeColliderComponent.cpp
 		Source/Clients/ShapeColliderComponent.h
+
+		Source/Debug/JoltDebug.cpp
+		Source/Debug/JoltDebug.h
+		Source/Debug/JoltDebugConfiguration.cpp
 
 #		Source/System/JoltAllocator.cpp
 		Source/System/JoltAllocator.h

@@ -54,7 +54,7 @@ AZ_FORCE_INLINE AZ::Matrix3x3 JoltMathConvert(const JPH::Mat44& inMat)
 
 AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Matrix3x3& inMat)
 {
-    JPH::Mat44 outMat = JPH::Mat44::sZero();
+    JPH::Mat44 outMat = JPH::Mat44::sIdentity();
     outMat.SetAxisX(JoltMathConvert(inMat.GetBasisX()));
     outMat.SetAxisY(JoltMathConvert(inMat.GetBasisY()));
     outMat.SetAxisZ(JoltMathConvert(inMat.GetBasisZ()));

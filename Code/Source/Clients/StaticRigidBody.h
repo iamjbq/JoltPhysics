@@ -28,7 +28,7 @@ namespace JoltPhysics
         AZ_RTTI(JoltPhysics::StaticRigidBody, "{F07150C1-E805-469F-9383-5CD3D4BB373A}", AzPhysics::StaticRigidBody);
 
         StaticRigidBody() = default;
-        StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem* owningSystem);
+        StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem);
         ~StaticRigidBody();
 
         // AzPhysics::StaticRigidBody

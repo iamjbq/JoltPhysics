@@ -102,7 +102,7 @@ namespace JoltPhysics
         template<class SimulatedBodyType, class ConfigurationType>
         AzPhysics::SimulatedBody* CreateSimulatedBody(const ConfigurationType* configuration, AZ::Crc32& crc, JPH::PhysicsSystem& inSystem)
         {
-            auto* newBody = aznew SimulatedBodyType(*configuration, &inSystem);
+            auto* newBody = aznew SimulatedBodyType(*configuration, inSystem);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
                 const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
@@ -114,7 +114,7 @@ namespace JoltPhysics
 
         AzPhysics::SimulatedBody* CreateRigidBody(const AzPhysics::RigidBodyConfiguration* configuration, AZ::Crc32& crc, JPH::PhysicsSystem& inSystem)
         {
-            auto* newBody = aznew RigidBody(*configuration, &inSystem);
+            auto* newBody = aznew RigidBody(*configuration, inSystem);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
                 const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
@@ -370,7 +370,7 @@ namespace JoltPhysics
             newBody->m_bodyHandle = newBodyHandle;
             m_simulatedBodyAddedEvent.Signal(m_sceneHandle, newBodyHandle);
 
-            // TODO: In Jolt I think we need to add shapes
+            // TODO: Add bodies to queue for adding every StartSimulation step
             // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
             // if (simulatedBodyConfig->m_startSimulationEnabled)
             // {

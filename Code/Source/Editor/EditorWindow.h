@@ -27,10 +27,10 @@ namespace LyViewPane
 namespace JoltPhysics
 {
     struct JoltSystemConfiguration;
-    // namespace Debug
-    // {
-    //     struct DebugConfiguration;
-    // }
+    namespace Debug
+    {
+        struct DebugConfiguration;
+    }
 
     namespace Editor
     {
@@ -50,7 +50,7 @@ namespace JoltPhysics
         private:
             static void SaveConfiguration(
                 const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-                // const JoltPhysics::Debug::DebugConfiguration& joltDebugConfiguration,
+                const JoltPhysics::Debug::DebugConfiguration& joltDebugConfiguration,
                 const AzPhysics::SceneConfiguration& defaultSceneConfiguration);
 
             QScopedPointer<Ui::EditorWindowClass> m_ui;

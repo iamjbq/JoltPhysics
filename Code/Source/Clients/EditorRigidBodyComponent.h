@@ -13,6 +13,8 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <JoltPhysics/ColliderComponentBus.h>
+#include <JoltPhysics/Debug/JoltDebugConfiguration.h>
+#include <JoltPhysics/Debug/JoltDebugInterface.h>
 #include <Clients/RigidBody.h>
 
 namespace JoltPhysics
@@ -118,7 +120,7 @@ namespace JoltPhysics
         bool SupportsEditorRayIntersect() override;
 
         void CreateEditorWorldRigidBody();
-        // void UpdateDebugDrawSettings(const Debug::DebugDisplayData& data);
+        void UpdateDebugDrawSettings(const Debug::DebugDisplayData& data);
 
         void SetShouldBeRecreated();
 
@@ -127,7 +129,7 @@ namespace JoltPhysics
 
         void OnConfigurationChanged();
 
-        // Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
+        JoltPhysics::Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
         EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration m_joltSpecificConfig; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.
