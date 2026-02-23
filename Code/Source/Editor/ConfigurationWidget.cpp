@@ -13,7 +13,7 @@
 namespace JoltPhysics
 {
     namespace Editor
-    {   // TODO: Figure out debug configuration
+    {
         ConfigurationWidget::ConfigurationWidget(QWidget* parent)
             : QWidget(parent)
         {
@@ -36,15 +36,15 @@ namespace JoltPhysics
 
             connect(m_settings, &SettingsWidget::onValueChanged,
                 this, [this](const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-                            const AzPhysics::SceneConfiguration& defaultSceneConfiguration
-                             // const Debug::DebugDisplayData& debugDisplayData
+                            const AzPhysics::SceneConfiguration& defaultSceneConfiguration,
+                             const Debug::DebugDisplayData& debugDisplayData
                              )
             {
                 m_joltSystemConfiguration = joltSystemConfiguration;
                 m_defaultSceneConfiguration = defaultSceneConfiguration;
-                // m_physXDebugConfiguration.m_debugDisplayData = debugDisplayData;
+                m_joltDebugConfiguration.m_debugDisplayData = debugDisplayData;
                 emit onConfigurationChanged(m_joltSystemConfiguration,
-                    // m_physXDebugConfiguration,
+                    m_joltDebugConfiguration,
                     m_defaultSceneConfiguration);
             });
 
@@ -54,15 +54,15 @@ namespace JoltPhysics
                 m_joltSystemConfiguration.m_collisionConfig.m_collisionLayers = layers;
                 m_joltSystemConfiguration.m_collisionConfig.m_collisionGroups = groups;
                 emit onConfigurationChanged(m_joltSystemConfiguration,
-                    // m_physXDebugConfiguration,
+                    m_joltDebugConfiguration,
                     m_defaultSceneConfiguration);
             });
 
             // connect(m_pvd, &PvdWidget::onValueChanged,
             //     this, [this](const Debug::PvdConfiguration& configuration)
             // {
-            //     m_physXDebugConfiguration.m_pvdConfigurationData = configuration;
-            //     emit onConfigurationChanged(m_joltSystemConfiguration, m_physXDebugConfiguration, m_defaultSceneConfiguration);
+            //     m_joltDebugConfiguration.m_pvdConfigurationData = configuration;
+            //     emit onConfigurationChanged(m_joltSystemConfiguration, m_joltDebugConfiguration, m_defaultSceneConfiguration);
             // });
 
             ConfigurationWindowRequestBus::Handler::BusConnect();
@@ -75,18 +75,18 @@ namespace JoltPhysics
 
         void ConfigurationWidget::SetConfiguration(
             const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-            // const PhysX::Debug::DebugConfiguration& physXDebugConfiguration,
+            const JoltPhysics::Debug::DebugConfiguration& joltDebugConfiguration,
             const AzPhysics::SceneConfiguration& defaultSceneConfiguration)
         {
             m_joltSystemConfiguration = joltSystemConfiguration;
             m_defaultSceneConfiguration = defaultSceneConfiguration;
-            // m_physXDebugConfiguration = physXDebugConfiguration;
+            m_joltDebugConfiguration = joltDebugConfiguration;
             m_settings->SetValue(m_joltSystemConfiguration,
-                m_defaultSceneConfiguration
-                // m_physXDebugConfiguration.m_debugDisplayData
+                m_defaultSceneConfiguration,
+                m_joltDebugConfiguration.m_debugDisplayData
                 );
             m_collisionFiltering->SetConfiguration(m_joltSystemConfiguration.m_collisionConfig.m_collisionLayers, m_joltSystemConfiguration.m_collisionConfig.m_collisionGroups);
-            // m_pvd->SetValue(m_physXDebugConfiguration.m_pvdConfigurationData);
+            // m_pvd->SetValue(m_joltDebugConfiguration.m_pvdConfigurationData);
         }
 
         void ConfigurationWidget::ShowCollisionLayersTab()

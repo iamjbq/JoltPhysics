@@ -9,6 +9,20 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/optional.h>
 
+#include <Jolt/Jolt.h>
+#include "Jolt/Math/Vec3.h"
+// #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include "Jolt/Physics/Collision/Shape/Shape.h"
+#include "Jolt/Physics/Collision/Shape/BoxShape.h"
+#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+// #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
+#include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
+// #include "Jolt/Physics/Collision/Shape/MeshShape.h"
+// #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
+#include "Jolt/Physics/Collision/Shape/SphereShape.h"
+// #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+
 namespace AzPhysics
 {
     class CollisionGroup;
@@ -27,9 +41,8 @@ namespace Physics
 
 namespace JPH
 {
-    class Shape;
+    // class Shape;
     class BroadPhaseLayer;
-    class ShapeSettings;
 }
 
 namespace JoltPhysics
@@ -44,15 +57,7 @@ namespace JoltPhysics
 
     namespace Utils
     {
-        JPH::Ref<JPH::ShapeSettings> CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration);
-
-        //! Creates a Jolt cooked mesh config from the given points.
-        //!
-        //! @param points Vector of points to build the mesh from.
-        //! @param scale Scale to be assigned to the cooked mesh.
-        //! @return Either a valid cooked mesh or none if the cooking failed.
-        //!
-        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale);
+        AzPhysics::Scene* GetDefaultScene();
 
         AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateConvexFromPrimitive(
             const Physics::ColliderConfiguration& colliderConfig,
@@ -83,25 +88,30 @@ namespace JoltPhysics
         //!
         AZStd::optional<AZStd::vector<AZ::Vector3>> CreatePointsAtFrustumExtents(float height, float bottomRadius, float topRadius, AZ::u8 subdivisions);
 
-        AzPhysics::Scene* GetDefaultScene();
+        //! Creates a Jolt cooked mesh config from the given points.
+        //!
+        //! @param points Vector of points to build the mesh from.
+        //! @param scale Scale to be assigned to the cooked mesh.
+        //! @return Either a valid cooked mesh or none if the cooking failed.
+        //!
+        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale);
 
+        // JPH::ShapeSettings* CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration);
 
-
-        JPH::Ref<JPH::Shape> CreateJoltShapeFromConfig(
+        JPH::Shape* CreateJoltShapeFromConfig(
             const Physics::ColliderConfiguration& colliderConfiguration,
-            const Physics::ShapeConfiguration& shapeConfiguration,
-            AzPhysics::CollisionGroup& assignedCollisionGroup
+            const Physics::ShapeConfiguration& shapeConfiguration
         );
 
         bool ComputeJoltShapeFromConfig(
             const Physics::ShapeConfiguration& shapeConfiguration,
-            JPH::Ref<JPH::Shape>& outShape,
-            AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
-
-        void CreateJoltShapeResultFromHeightField(
-            Physics::HeightfieldShapeConfiguration& heightfieldConfig,
             JPH::Shape::ShapeResult& outResult,
             AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
+
+        // void CreateJoltShapeResultFromHeightField(
+        //     Physics::HeightfieldShapeConfiguration& heightfieldConfig,
+        //     JPH::Shape::ShapeResult& outResult,
+        //     AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
 
         AZStd::vector<float> ConvertHeightfieldSamples(
             const Physics::HeightfieldShapeConfiguration& heightfield,
@@ -133,8 +143,8 @@ namespace JoltPhysics
             , const AZ::Quaternion& colliderRelativeRotation
             , const AZ::Vector3& nonUniformScale);
 
-        //! Returns AABB of collider by constructing PxGeometry from collider and shape configuration,
-        //! and invoking physx::PxGeometryQuery::getWorldBounds.
+        //! Returns AABB of collider by constructing a JPH::Shape from collider and shape configuration,
+        //! and invoking Shape->GetWorldSpaceBounds.
         //! This function is used only by editor components.
         AZ::Aabb GetColliderAabb(const AZ::Transform& worldTransform
             , bool hasNonUniformScale

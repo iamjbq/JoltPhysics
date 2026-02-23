@@ -1,3 +1,4 @@
+
 #include <Clients/DefaultWorldComponent.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
@@ -83,4 +84,4 @@ namespace JoltPhysics
             scene->UpdateConfiguration(config);
         }
     }
-} // namespace PhysX
+} // namespace JoltPhysics

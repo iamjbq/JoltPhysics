@@ -28,7 +28,7 @@ namespace JoltPhysics
         AZ_RTTI(JoltPhysics::StaticRigidBody, "{F07150C1-E805-469F-9383-5CD3D4BB373A}", AzPhysics::StaticRigidBody);
 
         StaticRigidBody() = default;
-        StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem, AZStd::vector<AZStd::shared_ptr<Shape>>& colliderShapes);
+        StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem);
         ~StaticRigidBody();
 
         // AzPhysics::StaticRigidBody
@@ -53,7 +53,7 @@ namespace JoltPhysics
         virtual void* GetNativePointer() const override;
 
     private:
-        void CreateJoltBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, AZStd::vector<AZStd::shared_ptr<Shape>>& colliderShapes);
+        void CreateJoltBody(const AzPhysics::StaticRigidBodyConfiguration& configuration);
 
         JPH::PhysicsSystem* m_owningSystem = nullptr;
         JPH::Body* m_joltStaticBody = nullptr;

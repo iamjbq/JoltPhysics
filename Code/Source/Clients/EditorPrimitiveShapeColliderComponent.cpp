@@ -13,7 +13,7 @@
 #include <Clients/SphereColliderComponent.h>
 #include <Clients/EditorStaticRigidBodyComponent.h>
 #include <Utils.h>
-#include <Clients/EditorSimpleShapeColliderComponent.h>
+#include <Clients/EditorPrimitiveShapeColliderComponent.h>
 
 namespace JoltPhysics
 {
@@ -113,44 +113,44 @@ namespace JoltPhysics
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
-    void EditorSimpleShapeColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void EditorPrimitiveShapeColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
         provided.push_back(AZ_CRC_CE("PhysicsTriggerService"));
     }
 
-    void EditorSimpleShapeColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void EditorPrimitiveShapeColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
         required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
-    void EditorSimpleShapeColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void EditorPrimitiveShapeColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
-    void EditorSimpleShapeColliderComponent::Reflect(AZ::ReflectContext* context)
+    void EditorPrimitiveShapeColliderComponent::Reflect(AZ::ReflectContext* context)
     {
         EditorProxyShapeConfig::Reflect(context);
         DebugDraw::Collider::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<EditorSimpleShapeColliderComponent, EditorComponentBase>()
+            serializeContext->Class<EditorPrimitiveShapeColliderComponent, EditorComponentBase>()
                 ->Version(1)
-                ->Field("ColliderConfiguration", &EditorSimpleShapeColliderComponent::m_configuration)
-                ->Field("ShapeConfiguration", &EditorSimpleShapeColliderComponent::m_proxyShapeConfiguration)
-                ->Field("DebugDrawSettings", &EditorSimpleShapeColliderComponent::m_colliderDebugDraw)
-                ->Field("ComponentMode", &EditorSimpleShapeColliderComponent::m_componentModeDelegate)
-                ->Field("HasNonUniformScale", &EditorSimpleShapeColliderComponent::m_hasNonUniformScale)
+                ->Field("ColliderConfiguration", &EditorPrimitiveShapeColliderComponent::m_configuration)
+                ->Field("ShapeConfiguration", &EditorPrimitiveShapeColliderComponent::m_proxyShapeConfiguration)
+                ->Field("DebugDrawSettings", &EditorPrimitiveShapeColliderComponent::m_colliderDebugDraw)
+                ->Field("ComponentMode", &EditorPrimitiveShapeColliderComponent::m_componentModeDelegate)
+                ->Field("HasNonUniformScale", &EditorPrimitiveShapeColliderComponent::m_hasNonUniformScale)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorSimpleShapeColliderComponent>(
-                    "Jolt Primitive Shape Collider", "Creates geometry in the Jolt simulation using primitive shape.")
+                editContext->Class<EditorPrimitiveShapeColliderComponent>(
+                    "Primitive Shape Collider", "Creates geometry in the Jolt simulation using primitive shape.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
@@ -158,15 +158,15 @@ namespace JoltPhysics
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSimpleShapeColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleShapeColliderComponent::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSimpleShapeColliderComponent::m_proxyShapeConfiguration, "Shape Configuration", "Configuration of the shape.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_proxyShapeConfiguration, "Shape Configuration", "Configuration of the shape.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleShapeColliderComponent::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSimpleShapeColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSimpleShapeColliderComponent::m_colliderDebugDraw,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_colliderDebugDraw,
                         "Debug draw settings", "Debug draw settings.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
@@ -174,7 +174,7 @@ namespace JoltPhysics
         }
     }
 
-    EditorSimpleShapeColliderComponent::EditorSimpleShapeColliderComponent(
+    EditorPrimitiveShapeColliderComponent::EditorPrimitiveShapeColliderComponent(
         const Physics::ColliderConfiguration& colliderConfiguration,
         const Physics::ShapeConfiguration& shapeConfiguration)
         : m_proxyShapeConfiguration(shapeConfiguration)
@@ -183,17 +183,17 @@ namespace JoltPhysics
 
     }
 
-    const EditorProxyShapeConfig& EditorSimpleShapeColliderComponent::GetShapeConfiguration() const
+    const EditorProxyShapeConfig& EditorPrimitiveShapeColliderComponent::GetShapeConfiguration() const
     {
         return m_proxyShapeConfiguration;
     }
 
-    const Physics::ColliderConfiguration& EditorSimpleShapeColliderComponent::GetColliderConfiguration() const
+    const Physics::ColliderConfiguration& EditorPrimitiveShapeColliderComponent::GetColliderConfiguration() const
     {
         return m_configuration;
     }
 
-    Physics::ColliderConfiguration EditorSimpleShapeColliderComponent::GetColliderConfigurationScaled() const
+    Physics::ColliderConfiguration EditorPrimitiveShapeColliderComponent::GetColliderConfigurationScaled() const
     {
         // Scale the collider offset
         Physics::ColliderConfiguration colliderConfiguration = m_configuration;
@@ -201,7 +201,7 @@ namespace JoltPhysics
         return colliderConfiguration;
     }
 
-    Physics::ColliderConfiguration EditorSimpleShapeColliderComponent::GetColliderConfigurationNoOffset() const
+    Physics::ColliderConfiguration EditorPrimitiveShapeColliderComponent::GetColliderConfigurationNoOffset() const
     {
         Physics::ColliderConfiguration colliderConfiguration = m_configuration;
         colliderConfiguration.m_position = AZ::Vector3::CreateZero();
@@ -209,7 +209,7 @@ namespace JoltPhysics
         return colliderConfiguration;
     }
 
-    bool EditorSimpleShapeColliderComponent::IsDebugDrawDisplayFlagEnabled() const
+    bool EditorPrimitiveShapeColliderComponent::IsDebugDrawDisplayFlagEnabled() const
     {
         return m_colliderDebugDraw.IsDisplayFlagEnabled();
     }
@@ -311,7 +311,7 @@ namespace JoltPhysics
         return m_hasNonUniformScale && (IsCapsuleConfig() || IsSphereConfig());
     }
 
-    void EditorSimpleShapeColliderComponent::Init()
+    void EditorPrimitiveShapeColliderComponent::Init()
     {
         m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
         // Primitive colliders can only have one material slot.
@@ -324,7 +324,7 @@ namespace JoltPhysics
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
     }
 
-    void EditorSimpleShapeColliderComponent::Activate()
+    void EditorPrimitiveShapeColliderComponent::Activate()
     {
         m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
@@ -368,21 +368,21 @@ namespace JoltPhysics
         }
 
         // Debug drawing
-        // m_colliderDebugDraw.Connect(entityId);
-        // m_colliderDebugDraw.SetDisplayCallback(this);
+        m_colliderDebugDraw.Connect(entityId);
+        m_colliderDebugDraw.SetDisplayCallback(this);
 
         // ComponentMode
         m_componentModeDelegate.ConnectWithSingleComponentMode<
-            EditorSimpleShapeColliderComponent, ColliderComponentMode>(
+            EditorPrimitiveShapeColliderComponent, ColliderComponentMode>(
             AZ::EntityComponentIdPair(entityId, componentId), nullptr);
 
         UpdateCollider();
     }
 
-    void EditorSimpleShapeColliderComponent::Deactivate()
+    void EditorPrimitiveShapeColliderComponent::Deactivate()
     {
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
-        // m_colliderDebugDraw.Disconnect();
+        m_colliderDebugDraw.Disconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
@@ -406,7 +406,7 @@ namespace JoltPhysics
         }
     }
 
-    AZ::u32 EditorSimpleShapeColliderComponent::OnConfigurationChanged()
+    AZ::u32 EditorPrimitiveShapeColliderComponent::OnConfigurationChanged()
     {
         m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default); // Non-asset configs only have the default slot.
         m_configuration.m_materialSlots.SetSlotsReadOnly(false);
@@ -423,7 +423,7 @@ namespace JoltPhysics
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    void EditorSimpleShapeColliderComponent::OnSelected()
+    void EditorPrimitiveShapeColliderComponent::OnSelected()
     {
         if (auto* joltSystem = GetJoltSystem())
         {
@@ -431,12 +431,12 @@ namespace JoltPhysics
         }
     }
 
-    void EditorSimpleShapeColliderComponent::OnDeselected()
+    void EditorPrimitiveShapeColliderComponent::OnDeselected()
     {
         m_joltConfigChangedHandler.Disconnect();
     }
 
-    void EditorSimpleShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    void EditorPrimitiveShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto sharedColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(m_configuration);
         BaseColliderComponent* colliderComponent = nullptr;
@@ -510,20 +510,20 @@ namespace JoltPhysics
         }
     }
 
-    AZ::Transform EditorSimpleShapeColliderComponent::GetColliderLocalTransform() const
+    AZ::Transform EditorPrimitiveShapeColliderComponent::GetColliderLocalTransform() const
     {
         return AZ::Transform::CreateFromQuaternionAndTranslation(
             m_configuration.m_rotation, m_configuration.m_position);
     }
 
-    void EditorSimpleShapeColliderComponent::UpdateCollider()
+    void EditorPrimitiveShapeColliderComponent::UpdateCollider()
     {
         UpdateShapeConfiguration();
-        CreateStaticEditorCollider();
+        // CreateStaticEditorCollider();
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 
-    void EditorSimpleShapeColliderComponent::CreateStaticEditorCollider()
+    void EditorPrimitiveShapeColliderComponent::CreateStaticEditorCollider()
     {
         m_cachedAabbDirty = true;
 
@@ -565,28 +565,28 @@ namespace JoltPhysics
             configuration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
         }
 
-        if (m_sceneInterface)
-        {
-            //remove the previous body if any
-            if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
-            {
-                m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            }
-            
-            m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
-        }
+        // if (m_sceneInterface)
+        // {
+        //     //remove the previous body if any
+        //     if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        //     {
+        //         m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+        //     }
+        //
+        //     m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
+        // }
 
         m_colliderDebugDraw.ClearCachedGeometry();
 
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
-    void EditorSimpleShapeColliderComponent::BuildDebugDrawMesh() const
+    void EditorPrimitiveShapeColliderComponent::BuildDebugDrawMesh() const
     {
         const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
         if (m_proxyShapeConfiguration.IsCylinderConfig())
         {
-            JPH::Ref<JPH::ShapeSettings> shapeSettings = Utils::CreateJoltShapeSettingsFromConfig(m_proxyShapeConfiguration.m_cylinder.m_configuration);
+            JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_proxyShapeConfiguration.m_cylinder.m_configuration);
             // Utils::CreatePxGeometryFromConfig(
             //     m_proxyShapeConfiguration.m_cylinder.m_configuration, pxGeometryHolder); // this will cause the native mesh to be cached
             m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.m_cylinder.m_configuration, shapeIndex);
@@ -601,7 +601,7 @@ namespace JoltPhysics
                 m_proxyShapeConfiguration.m_subdivisionLevel, m_proxyShapeConfiguration.GetCurrent().m_scale);
             if (m_scaledPrimitive.has_value())
             {
-                JPH::Ref<JPH::ShapeSettings> shapeSettings = Utils::CreateJoltShapeSettingsFromConfig(m_scaledPrimitive.value());
+                JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_scaledPrimitive.value());
                 // physx::PxGeometryHolder pxGeometryHolder;
                 // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
                 m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
@@ -609,7 +609,7 @@ namespace JoltPhysics
         }
     }
 
-    void EditorSimpleShapeColliderComponent::DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorPrimitiveShapeColliderComponent::DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         const AZ::u32 shapeIndex = 0;
         m_colliderDebugDraw.DrawMesh(
@@ -620,7 +620,7 @@ namespace JoltPhysics
             shapeIndex);
     }
 
-    void EditorSimpleShapeColliderComponent::DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorPrimitiveShapeColliderComponent::DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         if (m_scaledPrimitive.has_value())
         {
@@ -633,7 +633,7 @@ namespace JoltPhysics
         }
     }
 
-    void EditorSimpleShapeColliderComponent::DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorPrimitiveShapeColliderComponent::DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         switch (m_proxyShapeConfiguration.m_shapeType)
         {
@@ -649,7 +649,7 @@ namespace JoltPhysics
         }
     }
 
-    void EditorSimpleShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+    void EditorPrimitiveShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         if (!m_colliderDebugDraw.HasCachedGeometry())
@@ -663,7 +663,7 @@ namespace JoltPhysics
             {
                 DisplayCylinderCollider(debugDisplay);
             }
-            else 
+            else
             {
                 if (m_hasNonUniformScale)
                 {
@@ -677,43 +677,43 @@ namespace JoltPhysics
         }
     }
 
-    AZ::Vector3 EditorSimpleShapeColliderComponent::GetDimensions() const
+    AZ::Vector3 EditorPrimitiveShapeColliderComponent::GetDimensions() const
     {
         return GetBoxDimensions();
     }
 
-    void EditorSimpleShapeColliderComponent::SetDimensions(const AZ::Vector3& dimensions)
+    void EditorPrimitiveShapeColliderComponent::SetDimensions(const AZ::Vector3& dimensions)
     {
         SetBoxDimensions(dimensions);
     }
 
-    AZ::Vector3 EditorSimpleShapeColliderComponent::GetTranslationOffset() const
+    AZ::Vector3 EditorPrimitiveShapeColliderComponent::GetTranslationOffset() const
     {
         return m_configuration.m_position;
     }
 
-    void EditorSimpleShapeColliderComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    void EditorPrimitiveShapeColliderComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
         m_configuration.m_position = translationOffset;
         UpdateCollider();
     }
 
-    AZ::Transform EditorSimpleShapeColliderComponent::GetCurrentLocalTransform() const
+    AZ::Transform EditorPrimitiveShapeColliderComponent::GetCurrentLocalTransform() const
     {
         return GetColliderLocalTransform();
     }
 
-    AZ::Transform EditorSimpleShapeColliderComponent::GetManipulatorSpace() const
+    AZ::Transform EditorPrimitiveShapeColliderComponent::GetManipulatorSpace() const
     {
         return GetWorldTM();
     }
 
-    AZ::Quaternion EditorSimpleShapeColliderComponent::GetRotationOffset() const
+    AZ::Quaternion EditorPrimitiveShapeColliderComponent::GetRotationOffset() const
     {
         return m_configuration.m_rotation;
     }
 
-    void EditorSimpleShapeColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+    void EditorPrimitiveShapeColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
         if (world.IsClose(m_cachedWorldTransform))
         {
@@ -724,7 +724,7 @@ namespace JoltPhysics
         UpdateCollider();
     }
 
-    void EditorSimpleShapeColliderComponent::OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale)
+    void EditorPrimitiveShapeColliderComponent::OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale)
     {
         m_cachedNonUniformScale = nonUniformScale;
 
@@ -732,7 +732,7 @@ namespace JoltPhysics
     }
 
     // JoltPhysics::ColliderShapeBus
-    AZ::Aabb EditorSimpleShapeColliderComponent::GetColliderShapeAabb()
+    AZ::Aabb EditorPrimitiveShapeColliderComponent::GetColliderShapeAabb()
     {
         if (m_cachedAabbDirty)
         {
@@ -747,13 +747,13 @@ namespace JoltPhysics
         return m_cachedAabb;
     }
 
-    void EditorSimpleShapeColliderComponent::UpdateShapeConfigurationScale()
+    void EditorPrimitiveShapeColliderComponent::UpdateShapeConfigurationScale()
     {
         auto& shapeConfiguration = m_proxyShapeConfiguration.GetCurrent();
         shapeConfiguration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
     }
 
-    void EditorSimpleShapeColliderComponent::EnablePhysics()
+    void EditorPrimitiveShapeColliderComponent::EnablePhysics()
     {
         if (!IsPhysicsEnabled())
         {
@@ -761,7 +761,7 @@ namespace JoltPhysics
         }
     }
 
-    void EditorSimpleShapeColliderComponent::DisablePhysics()
+    void EditorPrimitiveShapeColliderComponent::DisablePhysics()
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -769,7 +769,7 @@ namespace JoltPhysics
         }
     }
 
-    bool EditorSimpleShapeColliderComponent::IsPhysicsEnabled() const
+    bool EditorPrimitiveShapeColliderComponent::IsPhysicsEnabled() const
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -781,7 +781,7 @@ namespace JoltPhysics
         return false;
     }
 
-    AZ::Aabb EditorSimpleShapeColliderComponent::GetAabb() const
+    AZ::Aabb EditorPrimitiveShapeColliderComponent::GetAabb() const
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -793,7 +793,7 @@ namespace JoltPhysics
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorSimpleShapeColliderComponent::GetSimulatedBody()
+    AzPhysics::SimulatedBody* EditorPrimitiveShapeColliderComponent::GetSimulatedBody()
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -805,12 +805,12 @@ namespace JoltPhysics
         return nullptr;
     }
 
-    AzPhysics::SimulatedBodyHandle EditorSimpleShapeColliderComponent::GetSimulatedBodyHandle() const
+    AzPhysics::SimulatedBodyHandle EditorPrimitiveShapeColliderComponent::GetSimulatedBodyHandle() const
     {
         return m_editorBodyHandle;
     }
 
-    AzPhysics::SceneQueryHit EditorSimpleShapeColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)
+    AzPhysics::SceneQueryHit EditorPrimitiveShapeColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -822,39 +822,39 @@ namespace JoltPhysics
         return AzPhysics::SceneQueryHit();
     }
 
-    bool EditorSimpleShapeColliderComponent::IsTrigger()
+    bool EditorPrimitiveShapeColliderComponent::IsTrigger()
     {
         return m_configuration.m_isTrigger;
     }
 
-    void EditorSimpleShapeColliderComponent::SetColliderOffset(const AZ::Vector3& offset)
+    void EditorPrimitiveShapeColliderComponent::SetColliderOffset(const AZ::Vector3& offset)
     {
         m_configuration.m_position = offset;
         UpdateCollider();
     }
 
-    AZ::Vector3 EditorSimpleShapeColliderComponent::GetColliderOffset() const
+    AZ::Vector3 EditorPrimitiveShapeColliderComponent::GetColliderOffset() const
     {
         return m_configuration.m_position;
     }
 
-    void EditorSimpleShapeColliderComponent::SetColliderRotation(const AZ::Quaternion& rotation)
+    void EditorPrimitiveShapeColliderComponent::SetColliderRotation(const AZ::Quaternion& rotation)
     {
         m_configuration.m_rotation = rotation;
         UpdateCollider();
     }
 
-    AZ::Quaternion EditorSimpleShapeColliderComponent::GetColliderRotation() const
+    AZ::Quaternion EditorPrimitiveShapeColliderComponent::GetColliderRotation() const
     {
         return m_configuration.m_rotation;
     }
 
-    AZ::Transform EditorSimpleShapeColliderComponent::GetColliderWorldTransform() const
+    AZ::Transform EditorPrimitiveShapeColliderComponent::GetColliderWorldTransform() const
     {
         return GetWorldTM() * GetColliderLocalTransform();
     }
 
-    void EditorSimpleShapeColliderComponent::SetShapeType(Physics::ShapeType shapeType)
+    void EditorPrimitiveShapeColliderComponent::SetShapeType(Physics::ShapeType shapeType)
     {
         m_proxyShapeConfiguration.m_shapeType = shapeType;
 
@@ -866,56 +866,56 @@ namespace JoltPhysics
         UpdateCollider();
     }
 
-    Physics::ShapeType EditorSimpleShapeColliderComponent::GetShapeType() const
+    Physics::ShapeType EditorPrimitiveShapeColliderComponent::GetShapeType() const
     {
         return m_proxyShapeConfiguration.m_shapeType;
     }
 
-    void EditorSimpleShapeColliderComponent::SetBoxDimensions(const AZ::Vector3& dimensions)
+    void EditorPrimitiveShapeColliderComponent::SetBoxDimensions(const AZ::Vector3& dimensions)
     {
         m_proxyShapeConfiguration.m_box.m_dimensions = dimensions;
         UpdateCollider();
     }
 
-    AZ::Vector3 EditorSimpleShapeColliderComponent::GetBoxDimensions() const
+    AZ::Vector3 EditorPrimitiveShapeColliderComponent::GetBoxDimensions() const
     {
         return m_proxyShapeConfiguration.m_box.m_dimensions;
     }
 
-    void EditorSimpleShapeColliderComponent::SetSphereRadius(float radius)
+    void EditorPrimitiveShapeColliderComponent::SetSphereRadius(float radius)
     {
         m_proxyShapeConfiguration.m_sphere.m_radius = radius;
         UpdateCollider();
     }
 
-    float EditorSimpleShapeColliderComponent::GetSphereRadius() const
+    float EditorPrimitiveShapeColliderComponent::GetSphereRadius() const
     {
         return m_proxyShapeConfiguration.m_sphere.m_radius;
     }
 
-    void EditorSimpleShapeColliderComponent::SetCapsuleRadius(float radius)
+    void EditorPrimitiveShapeColliderComponent::SetCapsuleRadius(float radius)
     {
         m_proxyShapeConfiguration.m_capsule.m_radius = radius;
         UpdateCollider();
     }
 
-    float EditorSimpleShapeColliderComponent::GetCapsuleRadius() const
+    float EditorPrimitiveShapeColliderComponent::GetCapsuleRadius() const
     {
         return m_proxyShapeConfiguration.m_capsule.m_radius;
     }
 
-    void EditorSimpleShapeColliderComponent::SetCapsuleHeight(float height)
+    void EditorPrimitiveShapeColliderComponent::SetCapsuleHeight(float height)
     {
         m_proxyShapeConfiguration.m_capsule.m_height = height;
         UpdateCollider();
     }
 
-    float EditorSimpleShapeColliderComponent::GetCapsuleHeight() const
+    float EditorPrimitiveShapeColliderComponent::GetCapsuleHeight() const
     {
         return m_proxyShapeConfiguration.m_capsule.m_height;
     }
 
-    void EditorSimpleShapeColliderComponent::SetCylinderRadius(float radius)
+    void EditorPrimitiveShapeColliderComponent::SetCylinderRadius(float radius)
     {
         if (radius <= 0.0f)
         {
@@ -928,12 +928,12 @@ namespace JoltPhysics
         UpdateCollider();
     }
 
-    float EditorSimpleShapeColliderComponent::GetCylinderRadius() const
+    float EditorPrimitiveShapeColliderComponent::GetCylinderRadius() const
     {
         return m_proxyShapeConfiguration.m_cylinder.m_radius;
     }
 
-    void EditorSimpleShapeColliderComponent::SetCylinderHeight(float height)
+    void EditorPrimitiveShapeColliderComponent::SetCylinderHeight(float height)
     {
         if (height <= 0.0f)
         {
@@ -946,12 +946,12 @@ namespace JoltPhysics
         UpdateCollider();
     }
 
-    float EditorSimpleShapeColliderComponent::GetCylinderHeight() const
+    float EditorPrimitiveShapeColliderComponent::GetCylinderHeight() const
     {
         return m_proxyShapeConfiguration.m_cylinder.m_height;
     }
 
-    void EditorSimpleShapeColliderComponent::SetCylinderSubdivisionCount(AZ::u8 subdivisionCount)
+    void EditorPrimitiveShapeColliderComponent::SetCylinderSubdivisionCount(AZ::u8 subdivisionCount)
     {
         const AZ::u8 clampedSubdivisionCount = AZ::GetClamp(subdivisionCount, Utils::MinFrustumSubdivisions, Utils::MaxFrustumSubdivisions);
         AZ_Warning(
@@ -967,12 +967,12 @@ namespace JoltPhysics
         UpdateCollider();
     }
 
-    AZ::u8 EditorSimpleShapeColliderComponent::GetCylinderSubdivisionCount() const
+    AZ::u8 EditorPrimitiveShapeColliderComponent::GetCylinderSubdivisionCount() const
     {
         return m_proxyShapeConfiguration.m_cylinder.m_subdivisionCount;
     }
 
-    void EditorSimpleShapeColliderComponent::UpdateShapeConfiguration()
+    void EditorPrimitiveShapeColliderComponent::UpdateShapeConfiguration()
     {
         UpdateShapeConfigurationScale();
 
@@ -983,7 +983,7 @@ namespace JoltPhysics
         }
     }
 
-    void EditorSimpleShapeColliderComponent::UpdateCylinderCookedMesh()
+    void EditorPrimitiveShapeColliderComponent::UpdateCylinderCookedMesh()
     {
         const AZ::u8 subdivisionCount = m_proxyShapeConfiguration.m_cylinder.m_subdivisionCount;
         const float height = m_proxyShapeConfiguration.m_cylinder.m_height;
@@ -1018,12 +1018,12 @@ namespace JoltPhysics
         m_proxyShapeConfiguration.m_cylinder.m_configuration = Utils::CreateJoltCookedMeshConfiguration(samplePoints, scale).value();
     }
 
-    AZ::Aabb EditorSimpleShapeColliderComponent::GetWorldBounds() const
+    AZ::Aabb EditorPrimitiveShapeColliderComponent::GetWorldBounds() const
     {
         return GetAabb();
     }
 
-    AZ::Aabb EditorSimpleShapeColliderComponent::GetLocalBounds() const
+    AZ::Aabb EditorPrimitiveShapeColliderComponent::GetLocalBounds() const
     {
         AZ::Aabb worldBounds = GetWorldBounds();
         if (worldBounds.IsValid())
@@ -1034,17 +1034,17 @@ namespace JoltPhysics
         return AZ::Aabb::CreateNull();
     }
 
-    bool EditorSimpleShapeColliderComponent::SupportsEditorRayIntersect()
+    bool EditorPrimitiveShapeColliderComponent::SupportsEditorRayIntersect()
     {
         return true;
     }
 
-    AZ::Aabb EditorSimpleShapeColliderComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
+    AZ::Aabb EditorPrimitiveShapeColliderComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
     {
         return GetWorldBounds();
     }
 
-    bool EditorSimpleShapeColliderComponent::EditorSelectionIntersectRayViewport(
+    bool EditorPrimitiveShapeColliderComponent::EditorSelectionIntersectRayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         AzPhysics::RayCastRequest request;

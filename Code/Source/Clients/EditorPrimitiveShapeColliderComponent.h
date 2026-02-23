@@ -84,7 +84,7 @@ namespace JoltPhysics
     };
 
 
-    class EditorSimpleShapeColliderComponent
+    class EditorPrimitiveShapeColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
         , protected DebugDraw::DisplayCallback
@@ -99,7 +99,7 @@ namespace JoltPhysics
         , public AzFramework::BoundsRequestBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorSimpleShapeColliderComponent, "{DCC0BBA2-6A41-4A36-B503-1E807E12E7E0}",
+        AZ_EDITOR_COMPONENT(EditorPrimitiveShapeColliderComponent, "{DCC0BBA2-6A41-4A36-B503-1E807E12E7E0}",
             AzToolsFramework::Components::EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -107,8 +107,8 @@ namespace JoltPhysics
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        EditorSimpleShapeColliderComponent() = default;
-        EditorSimpleShapeColliderComponent(
+        EditorPrimitiveShapeColliderComponent() = default;
+        EditorPrimitiveShapeColliderComponent(
             const Physics::ColliderConfiguration& colliderConfiguration,
             const Physics::ShapeConfiguration& shapeConfiguration);
 
@@ -132,7 +132,7 @@ namespace JoltPhysics
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
-        AZ_DISABLE_COPY_MOVE(EditorSimpleShapeColliderComponent);
+        AZ_DISABLE_COPY_MOVE(EditorPrimitiveShapeColliderComponent);
 
         // AZ::Component overrides ...
         void Init() override;

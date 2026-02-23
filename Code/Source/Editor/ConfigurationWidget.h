@@ -38,7 +38,7 @@ namespace JoltPhysics
             ~ConfigurationWidget() override;
 
             void SetConfiguration(const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-                                  // const PhysX::Debug::DebugConfiguration& physXDebugConfiguration,
+                                  const JoltPhysics::Debug::DebugConfiguration& joltDebugConfiguration,
                                   const AzPhysics::SceneConfiguration& defaultSceneConfiguration);
 
             // ConfigurationWindowRequestBus
@@ -48,13 +48,13 @@ namespace JoltPhysics
 
             signals:
                 void onConfigurationChanged(const JoltPhysics::JoltSystemConfiguration& joltSystemConfiguration,
-                                            // const PhysX::Debug::DebugConfiguration& physXDebugConfig,
+                                            const JoltPhysics::Debug::DebugConfiguration& joltDebugConfig,
                                             const AzPhysics::SceneConfiguration& defaultSceneConfiguration);
 
         private:
             AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
             JoltPhysics::JoltSystemConfiguration m_joltSystemConfiguration;
-            // PhysX::Debug::DebugConfiguration m_physXDebugConfiguration;
+            JoltPhysics::Debug::DebugConfiguration m_joltDebugConfiguration;
 
             AzQtComponents::TabWidget* m_tabs;
             SettingsWidget* m_settings;
