@@ -313,15 +313,19 @@ namespace JoltPhysics
 
     void EditorPrimitiveShapeColliderComponent::Init()
     {
-        m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
-        // Primitive colliders can only have one material slot.
-        if (m_configuration.m_materialSlots.GetSlotsCount() > 1)
+        // TODO: Can be removed eventually
+        if (m_proxyShapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset)
         {
-            m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
+            m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
+            // Primitive colliders can only have one material slot.
+            if (m_configuration.m_materialSlots.GetSlotsCount() > 1)
+            {
+                m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
+            }
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
         }
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
     }
 
     void EditorPrimitiveShapeColliderComponent::Activate()
@@ -349,7 +353,7 @@ namespace JoltPhysics
         AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
         ColliderShapeRequestBus::Handler::BusConnect(entityId);
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
-        EditorSimpleColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
+        EditorPrimitiveColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
@@ -386,7 +390,7 @@ namespace JoltPhysics
         m_nonUniformScaleChangedHandler.Disconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
-        EditorSimpleColliderComponentRequestBus::Handler::BusDisconnect();
+        EditorPrimitiveColliderComponentRequestBus::Handler::BusDisconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
         AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
@@ -519,7 +523,7 @@ namespace JoltPhysics
     void EditorPrimitiveShapeColliderComponent::UpdateCollider()
     {
         UpdateShapeConfiguration();
-        // CreateStaticEditorCollider();
+        CreateStaticEditorCollider();
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 
@@ -1015,7 +1019,7 @@ namespace JoltPhysics
             });
 
         const AZ::Vector3 scale = m_proxyShapeConfiguration.m_cylinder.m_configuration.m_scale;
-        m_proxyShapeConfiguration.m_cylinder.m_configuration = Utils::CreateJoltCookedMeshConfiguration(samplePoints, scale).value();
+        m_proxyShapeConfiguration.m_cylinder.m_configuration = Utils::CreateJoltCookedMeshConfiguration(samplePoints, scale).value(); // TODO: Crash here
     }
 
     AZ::Aabb EditorPrimitiveShapeColliderComponent::GetWorldBounds() const

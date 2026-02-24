@@ -94,7 +94,7 @@ namespace JoltPhysics
         , private AZ::TransformNotificationBus::Handler
         , private JoltPhysics::ColliderShapeRequestBus::Handler
         , private JoltPhysics::EditorColliderComponentRequestBus::Handler
-        , private JoltPhysics::EditorSimpleColliderComponentRequestBus::Handler
+        , private JoltPhysics::EditorPrimitiveColliderComponentRequestBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AzFramework::BoundsRequestBus::Handler
     {

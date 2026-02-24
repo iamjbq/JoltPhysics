@@ -339,8 +339,8 @@ namespace JoltPhysics
 
             for (double rad = 0; rad < AZ::Constants::TwoPi; rad += step)
             {
-                float x = aznumeric_cast<float>(std::cos(rad));
-                float y = aznumeric_cast<float>(std::sin(rad));
+                auto x = aznumeric_cast<float>(std::cos(rad));
+                auto y = aznumeric_cast<float>(std::sin(rad));
 
                 points.emplace_back(x * topRadius, y * topRadius, +halfHeight);
                 points.emplace_back(x * bottomRadius, y * bottomRadius, -halfHeight);

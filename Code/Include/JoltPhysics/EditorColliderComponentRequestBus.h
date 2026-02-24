@@ -40,7 +40,7 @@ namespace JoltPhysics
     using EditorColliderComponentRequestBus = AZ::EBus<EditorColliderComponentRequests>;
 
     //! Request bus for colliders using simple shapes.
-    class EditorSimpleColliderComponentRequests
+    class EditorPrimitiveColliderComponentRequests
         : public AZ::EntityComponentBus
     {
     public:
@@ -105,7 +105,7 @@ namespace JoltPhysics
         virtual AZ::u8 GetCylinderSubdivisionCount() const = 0;
     };
 
-    using EditorSimpleColliderComponentRequestBus = AZ::EBus<EditorSimpleColliderComponentRequests>;
+    using EditorPrimitiveColliderComponentRequestBus = AZ::EBus<EditorPrimitiveColliderComponentRequests>;
 
     //! Request bus for colliders using Jolt mesh assets.
     class EditorMeshColliderComponentRequests

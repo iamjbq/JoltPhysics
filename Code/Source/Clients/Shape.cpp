@@ -36,7 +36,10 @@ namespace JoltPhysics
 
             m_tag = AZ::Crc32(colliderConfiguration.m_tag);
         }
-        AZ_Warning("JoltPhysics::Shape", false, "New shape creation failed")
+        else
+        {
+            AZ_Warning("JoltPhysics::Shape", false, "New shape creation failed")
+        }
     }
 
     Shape::Shape(JPH::Shape* nativeShape)
@@ -48,7 +51,7 @@ namespace JoltPhysics
 
     Shape::~Shape()
     {
-        // m_joltShape->Release();
+        m_joltShape->Release();
         m_joltShape = nullptr;
         m_attachedBody = nullptr;
     }
@@ -232,23 +235,25 @@ namespace JoltPhysics
                 return AzPhysics::SceneQueryHit();
             }
 
-            // JPH::RRayCast inRay(
-            //     JoltMathConvert(worldSpaceRequest.m_start),
-            //     JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
-            // );
+            JPH::RRayCast inRay(
+                JoltMathConvert(worldSpaceRequest.m_start),
+                JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
+            );
             // JPH::RayCastSettings rayCastSettings;
             // JPH::ClosestHitCollisionCollector<JPH::CastRayCollector> collector;
             // m_attachedSystem->GetNarrowPhaseQuery().CastRay(inRay, rayCastSettings, collector);
 
-            JPH::RayCast inRay(
-                JoltMathConvert(worldSpaceRequest.m_start),
-                JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
-            );
+            // JPH::RayCast inRay(
+            //     JoltMathConvert(worldSpaceRequest.m_start),
+            //     JoltMathConvert(worldSpaceRequest.m_direction * worldSpaceRequest.m_distance)
+            // );
             JPH::RayCastResult result;
 
             inRay.mOrigin -= JoltMathConvert(worldTransform.GetTranslation());
 
-            bool hadHit = m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), result);
+            // bool hadHit = m_joltShape->CastRay(inRay, JPH::SubShapeIDCreator(), result);
+            JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(m_attachedBody->GetID());
+            bool hadHit = transformedShape.CastRay(inRay, result);
 
             if (hadHit)
             {
@@ -262,8 +267,7 @@ namespace JoltPhysics
                 returnHit.m_position = JoltMathConvert(hitPosition);
                 returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Position;
 
-                JPH::TransformedShape transformedShape = m_attachedSystem->GetBodyInterface().GetTransformedShape(result.mBodyID);
-                JPH::Vec3 hitNormal = transformedShape.GetWorldSpaceSurfaceNormal(result.mSubShapeID2, hitPosition); // TODO: new crash, same Mat4 issue.
+                JPH::Vec3 hitNormal = transformedShape.GetWorldSpaceSurfaceNormal(result.mSubShapeID2, hitPosition);
                 returnHit.m_normal = JoltMathConvert(hitNormal);
                 returnHit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
 

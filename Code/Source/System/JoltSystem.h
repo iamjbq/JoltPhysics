@@ -120,6 +120,7 @@ namespace JoltPhysics
         ObjectVsBroadPhaseLayerFilterImpl m_objectVsBroadPhaseLayerFilter;
         ObjectLayerPairFilterImpl m_objectLayerPairFilter;
 
+        Debug::JoltDebug m_joltDebug;
         AZStd::unique_ptr<JoltSettingsRegistryManager> m_registryManager; //! Handles all settings registry interactions.
         JoltSceneInterface m_sceneInterface; //! Implement the Scene Az::Interface.
 

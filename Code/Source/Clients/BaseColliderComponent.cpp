@@ -229,7 +229,6 @@ namespace JoltPhysics
         }
     }
 
-
     // AZ::Component
     void BaseColliderComponent::Activate()
     {

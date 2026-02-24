@@ -12,6 +12,7 @@
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include "JoltPhysics/Material/JoltMaterialConfiguration.h"
+#include <JoltPhysics/Debug/JoltDebugInterface.h>
 
 namespace JoltPhysics
 {
@@ -84,6 +85,59 @@ namespace JoltPhysics
         if (m_physicsSystem.Get() == this)
         {
             m_physicsSystem.Unregister(this);
+        }
+    }
+
+    void JoltPhysicsSystemComponent::Init()
+    {
+        if (m_physicsSystem.Get() == nullptr)
+        {
+            m_physicsSystem.Register(this);
+        }
+    }
+
+    template<typename AssetHandlerT, typename AssetT>
+    void RegisterAsset(AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>>& assetHandlers)
+    {
+        AssetHandlerT* handler = aznew AssetHandlerT();
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AssetT>::Uuid());
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, AssetHandlerT::s_assetFileExtension);
+        assetHandlers.emplace_back(handler);
+    }
+
+    void JoltPhysicsSystemComponent::Activate()
+    {
+        if (!m_enabled)
+        {
+            return;
+        }
+
+        m_defaultWorldComponent.Activate();
+
+        Physics::SystemRequestBus::Handler::BusConnect();
+        Physics::CollisionRequestBus::Handler::BusConnect();
+
+        ActivateSimulation();
+    }
+
+    void JoltPhysicsSystemComponent::Deactivate()
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+        Physics::CollisionRequestBus::Handler::BusDisconnect();
+        // JoltPhysicsRequestBus::Handler::BusDisconnect();
+        Physics::SystemRequestBus::Handler::BusDisconnect();
+
+        m_defaultWorldComponent.Deactivate();
+
+        m_materialManager.reset();
+
+        m_onSystemInitializedHandler.Disconnect();
+        m_onSystemConfigChangedHandler.Disconnect();
+
+        if (m_joltSystem != nullptr)
+        {
+            m_joltSystem->Shutdown();
+            m_joltSystem = nullptr;
         }
     }
 
@@ -200,60 +254,6 @@ namespace JoltPhysics
         return false;
     }
 
-    void JoltPhysicsSystemComponent::Init()
-    {
-        if (m_physicsSystem.Get() == nullptr)
-        {
-            m_physicsSystem.Register(this);
-        }
-    }
-
-    template<typename AssetHandlerT, typename AssetT>
-    void RegisterAsset(AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>>& assetHandlers)
-    {
-        AssetHandlerT* handler = aznew AssetHandlerT();
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AssetT>::Uuid());
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, AssetHandlerT::s_assetFileExtension);
-        assetHandlers.emplace_back(handler);
-    }
-
-    void JoltPhysicsSystemComponent::Activate()
-    {
-        if (!m_enabled)
-        {
-            return;
-        }
-
-        m_defaultWorldComponent.Activate();
-
-        Physics::SystemRequestBus::Handler::BusConnect();
-        // JoltPhysicsRequestBus::Handler::BusConnect(); // TODO: maybe remove
-        Physics::CollisionRequestBus::Handler::BusConnect();
-
-        ActivateSimulation();
-    }
-
-    void JoltPhysicsSystemComponent::Deactivate()
-    {
-        AZ::TickBus::Handler::BusDisconnect();
-        Physics::CollisionRequestBus::Handler::BusDisconnect();
-        // JoltPhysicsRequestBus::Handler::BusDisconnect();
-        Physics::SystemRequestBus::Handler::BusDisconnect();
-
-        m_defaultWorldComponent.Deactivate();
-
-        m_materialManager.reset();
-
-        m_onSystemInitializedHandler.Disconnect();
-        m_onSystemConfigChangedHandler.Disconnect();
-
-        if (m_joltSystem != nullptr)
-        {
-            m_joltSystem->Shutdown();
-            m_joltSystem = nullptr;
-        }
-    }
-
     void JoltPhysicsSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (m_joltSystem)
@@ -326,8 +326,28 @@ namespace JoltPhysics
                 };
                 registryManager.SaveDefaultSceneConfiguration(defaultConfig, saveCallback);
             }
-        }
+            //load the debug configuration and initialize the Jolt debug interface
+            if (auto* debug = AZ::Interface<Debug::JoltDebugInterface>::Get())
+            {
+                if (AZStd::optional<Debug::DebugConfiguration> config = registryManager.LoadDebugConfiguration();
+                    config.has_value())
+                {
+                    debug->Initialize(*config);
+                }
+                else //load defaults if there is no config
+                {
+                    const Debug::DebugConfiguration defaultConfig = Debug::DebugConfiguration::CreateDefault();
+                    debug->Initialize(defaultConfig);
 
+                    auto saveCallback = []([[maybe_unused]] const Debug::DebugConfiguration& config, [[maybe_unused]] JoltSettingsRegistryManager::Result result)
+                    {
+                        AZ_Warning("Jolt", result == JoltSettingsRegistryManager::Result::Success,
+                            "Unable to save the default Jolt Debug configuration.");
+                    };
+                    registryManager.SaveDebugConfiguration(defaultConfig, saveCallback);
+                }
+            }
+        }
         
         m_materialManager = AZStd::make_unique<MaterialManager>();
         m_materialManager->Init();

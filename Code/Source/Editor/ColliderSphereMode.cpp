@@ -18,15 +18,15 @@ namespace JoltPhysics
             [this]()
             {
                 float capsuleRadius = 0.0f;
-                EditorSimpleColliderComponentRequestBus::EventResult(
-                    capsuleRadius, m_entityComponentIdPair, &EditorSimpleColliderComponentRequests::GetSphereRadius);
+                EditorPrimitiveColliderComponentRequestBus::EventResult(
+                    capsuleRadius, m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::GetSphereRadius);
                 return capsuleRadius;
             });
         m_sphereViewportEdit->InstallSetSphereRadius(
             [this](float radius)
             {
-                EditorSimpleColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &EditorSimpleColliderComponentRequests::SetSphereRadius, radius);
+                EditorPrimitiveColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetSphereRadius, radius);
             });
         m_sphereViewportEdit->Setup(AzToolsFramework::GetMainManipulatorManagerId());
         m_sphereViewportEdit->AddEntityComponentIdPair(idPair);
