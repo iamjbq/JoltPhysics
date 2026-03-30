@@ -389,13 +389,13 @@ namespace JoltPhysics
                 return nullptr;
             }
 
-            JPH::Shape* newShape = outResult.Get();
+            JPH::Ref<JPH::Shape> newShape = outResult.Get();
+            newShape->AddRef(); // TODO: unsure if necessary
 
             JPH::Ref<JPH::RotatedTranslatedShape> offsetShape = new JPH::RotatedTranslatedShape(
                 JoltMathConvert(colliderConfiguration.m_position),
                 JoltMathConvert(colliderConfiguration.m_rotation),
                 newShape);
-
             offsetShape->AddRef();
 
             return offsetShape.GetPtr();

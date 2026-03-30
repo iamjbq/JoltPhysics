@@ -61,6 +61,15 @@ AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Matrix3x3& inMat)
     return outMat;
 }
 
+//! Convert Transform to a rotated and translated Jolt Matrix
+AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Transform& inTransform)
+{
+    return JPH::Mat44::sRotationTranslation(
+                JoltMathConvert(inTransform.GetRotation()),
+                JoltMathConvert(inTransform.GetTranslation())
+                );
+}
+
 // Why is there only Jolt->AZ direction for this one?
 AZ_FORCE_INLINE AZ::Aabb JoltMathConvert(const JPH::AABox& bounds)
 {

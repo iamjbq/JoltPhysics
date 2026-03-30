@@ -53,6 +53,7 @@ namespace JoltPhysics
         AzPhysics::SimulatedBody* GetSimulatedBody() const;
 
         bool IsValid() const;
+        AZ::u32 GetSanityValue() const;
 
     private:
         using JoltBodyUniquePtr = AZStd::unique_ptr<JPH::Body, AZStd::function<void(JPH::Body*)>>;
