@@ -127,6 +127,11 @@ namespace JoltPhysics
             const AZ::Vector3& centerOfMassOffsetOverride = AZ::Vector3::CreateZero(),
             const AZ::Matrix3x3& inertiaTensorOverride = AZ::Matrix3x3::CreateIdentity(),
             const float massOverride = 1.0f) override;
+        
+        //! Called after all collider info is collected.
+        //! Combines all primitive shape colliders on a body into one StaticCompoundShape.
+        //! This shape cannot be edited without re-constructing it.
+        void BuildCompoundShape();
 
     private:
         void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration);
@@ -137,6 +142,7 @@ namespace JoltPhysics
         JPH::PhysicsSystem* m_owningSystem = nullptr;
         JPH::Body* m_joltRigidBody = nullptr;
         AZStd::vector<AZStd::shared_ptr<JoltPhysics::Shape>> m_shapes;
+        AZStd::shared_ptr<JoltPhysics::Shape> m_compoundShape;
         JoltPhysics::BodyData m_bodyUserData;
         AZStd::string m_debugName;
         bool m_startAsleep = false;

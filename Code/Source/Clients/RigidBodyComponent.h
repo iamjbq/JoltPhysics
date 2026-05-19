@@ -155,6 +155,7 @@ namespace JoltPhysics
 
         std::unique_ptr<TransformForwardTimeInterpolator> m_interpolator;
         AzPhysics::SceneInterface* m_cachedSceneInterface = nullptr;
+        Physics::ColliderConfiguration m_collisionConfig;
         AzPhysics::RigidBodyConfiguration m_configuration; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration
             m_joltSpecificConfiguration; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.

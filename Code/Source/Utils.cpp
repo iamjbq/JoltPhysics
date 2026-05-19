@@ -365,11 +365,13 @@ namespace JoltPhysics
             return nullptr;
         }
 
-        JPH::Shape* CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
+        JPH::Ref<JPH::Shape> CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
                                                        const Physics::ShapeConfiguration& shapeConfiguration)
         {
+            // TODO: maybe can be moved to body level AddShape before set?
             // We get the materials from the collider config here and extract them to set on a shape
             // We can't set Jolt materials on base shapes because we need to know the type
+            
             AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
             AZStd::vector<const JoltPhysicsMaterial*> joltMaterials(materials.size(), nullptr);
             for (size_t materialIndex = 0; materialIndex < materials.size(); ++materialIndex)
@@ -388,17 +390,15 @@ namespace JoltPhysics
                 AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
                 return nullptr;
             }
-
-            JPH::Ref<JPH::Shape> newShape = outResult.Get();
-            newShape->AddRef(); // TODO: unsure if necessary
-
-            JPH::Ref<JPH::RotatedTranslatedShape> offsetShape = new JPH::RotatedTranslatedShape(
+            
+            JPH::Ref<JPH::RotatedTranslatedShapeSettings> offsetShapeSettings = new JPH::RotatedTranslatedShapeSettings(
                 JoltMathConvert(colliderConfiguration.m_position),
                 JoltMathConvert(colliderConfiguration.m_rotation),
-                newShape);
-            offsetShape->AddRef();
-
-            return offsetShape.GetPtr();
+                outResult.Get());
+            
+            auto offsetShape = offsetShapeSettings->Create().Get();
+            
+            return offsetShape;
         }
 
         bool ComputeJoltShapeFromConfig(
@@ -500,58 +500,6 @@ namespace JoltPhysics
 
             return true;
         }
-
-        // void CreateJoltShapeResultFromHeightField(
-        //     Physics::HeightfieldShapeConfiguration& heightfieldConfig,
-        //     JPH::Shape::ShapeResult& outResult,
-        //     [[maybe_unused]] AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
-        // {
-        //     const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
-        //
-        //     const size_t numCols = heightfieldConfig.GetNumColumnVertices();
-        //     const size_t numRows = heightfieldConfig.GetNumRowVertices();
-        //
-        //     const float rowScale = gridSpacing.GetX();
-        //     const float colScale = gridSpacing.GetY();
-        //
-        //     // Temp
-        //     AZ_UNUSED(rowScale)
-        //     AZ_UNUSED(colScale)
-        //     // Temp
-        //
-        //     const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
-        //     const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
-        //     const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
-        //
-        //     // We're making the assumption right now that the min/max bounds are centered around 0.
-        //     AZ_Assert(
-        //         AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
-        //         "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.")
-        //
-        //     AZ_Assert(
-        //         maxHeightBounds >= minHeightBounds,
-        //         "Max height bounds is less than min height bounds, the height conversions below will be incorrect.")
-        //
-        //     // Jolt quantizes float height values into uin16 internally, so we only need to worry about converting floats
-        //
-        //     if (auto cachedHeightField = static_cast<JPH::HeightFieldShape*>(heightfieldConfig.GetCachedNativeHeightfield()))
-        //     {
-        //         outResult.Clear();
-        //         outResult.Set(cachedHeightField);
-        //         return;
-        //     }
-        //
-        //     AZStd::vector<float> joltHeightSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
-        //
-        //     // TODO: Determine how or if we can set HeightField offset or scale in O3DE
-        //     // TODO: Add material indices and material list
-        //     JPH::HeightFieldShapeSettings settings(
-        //         joltHeightSamples.data(),
-        //         JPH::Vec3::sZero(),
-        //         JPH::Vec3::sOne(),
-        //         static_cast<JPH::uint32>(joltHeightSamples.size()));
-        //     outResult = settings.Create();
-        // }
 
         AZStd::vector<float> ConvertHeightfieldSamples(const Physics::HeightfieldShapeConfiguration& heightfield,
             const size_t startCol, const size_t startRow, const size_t numColsToUpdate, const size_t numRowsToUpdate)

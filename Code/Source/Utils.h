@@ -98,7 +98,7 @@ namespace JoltPhysics
 
         // JPH::ShapeSettings* CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration);
 
-        JPH::Shape* CreateJoltShapeFromConfig(
+        JPH::Ref<JPH::Shape> CreateJoltShapeFromConfig(
             const Physics::ColliderConfiguration& colliderConfiguration,
             const Physics::ShapeConfiguration& shapeConfiguration
         );
@@ -107,11 +107,6 @@ namespace JoltPhysics
             const Physics::ShapeConfiguration& shapeConfiguration,
             JPH::Shape::ShapeResult& outResult,
             AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
-
-        // void CreateJoltShapeResultFromHeightField(
-        //     Physics::HeightfieldShapeConfiguration& heightfieldConfig,
-        //     JPH::Shape::ShapeResult& outResult,
-        //     AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
 
         AZStd::vector<float> ConvertHeightfieldSamples(
             const Physics::HeightfieldShapeConfiguration& heightfield,

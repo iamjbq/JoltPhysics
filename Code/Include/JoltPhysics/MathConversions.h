@@ -58,6 +58,7 @@ AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Matrix3x3& inMat)
     outMat.SetAxisX(JoltMathConvert(inMat.GetBasisX()));
     outMat.SetAxisY(JoltMathConvert(inMat.GetBasisY()));
     outMat.SetAxisZ(JoltMathConvert(inMat.GetBasisZ()));
+    
     return outMat;
 }
 
@@ -65,9 +66,9 @@ AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Matrix3x3& inMat)
 AZ_FORCE_INLINE JPH::Mat44 JoltMathConvert(const AZ::Transform& inTransform)
 {
     return JPH::Mat44::sRotationTranslation(
-                JoltMathConvert(inTransform.GetRotation()),
-                JoltMathConvert(inTransform.GetTranslation())
-                );
+        JoltMathConvert(inTransform.GetRotation()),
+        JoltMathConvert(inTransform.GetTranslation())
+        );
 }
 
 // Why is there only Jolt->AZ direction for this one?

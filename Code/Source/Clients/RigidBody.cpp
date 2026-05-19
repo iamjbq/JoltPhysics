@@ -199,21 +199,22 @@ namespace JoltPhysics
             AZ_Error("Jolt", false, "Cannot use mesh geometry on a dynamic object: %s", GetName().c_str());
             return;
         }
-
-        {
-            m_owningSystem->GetBodyInterface().SetShape(
-                m_joltRigidBody->GetID(),
-                static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
-                true,
-                JPH::EActivation::DontActivate
-                );
-
-            // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
-            auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
-            const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
-            m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
-            m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), joltShape->GetIsTrigger());
-        }
+        
+        
+        // {
+        //     m_owningSystem->GetBodyInterface().SetShape(
+        //         m_joltRigidBody->GetID(),
+        //         static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
+        //         true,
+        //         JPH::EActivation::DontActivate
+        //         );
+        //
+        //     // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
+        //     auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
+        //     const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
+        //     m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
+        //     m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), joltShape->GetIsTrigger());
+        // }
 
         joltShape->SetInternalPhysicsSystem(m_owningSystem);
         joltShape->AttachedToActor(m_joltRigidBody);
@@ -259,6 +260,51 @@ namespace JoltPhysics
         AZ_UNUSED(needsCompute);
         const bool includeAllShapesInMassCalculation = AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
         AZ_UNUSED(includeAllShapesInMassCalculation)
+    }
+
+    void RigidBody::BuildCompoundShape()
+    {
+        if (m_shapes.empty())
+        {
+            AZ_Error("JoltPhysics::RigidBody", false, "No shapes to build compound shape on this rigid body: %s", GetName().c_str());
+            return;
+        }
+        
+        JPH::Ref<JPH::StaticCompoundShapeSettings> settings = new JPH::StaticCompoundShapeSettings;
+        
+        for (auto& shape : m_shapes)
+        {
+            auto* offsetShape = static_cast<JPH::RotatedTranslatedShape*>(shape->GetNativePointer());
+            settings->AddShape(offsetShape->GetPosition(), offsetShape->GetRotation(), offsetShape->GetInnerShape());
+        }
+        
+        auto result = settings->Create();
+        
+        if (result.HasError())
+        {
+            AZ_Error("JoltPhysics::RigidBody", false, "Failed to build compound shape on this rigid body: %s", GetName().c_str());
+            return;
+        }
+        
+        JPH::Ref<JPH::StaticCompoundShape> compoundShape = static_cast<JPH::StaticCompoundShape*>(result.Get().GetPtr());
+        m_compoundShape = AZStd::make_shared<JoltPhysics::Shape>(compoundShape);
+        
+        {
+            m_owningSystem->GetBodyInterface().SetShape(
+                m_joltRigidBody->GetID(),
+                compoundShape,
+                true,
+                JPH::EActivation::DontActivate
+            );
+            
+            // TODO: collision layers and groups should only be set on one - temporarily taking the first shape in m_shapes
+            // TODO: Trigger should be set on only one
+            // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
+            constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
+            const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(m_shapes.front()->GetCollisionLayer(), m_shapes.front()->GetCollisionGroup(), newBPLayer);
+            m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
+            m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), m_shapes.front()->GetIsTrigger());
+        }       
     }
 
     AZ::u32 RigidBody::GetShapeCount() const
@@ -581,7 +627,7 @@ namespace JoltPhysics
     {
         AzPhysics::SceneQueryHit closestHit;
         float closestHitDist = AZStd::numeric_limits<float>::max();
-        for (auto& shape : m_shapes)
+        for (auto& shape : m_shapes) // TODO: maybe change to only call the compound shape
         {
             AzPhysics::SceneQueryHit hit = shape->RayCast(request, GetTransform());
             if (hit && hit.m_distance < closestHitDist)

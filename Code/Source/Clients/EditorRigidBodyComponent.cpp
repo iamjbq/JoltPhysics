@@ -26,8 +26,7 @@ namespace JoltPhysics
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> allShapes;
 
             [[maybe_unused]] const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
-
-            // TODO: primitive collider
+            
             for (const EditorPrimitiveShapeColliderComponent* collider : entity->FindComponents<EditorPrimitiveShapeColliderComponent>())
             {
                 const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
@@ -324,6 +323,9 @@ namespace JoltPhysics
 
     void EditorRigidBodyComponent::Activate()
     {
+        m_collisionConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::MaterialSelection, false);
+        m_collisionConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Offset, false);
+        
         // During activation all the editor collider components will create their physics shapes.
         // Delaying the creation of the editor dynamic rigid body to OnEntityActivated so all the shapes are ready.
         AZ::EntityBus::Handler::BusConnect(GetEntityId());
@@ -423,6 +425,7 @@ namespace JoltPhysics
             serializeContext->Class<EditorRigidBodyComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Field("Configuration", &EditorRigidBodyComponent::m_config)
                 ->Field("JoltSpecificConfiguration", &EditorRigidBodyComponent::m_joltSpecificConfig)
+                ->Field("CollisionConfiguration", &EditorRigidBodyComponent::m_collisionConfig)
                 ->Version(1)
             ;
 
@@ -439,6 +442,7 @@ namespace JoltPhysics
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL, "https://jrouwe.github.io/JoltPhysics/class_body.html")
+                
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorRigidBodyComponent::m_config,
@@ -446,11 +450,20 @@ namespace JoltPhysics
                         "Configuration for rigid body physics.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
+                
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorRigidBodyComponent::m_joltSpecificConfig,
                         "Jolt-Specific Configuration",
                         "Settings which are specific to Jolt, rather than generic.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
+                    
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorRigidBodyComponent::m_collisionConfig, 
+                        "Collision Configuration", 
+                        "Collision configuration for the body.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
                     ;

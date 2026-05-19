@@ -52,6 +52,7 @@ namespace JoltPhysics
                 ->Version(1)
                 ->Field("RigidBodyConfiguration", &RigidBodyComponent::m_configuration)
                 ->Field("JoltSpecificConfiguration", &RigidBodyComponent::m_joltSpecificConfiguration)
+                ->Field("CollisionConfiguration", &RigidBodyComponent::m_collisionConfig)
                 ;
         }
 

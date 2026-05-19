@@ -51,6 +51,11 @@ namespace JoltPhysics
 
         virtual AZ::Crc32 GetNativeType() const override;
         virtual void* GetNativePointer() const override;
+        
+        //! Called after all collider info is collected.
+        //! Combines all primitive shape colliders on a body into one StaticCompoundShape.
+        //! This shape cannot be edited without re-constructing it.
+        void BuildCompoundShape();
 
     private:
         void CreateJoltBody(const AzPhysics::StaticRigidBodyConfiguration& configuration);

@@ -13,6 +13,7 @@
 #include <Clients/SphereColliderComponent.h>
 #include <Clients/EditorStaticRigidBodyComponent.h>
 #include <Utils.h>
+#include <AzFramework/Physics/Shape.h>
 #include <Clients/EditorPrimitiveShapeColliderComponent.h>
 
 namespace JoltPhysics
@@ -180,7 +181,6 @@ namespace JoltPhysics
         : m_proxyShapeConfiguration(shapeConfiguration)
         , m_configuration(colliderConfiguration)
     {
-
     }
 
     const EditorProxyShapeConfig& EditorPrimitiveShapeColliderComponent::GetShapeConfiguration() const
@@ -313,23 +313,13 @@ namespace JoltPhysics
 
     void EditorPrimitiveShapeColliderComponent::Init()
     {
-        // TODO: Can be removed eventually
-        if (m_proxyShapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset)
-        {
-            m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
-            // Primitive colliders can only have one material slot.
-            if (m_configuration.m_materialSlots.GetSlotsCount() > 1)
-            {
-                m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
-            }
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-        }
     }
 
     void EditorPrimitiveShapeColliderComponent::Activate()
     {
+        m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::CollisionLayer, false);
+        m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
+        
         m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
         {

@@ -82,8 +82,7 @@ namespace JoltPhysics
 
         Physics::ShapeType m_lastShapeType = Physics::ShapeType::Box;
     };
-
-
+    
     class EditorPrimitiveShapeColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler

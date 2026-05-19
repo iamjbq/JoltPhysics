@@ -130,7 +130,8 @@ namespace JoltPhysics
         void OnConfigurationChanged();
 
         JoltPhysics::Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
-
+        
+        Physics::ColliderConfiguration m_collisionConfig;
         EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration m_joltSpecificConfig; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.
         AzPhysics::SimulatedBodyHandle m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;

@@ -107,6 +107,7 @@ namespace JoltPhysics
             {
                 const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("JoltScene::CreateSimulatedBody", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+                newBody->BuildCompoundShape();
             }
             crc = AZ::Crc32(newBody, sizeof(*newBody));
             return newBody;
@@ -119,6 +120,7 @@ namespace JoltPhysics
             {
                 const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("JoltScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+                newBody->BuildCompoundShape();
             }
             const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
             newBody->UpdateMassProperties(flags, configuration->m_centerOfMassOffset,
