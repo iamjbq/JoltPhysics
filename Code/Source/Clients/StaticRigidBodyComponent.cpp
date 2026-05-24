@@ -25,12 +25,20 @@ namespace JoltPhysics
 
     }
 
+    StaticRigidBodyComponent::StaticRigidBodyComponent(const RigidBodyConfiguration& joltSpecificConfig,
+        AzPhysics::SceneHandle sceneHandle)
+            : m_joltSpecificConfiguration(joltSpecificConfig)
+            , m_attachedSceneHandle(sceneHandle)
+    {
+    }
+
     void StaticRigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<StaticRigidBodyComponent, AZ::Component>()
                 ->Version(1)
+                ->Field("JoltSpecificConfiguration", &StaticRigidBodyComponent::m_joltSpecificConfiguration)
                 ;
         }
     }
@@ -80,6 +88,7 @@ namespace JoltPhysics
         {
             configuration.m_startSimulationEnabled = false; // enable physics will enable this when called.
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
+            ApplyJoltSpecificConfiguration();
         }
 
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
@@ -220,6 +229,30 @@ namespace JoltPhysics
             return sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
         return nullptr;
+    }
+
+    void StaticRigidBodyComponent::ApplyJoltSpecificConfiguration()
+    {
+        if (auto* body = GetRigidBody())
+        {
+            if (auto* joltBody = static_cast<JPH::Body*>(body->GetNativePointer()))
+            {
+                constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Static));
+                
+                AzPhysics::CollisionGroup group;
+                Physics::CollisionRequestBus::BroadcastResult(group,
+                                                          &Physics::CollisionRequests::GetCollisionGroupById,
+                                                          m_joltSpecificConfiguration.m_colliderConfig.m_collisionGroupId);
+                const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(m_joltSpecificConfiguration.m_colliderConfig.m_collisionLayer, group, newBPLayer);
+                
+                if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+                {
+                    auto* joltSystem = static_cast<JPH::PhysicsSystem*>(sceneInterface->GetScene(m_attachedSceneHandle)->GetNativePointer());
+                    joltSystem->GetBodyInterface().SetObjectLayer(joltBody->GetID(), newLayer);
+                    joltSystem->GetBodyInterface().SetIsSensor(joltBody->GetID(), m_joltSpecificConfiguration.m_colliderConfig.m_isTrigger);
+                }
+            }
+        }
     }
 
     AzPhysics::SceneQueryHit StaticRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -382,6 +415,6 @@ namespace JoltPhysics
 
     AzPhysics::RigidBody* StaticRigidBodyComponent::GetRigidBody()
     {
-        return nullptr;
+        return static_cast<AzPhysics::RigidBody*>(GetSimulatedBody());
     }
 } // JoltPhysics

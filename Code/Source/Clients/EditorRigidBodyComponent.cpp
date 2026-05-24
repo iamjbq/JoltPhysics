@@ -323,8 +323,24 @@ namespace JoltPhysics
 
     void EditorRigidBodyComponent::Activate()
     {
-        m_collisionConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::MaterialSelection, false);
-        m_collisionConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Offset, false);
+        m_joltSpecificConfig.m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::MaterialSelection, false);
+        m_joltSpecificConfig.m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Offset, false);
+        m_joltSpecificConfig.m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Tag, false);
+        m_joltSpecificConfig.m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::ContactOffset, false);
+        
+        m_joltConfigChangedHandler = AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler(
+            [this]([[maybe_unused]] const AzPhysics::SystemConfiguration* config)
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+                
+                CreateEditorWorldRigidBody();
+            });
+        
+        if (auto* joltSystem = GetJoltSystem())
+        {
+            joltSystem->RegisterSystemConfigurationChangedEvent(m_joltConfigChangedHandler); // TODO: I suspect this is the source of some delays in shape configs in PhysX
+        }
         
         // During activation all the editor collider components will create their physics shapes.
         // Delaying the creation of the editor dynamic rigid body to OnEntityActivated so all the shapes are ready.
@@ -387,6 +403,7 @@ namespace JoltPhysics
     {
         AZ::EntityBus::Handler::BusDisconnect();
 
+        m_joltConfigChangedHandler.Disconnect();
         m_debugDisplayDataChangeHandler.Disconnect();
         m_sceneConfigChangedHandler.Disconnect();
 
@@ -425,7 +442,6 @@ namespace JoltPhysics
             serializeContext->Class<EditorRigidBodyComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Field("Configuration", &EditorRigidBodyComponent::m_config)
                 ->Field("JoltSpecificConfiguration", &EditorRigidBodyComponent::m_joltSpecificConfig)
-                ->Field("CollisionConfiguration", &EditorRigidBodyComponent::m_collisionConfig)
                 ->Version(1)
             ;
 
@@ -458,15 +474,7 @@ namespace JoltPhysics
                         "Settings which are specific to Jolt, rather than generic.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
-                    
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &EditorRigidBodyComponent::m_collisionConfig, 
-                        "Collision Configuration", 
-                        "Collision configuration for the body.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
-                    ;
+                ;
             }
         }
     }
@@ -542,6 +550,8 @@ namespace JoltPhysics
                 sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorRigidBodyHandle)
                 ))
             {
+                void ApplyJoltSpecificConfiguration(); // Need to set collision and trigger configuration for Jolt Body
+
                 // AddSimulatedBody may update mass / CoM / Inertia tensor based on the config, so grab the updated values.
                 m_config.m_mass = body->GetMass();
                 m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
@@ -557,6 +567,39 @@ namespace JoltPhysics
         }
         AZ_Error("EditorRigidBodyComponent",
             m_editorRigidBodyHandle != AzPhysics::InvalidSimulatedBodyHandle, "Failed to create editor rigid body");
+    }
+
+    void EditorRigidBodyComponent::ApplyJoltSpecificConfiguration()
+    {
+        if (auto* body = GetRigidBody())
+        {
+            if (auto* joltBody = static_cast<JPH::Body*>(body->GetNativePointer()))
+            {
+                constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
+                
+                AzPhysics::CollisionGroup group;
+                Physics::CollisionRequestBus::BroadcastResult(group,
+                                                          &Physics::CollisionRequests::GetCollisionGroupById,
+                                                          m_joltSpecificConfig.m_colliderConfig.m_collisionGroupId);
+                const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(m_joltSpecificConfig.m_colliderConfig.m_collisionLayer, group, newBPLayer);
+                
+                if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+                {
+                    auto* joltSystem = static_cast<JPH::PhysicsSystem*>(sceneInterface->GetScene(m_editorSceneHandle)->GetNativePointer());
+                    joltSystem->GetBodyInterface().SetObjectLayer(joltBody->GetID(), newLayer);
+                    joltSystem->GetBodyInterface().SetIsSensor(joltBody->GetID(), m_joltSpecificConfig.m_colliderConfig.m_isTrigger);
+                }
+                
+                const AZ::u8 solverVelocityIterations =
+                    AZ::GetClamp<AZ::u8>(m_joltSpecificConfig.m_solverVelocityIterations, 0, 255);
+                const AZ::u8 solverPositionIterations =
+                    AZ::GetClamp<AZ::u8>(m_joltSpecificConfig.m_solverPositionIterations, 0, 255);
+
+                joltBody->GetMotionProperties()->SetNumVelocityStepsOverride(solverVelocityIterations);
+                joltBody->GetMotionProperties()->SetNumPositionStepsOverride(solverPositionIterations);
+                // TODO: set mallowSleeping on MotionProperties
+            }
+        }
     }
 
     void EditorRigidBodyComponent::OnColliderChanged()

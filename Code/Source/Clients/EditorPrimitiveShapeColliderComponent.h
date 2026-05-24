@@ -232,7 +232,7 @@ namespace JoltPhysics
         AzPhysics::SimulatedBodyHandle m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
 
         DebugDraw::Collider m_colliderDebugDraw;
-
+ 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_joltConfigChangedHandler;
         AZ::Transform m_cachedWorldTransform;
 

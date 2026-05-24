@@ -222,6 +222,52 @@ namespace JoltPhysics
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationStartEvent::Signaled");
             m_sceneSimulationStartEvent.Signal(m_sceneHandle, deltaTime);
         }
+        
+        if (!m_bodiesToAdd.empty())
+        {
+            AZ_Assert(sizeof(JPH::BodyID) == sizeof(AZ::u32), "StartSimulation: Jolt BodyId was incorrect size")
+            
+            JPH::BodyID* bodyIDs = reinterpret_cast<JPH::BodyID*>(m_bodiesToAdd.data());
+            const auto count = static_cast<int>(m_bodiesToAdd.size());
+            void* bodiesData = m_bodyInterface->AddBodiesPrepare(bodyIDs, count);
+            m_bodyInterface->AddBodiesFinalize(bodyIDs, count, bodiesData, JPH::EActivation::DontActivate);
+            
+            // In case we need to handle BodyID sequence rollover after 128 re-uses in a very short window, we can use this approach
+            // AZ::u32 startIndex = 0;
+            // while (startIndex < m_bodiesToAdd.size())
+            // {
+            //     const AZ::u32 count = AZStd::min(static_cast<AZ::u32>(m_bodiesToAdd.size()) - startIndex, MaxBodiesPerBatchAdd);
+            //     
+            //     JPH::BodyID* bodyIDs = reinterpret_cast<JPH::BodyID*>(m_bodiesToAdd.data() + startIndex);
+            //     
+            //     void* bodiesData = m_bodyInterface->AddBodiesPrepare(bodyIDs, count);
+            //     m_bodyInterface->AddBodiesFinalize(bodyIDs, count, bodiesData, JPH::EActivation::DontActivate);
+            //    
+            //     
+            //     startIndex += count;
+            // }
+            
+            m_bodiesToAdd.clear();
+        }
+        
+        if (!m_bodiesToAddAndActivate.empty())
+        {
+            AZ_Assert(sizeof(JPH::BodyID) == sizeof(AZ::u32), "StartSimulation: Jolt BodyId was incorrect size")
+            
+            JPH::BodyID* bodyIDs = reinterpret_cast<JPH::BodyID*>(m_bodiesToAddAndActivate.data());
+            const auto count = static_cast<int>(m_bodiesToAddAndActivate.size());
+            void* bodiesData = m_bodyInterface->AddBodiesPrepare(bodyIDs, count);
+            m_bodyInterface->AddBodiesFinalize(bodyIDs, count, bodiesData, JPH::EActivation::Activate);
+            
+            
+            // TODO: in case we need this to be threadsafe in the future, something like this might be necessary during body queuing 
+            // {
+            //     AZStd::scoped_lock lock(m_bodyQueueMutex); // acquires mutex here
+            //     m_bodiesToAdd.push_back(bodyID);
+            // } // lock destructor releases mutex here automatically
+            
+            m_bodiesToAddAndActivate.clear();
+        }
 
         m_currentDeltaTime = deltaTime;
         m_physicsSystem->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem);
@@ -374,10 +420,10 @@ namespace JoltPhysics
 
             // TODO: Add bodies to queue for adding every StartSimulation step
             // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
-            // if (simulatedBodyConfig->m_startSimulationEnabled)
-            // {
-            //     EnableSimulationOfBodyInternal(*newBody);
-            // }
+            if (simulatedBodyConfig->m_startSimulationEnabled)
+            {
+                EnableSimulationOfBodyInternal(*newBody);
+            }
 
             return newBodyHandle;
         }
@@ -758,24 +804,62 @@ namespace JoltPhysics
         }
     }
 
+    void JoltScene::QueueBodyToAdd(JPH::Body* body, bool shouldActivate)
+    {
+        if (shouldActivate)
+        {
+            m_bodiesToAddAndActivate.push_back(body->GetID().GetIndexAndSequenceNumber());
+        }
+        else
+        {
+            m_bodiesToAdd.push_back(body->GetID().GetIndexAndSequenceNumber());
+        }
+    }
+
+    bool JoltScene::RemoveBodyFromQueue(JPH::BodyID bodyId)
+    {
+        const AZ::u32 id = bodyId.GetIndexAndSequenceNumber();
+        
+        auto removeFromQueue = [](AZStd::vector<AZ::u32>& bodyVector, AZ::u32 bodyId)
+        {
+            auto it = AZStd::find(bodyVector.begin(), bodyVector.end(), bodyId);
+            if (it != bodyVector.end())
+            {
+                AZStd::iter_swap(it, bodyVector.end() - 1);
+                bodyVector.pop_back();
+                return true;
+            }
+            return false;
+        };
+        
+        const bool removed = removeFromQueue(m_bodiesToAdd, id) || removeFromQueue(m_bodiesToAddAndActivate, id);
+        
+        AZ_Warning("JoltScene::RemoveBodyFromQueue", removed, "Body %u was not found in any pending queue", bodyId);
+        
+        return removed;
+    }
+
     void JoltScene::EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body)
     {
         //character controller is a special actor and only needs the m_simulating flag set,
         // if (!azrtti_istypeof<JoltPhysics::CharacterController>(body) &&
-        //     !azrtti_istypeof<JoltPhysics::Ragdoll>(body) &&
-        //     !azrtti_istypeof<JoltPhysics::ArticulationLink>(body))
-        if (auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer())) // TODO: temp fix to test basic shapes first
+        //     !azrtti_istypeof<JoltPhysics::Ragdoll>(body))
         {
+            auto* joltBody = static_cast<JPH::Body*>(body.GetNativePointer());
             AZ_Assert(joltBody, "Simulated Body doesn't have a valid Jolt body");
-            {
-                m_bodyInterface->ActivateBody(joltBody->GetID());
-            }
 
             if (azrtti_istypeof<JoltPhysics::RigidBody>(body))
             {
-                if (const auto rigidBody = azdynamic_cast<JoltPhysics::RigidBody*>(&body); rigidBody->ShouldStartAsleep())
+                if (const auto rigidBody = azdynamic_cast<JoltPhysics::RigidBody*>(&body))
                 {
-                    rigidBody->ForceAsleep();
+                    QueueBodyToAdd(joltBody, !rigidBody->ShouldStartAsleep()); // TODO: box not falling when in game mode
+                }
+            }
+            else if (azrtti_istypeof<JoltPhysics::StaticRigidBody>(body))
+            {
+                if (const auto staticBody = azdynamic_cast<JoltPhysics::StaticRigidBody*>(&body))
+                {
+                    QueueBodyToAdd(joltBody, true);
                 }
             }
         }

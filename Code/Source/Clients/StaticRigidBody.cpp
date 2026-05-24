@@ -10,6 +10,7 @@
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include "Jolt/Physics/Body/BodyCreationSettings.h"
 #include "Jolt/Physics/Collision/Shape/EmptyShape.h"
+#include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 
 #include <Utils.h>
 #include <Clients/Shape.h>
@@ -63,10 +64,10 @@ namespace JoltPhysics
         newBody.mPosition = JoltMathConvert(configuration.m_position);
         newBody.mRotation = JoltMathConvert(configuration.m_orientation);
         newBody.mMotionType = JPH::EMotionType::Static,
-        newBody.mObjectLayer = 1 << 1; // Placeholder object layer until we set shape to get collider configuration
+        newBody.mObjectLayer = 1 << 1; // Placeholder object layer until ApplyJoltConfiguration()
 
         m_joltStaticBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
-        m_owningSystem->GetBodyInterface().AddBody(m_joltStaticBody->GetID(), JPH::EActivation::DontActivate);
+        // m_owningSystem->GetBodyInterface().AddBody(m_joltStaticBody->GetID(), JPH::EActivation::DontActivate);
 
         if (m_joltStaticBody == nullptr)
         {
@@ -90,29 +91,22 @@ namespace JoltPhysics
         }
 
         auto joltShape = AZStd::rtti_pointer_cast<JoltPhysics::Shape>(shape);
-        if (joltShape && joltShape->GetNativePointer())
+        
+        if (!joltShape)
         {
-            {
-                m_owningSystem->GetBodyInterface().SetShape(
-                    m_joltStaticBody->GetID(),
-                    static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
-                    true,
-                    JPH::EActivation::DontActivate
-                    );
+            AZ_Error("Jolt Static Rigid Body", false, "Trying to add a shape of unknown type. Name: %s", GetName().c_str());
+            return;
+        }
 
-                // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. static)
-                constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Static));
-                const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
-                m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltStaticBody->GetID(), newLayer);
-            }
-            joltShape->SetInternalPhysicsSystem(m_owningSystem);
-            joltShape->AttachedToActor(m_joltStaticBody);
-            m_shapes.push_back(joltShape);
-        }
-        else
+        if (!joltShape->GetNativePointer())
         {
-            AZ_Error("Jolt Static Rigid Body", false, "Trying to add an invalid shape.");
+            AZ_Error("Jolt Static Rigid Body", false, "Trying to add a shape with no valid JPH::Shape. Name: %s", GetName().c_str());
+            return;
         }
+            
+        joltShape->SetInternalPhysicsSystem(m_owningSystem);
+        joltShape->AttachedToActor(m_joltStaticBody);
+        m_shapes.push_back(joltShape);
     }
 
     AZStd::shared_ptr<Physics::Shape> StaticRigidBody::GetShape(AZ::u32 index)
@@ -223,6 +217,48 @@ namespace JoltPhysics
 
     void StaticRigidBody::BuildCompoundShape()
     {
-        // TODO:
+        if (m_shapes.empty())
+        {
+            AZ_Error("JoltPhysics::StaticRigidBody", false, "No shapes found to build compound shape on this rigid body: %s", GetName().c_str());
+            return;
+        }
+        
+        JPH::Ref<JPH::StaticCompoundShapeSettings> settings = new JPH::StaticCompoundShapeSettings;
+        
+        for (auto& shape : m_shapes)
+        {
+            auto* offsetShape = static_cast<JPH::RotatedTranslatedShape*>(shape->GetNativePointer());
+            settings->AddShape(offsetShape->GetPosition(), offsetShape->GetRotation(), offsetShape->GetInnerShape());
+        }
+        
+        auto result = settings->Create();
+        
+        if (result.HasError())
+        {
+            AZ_Error("JoltPhysics::StaticRigidBody", false, "Failed to build compound shape on this rigid body: %s", GetName().c_str());
+            return;
+        }
+        
+        JPH::Ref<JPH::StaticCompoundShape> compoundShape = static_cast<JPH::StaticCompoundShape*>(result.Get().GetPtr());
+        m_compoundShape = AZStd::make_shared<JoltPhysics::Shape>(compoundShape);
+        
+        {
+            m_owningSystem->GetBodyInterface().SetShape(
+                m_joltStaticBody->GetID(),
+                compoundShape,
+                true,
+                JPH::EActivation::DontActivate
+                );
+        }
+    }
+    
+    void StaticRigidBody::SetName(const AZStd::string& entityName)
+    {
+        m_debugName = entityName;
+    }
+
+    const AZStd::string& StaticRigidBody::GetName() const
+    {
+        return m_debugName;
     }
 }

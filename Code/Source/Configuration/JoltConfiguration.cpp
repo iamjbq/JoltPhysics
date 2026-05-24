@@ -87,8 +87,8 @@ namespace JoltPhysics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_baumgarte,
                         "Baumgarte Stabilization Factor", "How much of the position error to 'fix' in 1 update.\n"
                         "Note: 0 = nothing, 1 = 100%")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0)
-                        ->Attribute(AZ::Edit::Attributes::Max, 1)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_useBodyPairContactCache,
                         "Use Body Pair Contact Cache", "Removes the need for narrow phase collision detection when orientation between two bodies didn't change.\n"
                         "Note: This is also called Persistent Contact Manifold (PCM), and can be enabled in Scene Settings, but offers additional controls below.")

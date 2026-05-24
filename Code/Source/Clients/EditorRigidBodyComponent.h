@@ -67,6 +67,7 @@ namespace JoltPhysics
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("TransformService"));
+            required.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -120,18 +121,15 @@ namespace JoltPhysics
         bool SupportsEditorRayIntersect() override;
 
         void CreateEditorWorldRigidBody();
+        void ApplyJoltSpecificConfiguration();
         void UpdateDebugDrawSettings(const Debug::DebugDisplayData& data);
-
         void SetShouldBeRecreated();
-
         void InitPhysicsTickHandler();
         void PrePhysicsTick();
-
         void OnConfigurationChanged();
 
         JoltPhysics::Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
         
-        Physics::ColliderConfiguration m_collisionConfig;
         EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration m_joltSpecificConfig; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.
         AzPhysics::SimulatedBodyHandle m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
@@ -140,7 +138,8 @@ namespace JoltPhysics
         AZ::Color m_centerOfMassDebugColor = AZ::Colors::White;
         float m_centerOfMassDebugSize = 0.1f;
         bool m_shouldBeRecreated = false;
-
+        
+        AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_joltConfigChangedHandler;
         AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
         AzPhysics::SystemEvents::OnDefaultSceneConfigurationChangedEvent::Handler m_sceneConfigChangedHandler; //!< Responds to changes in Scene Config.

@@ -27,6 +27,9 @@ namespace JoltPhysics
 
         StaticRigidBodyComponent();
         explicit StaticRigidBodyComponent(AzPhysics::SceneHandle sceneHandle);
+        StaticRigidBodyComponent(
+            const RigidBodyConfiguration& joltSpecificConfig,
+            AzPhysics::SceneHandle sceneHandle);
         ~StaticRigidBodyComponent();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -49,6 +52,7 @@ namespace JoltPhysics
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
 
     private:
+        void ApplyJoltSpecificConfiguration();
         void CreateRigidBody();
         void DestroyRigidBody();
 
@@ -109,7 +113,9 @@ namespace JoltPhysics
         void SetSleepThreshold(float threshold) override;
         AzPhysics::RigidBody* GetRigidBody() override;
         // -------------------------------------------
-
+        
+        RigidBodyConfiguration
+            m_joltSpecificConfiguration; //!< Properties specific to Jolt which might not have exact equivalents in other physics engines.
         AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
     };

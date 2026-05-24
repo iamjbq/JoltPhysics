@@ -124,7 +124,7 @@ namespace JoltPhysics
     void EditorPrimitiveShapeColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        // required.push_back(AZ_CRC_CE("PhysicsRigidBodyService")); 
     }
 
     void EditorPrimitiveShapeColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -141,11 +141,11 @@ namespace JoltPhysics
         {
             serializeContext->Class<EditorPrimitiveShapeColliderComponent, EditorComponentBase>()
                 ->Version(1)
-                ->Field("ColliderConfiguration", &EditorPrimitiveShapeColliderComponent::m_configuration)
                 ->Field("ShapeConfiguration", &EditorPrimitiveShapeColliderComponent::m_proxyShapeConfiguration)
                 ->Field("DebugDrawSettings", &EditorPrimitiveShapeColliderComponent::m_colliderDebugDraw)
                 ->Field("ComponentMode", &EditorPrimitiveShapeColliderComponent::m_componentModeDelegate)
                 ->Field("HasNonUniformScale", &EditorPrimitiveShapeColliderComponent::m_hasNonUniformScale)
+                ->Field("ColliderConfiguration", &EditorPrimitiveShapeColliderComponent::m_configuration)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -153,23 +153,23 @@ namespace JoltPhysics
                 editContext->Class<EditorPrimitiveShapeColliderComponent>(
                     "Primitive Shape Collider", "Creates geometry in the Jolt simulation using primitive shape.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/collider/")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
+                        ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/collider/")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_proxyShapeConfiguration, "Shape Configuration", "Configuration of the shape.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_colliderDebugDraw,
                         "Debug draw settings", "Debug draw settings.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
                     ;
             }
         }
@@ -319,6 +319,7 @@ namespace JoltPhysics
     {
         m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::CollisionLayer, false);
         m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
+        m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::ContactOffset, false);
         
         m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
@@ -421,6 +422,7 @@ namespace JoltPhysics
     {
         if (auto* joltSystem = GetJoltSystem())
         {
+            // TODO: wonder if this should be in Activate so updates don't have a delay after selecting the entity
             joltSystem->RegisterSystemConfigurationChangedEvent(m_joltConfigChangedHandler);
         }
     }

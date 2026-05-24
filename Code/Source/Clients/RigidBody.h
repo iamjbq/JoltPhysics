@@ -33,10 +33,27 @@ namespace JoltPhysics
         virtual ~RigidBodyConfiguration() = default;
 
         static void Reflect(AZ::ReflectContext* context);
-
+        
+        enum PropertyVisibility : AZ::u8
+        {
+            SolverIteration = 1 << 0,
+            CanSleep = 1 << 1,
+        };
+        
+        AZ::Crc32 GetPropertyVisibility(PropertyVisibility property) const;
+        void SetPropertyVisibility(PropertyVisibility property, bool isVisible);
+        
+        AZ::Crc32 GetSolverIterationVisibility() const;
+        AZ::Crc32 GetCanSleepVisibility() const;
+        
+        Physics::ColliderConfiguration m_colliderConfig; //!< We only show the collision layer/groups and IsTrigger since they are set at Body-level
         AZ::u8 m_solverVelocityIterations = 0; //!< Higher values can improve stability at the cost of performance. 0 follows Jolt configuration value.
         AZ::u8 m_solverPositionIterations = 0; //!< Higher values can improve stability at the cost of performance. 0 follows Jolt configuration value.
         bool m_canSleep = true; //! Whether this body is allowed to sleep ever.
+        
+        AZ::u8 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u8>::max)(); ///< Visibility flags for config.
+                                                                                ///< Note: added parenthesis for std::numeric_limits is
+                                                                                ///< to avoid collision with `max` macro in uber builds.
     };
 
     class RigidBody
@@ -132,7 +149,7 @@ namespace JoltPhysics
         //! Combines all primitive shape colliders on a body into one StaticCompoundShape.
         //! This shape cannot be edited without re-constructing it.
         void BuildCompoundShape();
-
+        
     private:
         void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration);
 
@@ -146,5 +163,6 @@ namespace JoltPhysics
         JoltPhysics::BodyData m_bodyUserData;
         AZStd::string m_debugName;
         bool m_startAsleep = false;
+        bool m_isReady = false;
     };
 }

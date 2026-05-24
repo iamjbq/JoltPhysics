@@ -85,6 +85,9 @@ namespace JoltPhysics
         void FlushTransformSync();
 
         void InitializeJoltSystem();
+        
+        void QueueBodyToAdd(JPH::Body* body, bool shouldActivate);
+        bool RemoveBodyFromQueue(JPH::BodyID bodyId);
 
     private:
         //! Data structure for efficient unique vector functionality.
@@ -159,14 +162,19 @@ namespace JoltPhysics
 
         // JoltAzAllocatorCallback* m_tempAllocator = nullptr;
         JPH::TempAllocatorImpl* m_tempAllocator = nullptr;
+        
+        // static constexpr AZ::u32 MaxBodiesPerBatchAdd = 128;
+        AZ::u32 m_bodiesAddedSinceOptimize = 100;
+        AZStd::vector<AZ::u32> m_bodiesToAdd;
+        AZStd::vector<AZ::u32> m_bodiesToAddAndActivate;
 
-        // System init variables
+        // System init variables with sane defaults
         unsigned int m_maxBodies = 65536;
         unsigned int m_numBodyMutexes = 128;
         unsigned int m_maxBodyPairs = 65536;
         unsigned int m_maxContactConstraints = 16384;
         int m_collisionSteps = 1;
 
-        AZ::Vector3 m_gravity; // cache the gravity of the scene to avoid a lock in GetGravity().
+        AZ::Vector3 m_gravity; // cache the gravity of the scene to avoid a lock in GetGravity()
     };
 }

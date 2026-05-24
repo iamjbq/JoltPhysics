@@ -30,6 +30,9 @@ namespace JoltPhysics
         StaticRigidBody() = default;
         StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem);
         ~StaticRigidBody();
+        
+        void SetName(const AZStd::string& entityName);
+        const AZStd::string& GetName() const;
 
         // AzPhysics::StaticRigidBody
         void AddShape(AZStd::shared_ptr<Physics::Shape> shape) override;
@@ -63,6 +66,7 @@ namespace JoltPhysics
         JPH::PhysicsSystem* m_owningSystem = nullptr;
         JPH::Body* m_joltStaticBody = nullptr;
         AZStd::vector<AZStd::shared_ptr<JoltPhysics::Shape>> m_shapes;
+        AZStd::shared_ptr<JoltPhysics::Shape> m_compoundShape;
         JoltPhysics::BodyData m_bodyUserData;
         AZStd::string m_debugName;
     };

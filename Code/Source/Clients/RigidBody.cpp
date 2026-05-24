@@ -34,10 +34,10 @@ namespace JoltPhysics
         {
             serializeContext->Class<JoltPhysics::RigidBodyConfiguration>()
                 ->Version(1)
+                ->Field("CollisionConfiguration", &JoltPhysics::RigidBodyConfiguration::m_colliderConfig)
                 ->Field("SolverVelocityIterations", &JoltPhysics::RigidBodyConfiguration::m_solverVelocityIterations)
                 ->Field("SolverPositionIterations", &JoltPhysics::RigidBodyConfiguration::m_solverPositionIterations)
-                ->Field("CanSleep", &JoltPhysics::RigidBodyConfiguration::m_canSleep)
-                ;
+                ->Field("CanSleep", &JoltPhysics::RigidBodyConfiguration::m_canSleep);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -45,27 +45,62 @@ namespace JoltPhysics
                     "Additional Rigid Body settings specific to JoltPhysics.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
+                        &RigidBodyConfiguration::m_colliderConfig, 
+                        "Collision Configuration", 
+                        "Collision configuration for the body.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
                         &JoltPhysics::RigidBodyConfiguration::m_solverVelocityIterations,
                         "Solver Velocity Iterations",
                         "Higher values can improve stability at the cost of performance. 0 follows default in Jolt configuration")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0)
-                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0)
+                        ->Attribute(AZ::Edit::Attributes::Max, 255)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &RigidBodyConfiguration::GetSolverIterationVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &JoltPhysics::RigidBodyConfiguration::m_solverPositionIterations,
                         "Solver Position Iterations",
                         "Higher values can improve stability at the cost of performance. 0 follows default in Jolt configuration")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0)
-                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0)
+                        ->Attribute(AZ::Edit::Attributes::Max, 255)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &RigidBodyConfiguration::GetSolverIterationVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &JoltPhysics::RigidBodyConfiguration::m_canSleep,
                         "Can Sleep",
                         "Whether this body is allowed to sleep ever."
                         )
-                    ;
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &RigidBodyConfiguration::GetCanSleepVisibility);
             }
         }
+    }
+
+    AZ::Crc32 RigidBodyConfiguration::GetPropertyVisibility(PropertyVisibility property) const
+    {
+        return (m_propertyVisibilityFlags & property) != 0 ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    void RigidBodyConfiguration::SetPropertyVisibility(PropertyVisibility property, bool isVisible)
+    {
+        if (isVisible)
+        {
+            m_propertyVisibilityFlags |= property;
+        }
+        else
+        {
+            m_propertyVisibilityFlags &= ~property;
+        }
+    }
+
+    AZ::Crc32 RigidBodyConfiguration::GetSolverIterationVisibility() const
+    {
+        return GetPropertyVisibility(PropertyVisibility::SolverIteration);
+    }
+
+    AZ::Crc32 RigidBodyConfiguration::GetCanSleepVisibility() const
+    {
+        return GetPropertyVisibility(PropertyVisibility::CanSleep);
     }
 
     RigidBody::RigidBody(const AzPhysics::RigidBodyConfiguration& configuration, JPH::PhysicsSystem& owningSystem)
@@ -130,7 +165,7 @@ namespace JoltPhysics
         newBody.mPosition = JoltMathConvert(configuration.m_position);
         newBody.mRotation = JoltMathConvert(configuration.m_orientation);
         newBody.mMotionType = motionType;
-        newBody.mObjectLayer = 1 << 1; // Placeholder object layer until we set shape to get collider configuration
+        newBody.mObjectLayer = 1 << 1; // Placeholder object layer until ApplyJoltConfiguration()
         newBody.mLinearVelocity = JoltMathConvert(configuration.m_initialLinearVelocity);
         newBody.mAngularVelocity = JoltMathConvert(configuration.m_initialAngularVelocity);
 
@@ -156,10 +191,8 @@ namespace JoltPhysics
         }
 
         m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
-        m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate); // TODO: Add to body queue that gets Added per StartSimulation step
-
-        // Note that if you need to add multiple bodies, use the AddBodiesPrepare/AddBodiesFinalize function.
-        // Adding many bodies, one at a time, results in a really inefficient broadphase until PhysicsSystem::OptimizeBroadPhase is called or when PhysicsSystem::Update rebuilds the tree!
+        // m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate); // TODO: finalize queuing in JoltScene
+        
         if (m_joltRigidBody == nullptr)
         {
             AZ_Warning("RigidBody::CreateJoltBody", false, "Jolt Body pointer was null")
@@ -199,22 +232,6 @@ namespace JoltPhysics
             AZ_Error("Jolt", false, "Cannot use mesh geometry on a dynamic object: %s", GetName().c_str());
             return;
         }
-        
-        
-        // {
-        //     m_owningSystem->GetBodyInterface().SetShape(
-        //         m_joltRigidBody->GetID(),
-        //         static_cast<const JPH::Shape*>(joltShape->GetNativePointer()),
-        //         true,
-        //         JPH::EActivation::DontActivate
-        //         );
-        //
-        //     // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
-        //     auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
-        //     const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(shape->GetCollisionLayer(), shape->GetCollisionGroup(), newBPLayer);
-        //     m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
-        //     m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), joltShape->GetIsTrigger());
-        // }
 
         joltShape->SetInternalPhysicsSystem(m_owningSystem);
         joltShape->AttachedToActor(m_joltRigidBody);
@@ -223,6 +240,7 @@ namespace JoltPhysics
 
     void RigidBody::RemoveShape([[maybe_unused]] AZStd::shared_ptr<Physics::Shape> shape)
     {
+        // TODO: trigger reCreateBody
         if (!m_joltRigidBody || !shape)
         {
             return;
@@ -266,7 +284,7 @@ namespace JoltPhysics
     {
         if (m_shapes.empty())
         {
-            AZ_Error("JoltPhysics::RigidBody", false, "No shapes to build compound shape on this rigid body: %s", GetName().c_str());
+            AZ_Error("JoltPhysics::RigidBody", false, "No shapes found to build compound shape on this rigid body: %s", GetName().c_str());
             return;
         }
         
@@ -296,15 +314,9 @@ namespace JoltPhysics
                 true,
                 JPH::EActivation::DontActivate
             );
-            
-            // TODO: collision layers and groups should only be set on one - temporarily taking the first shape in m_shapes
-            // TODO: Trigger should be set on only one
-            // This is a good place to set ObjectLayer since we can access collision layer/group, and we know body type (i.e. dynamic)
-            constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
-            const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(m_shapes.front()->GetCollisionLayer(), m_shapes.front()->GetCollisionGroup(), newBPLayer);
-            m_owningSystem->GetBodyInterface().SetObjectLayer(m_joltRigidBody->GetID(), newLayer);
-            m_owningSystem->GetBodyInterface().SetIsSensor(m_joltRigidBody->GetID(), m_shapes.front()->GetIsTrigger());
-        }       
+        } 
+        
+        m_isReady = true;
     }
 
     AZ::u32 RigidBody::GetShapeCount() const
@@ -626,6 +638,13 @@ namespace JoltPhysics
     AzPhysics::SceneQueryHit RigidBody::RayCast(const AzPhysics::RayCastRequest& request)
     {
         AzPhysics::SceneQueryHit closestHit;
+        
+        if (!m_isReady)
+        {
+            AZ_Warning("RigidBody::RayCast", false, "Body is not finished activating yet")
+            return closestHit;
+        }
+        
         float closestHitDist = AZStd::numeric_limits<float>::max();
         for (auto& shape : m_shapes) // TODO: maybe change to only call the compound shape
         {
@@ -761,7 +780,6 @@ namespace JoltPhysics
     void RigidBody::SetName(const AZStd::string& entityName)
     {
         m_debugName = entityName;
-        // TODO: Check if Jolt has debug naming
     }
 
     const AZStd::string& RigidBody::GetName() const

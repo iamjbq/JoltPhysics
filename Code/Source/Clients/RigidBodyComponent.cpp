@@ -52,7 +52,6 @@ namespace JoltPhysics
                 ->Version(1)
                 ->Field("RigidBodyConfiguration", &RigidBodyComponent::m_configuration)
                 ->Field("JoltSpecificConfiguration", &RigidBodyComponent::m_joltSpecificConfiguration)
-                ->Field("CollisionConfiguration", &RigidBodyComponent::m_collisionConfig)
                 ;
         }
 
@@ -386,6 +385,21 @@ namespace JoltPhysics
         {
             if (auto* joltBody = static_cast<JPH::Body*>(body->GetNativePointer()))
             {
+                constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Dynamic));
+                
+                AzPhysics::CollisionGroup group;
+                Physics::CollisionRequestBus::BroadcastResult(group,
+                                                          &Physics::CollisionRequests::GetCollisionGroupById,
+                                                          m_joltSpecificConfiguration.m_colliderConfig.m_collisionGroupId);
+                const JPH::ObjectLayer newLayer = Utils::ConstructObjectLayer(m_joltSpecificConfiguration.m_colliderConfig.m_collisionLayer, group, newBPLayer);
+                
+                if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+                {
+                    auto* joltSystem = static_cast<JPH::PhysicsSystem*>(sceneInterface->GetScene(m_attachedSceneHandle)->GetNativePointer());
+                    joltSystem->GetBodyInterface().SetObjectLayer(joltBody->GetID(), newLayer);
+                    joltSystem->GetBodyInterface().SetIsSensor(joltBody->GetID(), m_joltSpecificConfiguration.m_colliderConfig.m_isTrigger);
+                }
+                
                 const AZ::u8 solverVelocityIterations =
                     AZ::GetClamp<AZ::u8>(m_joltSpecificConfiguration.m_solverVelocityIterations, 0, 255);
                 const AZ::u8 solverPositionIterations =
