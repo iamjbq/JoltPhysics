@@ -9,11 +9,6 @@
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
-#include <cmath>
-
-#include <Clients/EditorRigidBodyComponent.h>
-#include <Clients/EditorShapeColliderComponent.h>
-#include <Clients/EditorStaticRigidBodyComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
@@ -22,6 +17,12 @@
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <LyViewPaneNames.h>
+
+#include <cmath>
+
+#include <Clients/EditorRigidBodyComponent.h>
+#include <Clients/EditorShapeColliderComponent.h>
+#include <Clients/EditorStaticRigidBodyComponent.h>
 #include <JoltPhysics/JoltPhysicsBus.h>
 #include <Clients/StaticRigidBody.h>
 #include <Clients/ShapeColliderComponent.h>
@@ -39,7 +40,6 @@ namespace JoltPhysics
             })
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale);})
     {
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
     }
 
     AZ::Crc32 EditorShapeColliderComponent::SubdivisionCountVisibility() const
@@ -69,17 +69,16 @@ namespace JoltPhysics
         {
             serializeContext->Class<EditorShapeColliderComponent, EditorComponentBase>()
                 ->Version(1)
-                ->Field("ColliderConfiguration", &EditorShapeColliderComponent::m_colliderConfig)
-                ->Field("DebugDrawSettings", &EditorShapeColliderComponent::m_colliderDebugDraw)
+                // ->Field("DebugDrawSettings", &EditorShapeColliderComponent::m_colliderDebugDraw)
                 ->Field("ShapeConfigs", &EditorShapeColliderComponent::m_shapeConfigs)
                 ->Field("SubdivisionCount", &EditorShapeColliderComponent::m_subdivisionCount)
                 ->Field("SingleSided", &EditorShapeColliderComponent::m_singleSided)
-                ;
+                ->Field("ColliderConfiguration", &EditorShapeColliderComponent::m_colliderConfig);
 
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorShapeColliderComponent>(
-                    "Shared Shape Collider", "A collider which can share a common Shape with other components, e.g. an Audio component.")
+                    "Shape Collider", "A collider using primitive shapes. It can also share a common Shape with other components, e.g. an Audio component.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
@@ -87,13 +86,6 @@ namespace JoltPhysics
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderConfig,
-                        "Collider configuration", "Configuration of the collider.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings", "Debug draw settings.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_subdivisionCount, "Subdivision count",
                         "Number of angular subdivisions in the Jolt cylinder.")
                         ->Attribute(AZ::Edit::Attributes::Min, Utils::MinFrustumSubdivisions)
@@ -104,7 +96,13 @@ namespace JoltPhysics
                         "If enabled, planar shapes will only collide from one direction (not valid for shapes attached to dynamic rigid bodies)")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnSingleSidedChange)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorShapeColliderComponent::SingleSidedVisibility)
-                    ;
+                    // ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderDebugDraw,
+                    //     "Debug draw settings", "Debug draw settings.")
+                    //     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderConfig,
+                        "Collider configuration", "Configuration of the collider.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnConfigurationChanged);
             }
         }
     }
@@ -121,7 +119,7 @@ namespace JoltPhysics
     {
         required.push_back(AZ_CRC_CE("TransformService"));
         required.push_back(AZ_CRC_CE("ShapeService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        // required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -239,6 +237,11 @@ namespace JoltPhysics
         colliderConfigurationScaled.m_position *= m_cachedWorldTransform.GetUniformScale();
         return colliderConfigurationScaled;
     }
+
+    // bool EditorShapeColliderComponent::IsDebugDrawDisplayFlagEnabled() const
+    // {
+    //     return m_colliderDebugDraw.IsDisplayFlagEnabled();
+    // }
 
     const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& EditorShapeColliderComponent::GetShapeConfigurations() const
     {
@@ -657,10 +660,20 @@ namespace JoltPhysics
 
         InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
     }
+    
+    void EditorShapeColliderComponent::Init()
+    {
+    }
 
     // AZ::Component
     void EditorShapeColliderComponent::Activate()
     {
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Tag, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::CollisionLayer, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::ContactOffset, false);
+        
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
@@ -682,12 +695,12 @@ namespace JoltPhysics
 
         UpdateSingleSidedSettings();
         UpdateShapeConfigs();
-        UpdateTriggerSettings();
-        UpdateTranslationOffset();
+        // UpdateTriggerSettings();
+        UpdateTransformOffset();
 
         // Debug drawing
-        m_colliderDebugDraw.Connect(GetEntityId());
-        m_colliderDebugDraw.SetDisplayCallback(this);
+        // m_colliderDebugDraw.Connect(GetEntityId());
+        // m_colliderDebugDraw.SetDisplayCallback(this);
         // CreateStaticEditorCollider();
 
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -696,7 +709,7 @@ namespace JoltPhysics
     void EditorShapeColliderComponent::Deactivate()
     {
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
-        m_colliderDebugDraw.Disconnect();
+        // m_colliderDebugDraw.Disconnect();
 
         m_nonUniformScaleChangedHandler.Disconnect();
         JoltPhysics::ColliderShapeRequestBus::Handler::BusDisconnect();
@@ -749,7 +762,7 @@ namespace JoltPhysics
         m_currentNonUniformScale = scale;
 
         UpdateShapeConfigs();
-        UpdateTranslationOffset();
+        UpdateTransformOffset();
 
         // CreateStaticEditorCollider();
         m_geometryCache.m_cachedSamplePointsDirty = true;
@@ -831,8 +844,8 @@ namespace JoltPhysics
         if (changeReason == LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged)
         {
             UpdateShapeConfigs();
-            UpdateTriggerSettings();
-            UpdateTranslationOffset();
+            // UpdateTriggerSettings();
+            UpdateTransformOffset();
 
             // CreateStaticEditorCollider();
             Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -840,75 +853,75 @@ namespace JoltPhysics
     }
 
     // // DisplayCallback
-    void EditorShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay) const
-    {
-        // polygon prism is a special case
-        if (m_shapeType == ShapeType::PolygonPrism)
-        {
-            // AZ::PolygonPrismPtr polygonPrismPtr;
-            // LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(polygonPrismPtr, GetEntityId(),
-            //     &LmbrCentral::PolygonPrismShapeComponentRequests::GetPolygonPrism);
-            // if (polygonPrismPtr)
-            // {
-            //     const float transformScale = Utils::GetTransformScale(GetEntityId());
-            //     const AZ::Vector3 overallScale = transformScale * m_currentNonUniformScale;
-            //     const float height = polygonPrismPtr->GetHeight();
-            //     m_colliderDebugDraw.DrawPolygonPrism(debugDisplay, m_colliderConfig, m_mesh.GetDebugDrawPoints(height,
-            //         overallScale));
-            // }
-        }
-
-        else if (m_shapeType == ShapeType::Cylinder)
-        {
-            if (!m_shapeConfigs.empty())
-            {
-                const AZ::u32 shapeIndex = 0;
-                const float transformScale = Utils::GetTransformScale(GetEntityId());
-                Physics::ShapeConfiguration* shapeConfig = m_shapeConfigs[0].get();
-                m_colliderDebugDraw.BuildMeshes(*shapeConfig, shapeIndex);
-                m_colliderDebugDraw.DrawMesh(
-                    debugDisplay,
-                    m_colliderConfig,
-                    *static_cast<Physics::CookedMeshShapeConfiguration*>(shapeConfig),
-                    AZ::Vector3(transformScale),
-                    shapeIndex);
-            }
-        }
-
-        // for primitive shapes just display the shape configs
-        else
-        {
-            for (const auto& shapeConfig : m_shapeConfigs)
-            {
-                switch (shapeConfig->GetShapeType())
-                {
-                case Physics::ShapeType::Box:
-                {
-                    Physics::ColliderConfiguration unscaledColliderConfig = m_colliderConfig;
-                    unscaledColliderConfig.m_position /= m_currentNonUniformScale;
-                    const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(*shapeConfig);
-                    m_colliderDebugDraw.DrawBox(debugDisplay, unscaledColliderConfig, boxConfig, m_currentNonUniformScale);
-                    break;
-                }
-                case Physics::ShapeType::Capsule:
-                {
-                    const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(*shapeConfig);
-                    m_colliderDebugDraw.DrawCapsule(debugDisplay, m_colliderConfig, capsuleConfig, AZ::Vector3::CreateOne());
-                    break;
-                }
-                case Physics::ShapeType::Sphere:
-                {
-                    const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(*shapeConfig);
-                    m_colliderDebugDraw.DrawSphere(debugDisplay, m_colliderConfig, sphereConfig);
-                    break;
-                }
-                default:
-                    break;
-                }
-            }
-        }
-    }
+    // void EditorShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+    //     AzFramework::DebugDisplayRequests& debugDisplay) const
+    // {
+    //     // polygon prism is a special case
+    //     if (m_shapeType == ShapeType::PolygonPrism)
+    //     {
+    //         // AZ::PolygonPrismPtr polygonPrismPtr;
+    //         // LmbrCentral::PolygonPrismShapeComponentRequestBus::EventResult(polygonPrismPtr, GetEntityId(),
+    //         //     &LmbrCentral::PolygonPrismShapeComponentRequests::GetPolygonPrism);
+    //         // if (polygonPrismPtr)
+    //         // {
+    //         //     const float transformScale = Utils::GetTransformScale(GetEntityId());
+    //         //     const AZ::Vector3 overallScale = transformScale * m_currentNonUniformScale;
+    //         //     const float height = polygonPrismPtr->GetHeight();
+    //         //     m_colliderDebugDraw.DrawPolygonPrism(debugDisplay, m_colliderConfig, m_mesh.GetDebugDrawPoints(height,
+    //         //         overallScale));
+    //         // }
+    //     }
+    //
+    //     else if (m_shapeType == ShapeType::Cylinder)
+    //     {
+    //         if (!m_shapeConfigs.empty())
+    //         {
+    //             const AZ::u32 shapeIndex = 0;
+    //             const float transformScale = Utils::GetTransformScale(GetEntityId());
+    //             Physics::ShapeConfiguration* shapeConfig = m_shapeConfigs[0].get();
+    //             m_colliderDebugDraw.BuildMeshes(*shapeConfig, shapeIndex);
+    //             m_colliderDebugDraw.DrawMesh(
+    //                 debugDisplay,
+    //                 m_colliderConfig,
+    //                 *static_cast<Physics::CookedMeshShapeConfiguration*>(shapeConfig),
+    //                 AZ::Vector3(transformScale),
+    //                 shapeIndex);
+    //         }
+    //     }
+    //
+    //     // for primitive shapes just display the shape configs
+    //     else
+    //     {
+    //         for (const auto& shapeConfig : m_shapeConfigs)
+    //         {
+    //             switch (shapeConfig->GetShapeType())
+    //             {
+    //             case Physics::ShapeType::Box:
+    //             {
+    //                 Physics::ColliderConfiguration unscaledColliderConfig = m_colliderConfig;
+    //                 unscaledColliderConfig.m_position /= m_currentNonUniformScale;
+    //                 const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(*shapeConfig);
+    //                 m_colliderDebugDraw.DrawBox(debugDisplay, unscaledColliderConfig, boxConfig, m_currentNonUniformScale);
+    //                 break;
+    //             }
+    //             case Physics::ShapeType::Capsule:
+    //             {
+    //                 const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(*shapeConfig);
+    //                 m_colliderDebugDraw.DrawCapsule(debugDisplay, m_colliderConfig, capsuleConfig, AZ::Vector3::CreateOne());
+    //                 break;
+    //             }
+    //             case Physics::ShapeType::Sphere:
+    //             {
+    //                 const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(*shapeConfig);
+    //                 m_colliderDebugDraw.DrawSphere(debugDisplay, m_colliderConfig, sphereConfig);
+    //                 break;
+    //             }
+    //             default:
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
 
     // ColliderShapeRequestBus
     AZ::Aabb EditorShapeColliderComponent::GetColliderShapeAabb()
@@ -924,35 +937,45 @@ namespace JoltPhysics
         return m_colliderConfig.m_isTrigger;
     }
 
-    void EditorShapeColliderComponent::UpdateTriggerSettings()
-    {
-        if (m_shapeType == ShapeType::QuadSingleSided || m_shapeType == ShapeType::QuadDoubleSided)
-        {
-            if (!m_previousIsTrigger.has_value())
-            {
-                m_previousIsTrigger = m_colliderConfig.m_isTrigger;
-                m_colliderConfig.m_isTrigger = false;
-            }
-            m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
-        }
-        else
-        {
-            if (m_previousIsTrigger.has_value())
-            {
-                m_colliderConfig.m_isTrigger = m_previousIsTrigger.value();
-                m_previousIsTrigger.reset();
-            }
-            m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, true);
-        }
-    }
+    // void EditorShapeColliderComponent::UpdateTriggerSettings()
+    // {
+    //     if (m_shapeType == ShapeType::QuadSingleSided || m_shapeType == ShapeType::QuadDoubleSided)
+    //     {
+    //         if (!m_previousIsTrigger.has_value())
+    //         {
+    //             m_previousIsTrigger = m_colliderConfig.m_isTrigger;
+    //             m_colliderConfig.m_isTrigger = false;
+    //         }
+    //         m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
+    //     }
+    //     else
+    //     {
+    //         if (m_previousIsTrigger.has_value())
+    //         {
+    //             m_colliderConfig.m_isTrigger = m_previousIsTrigger.value();
+    //             m_previousIsTrigger.reset();
+    //         }
+    //         m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, true);
+    //     }
+    // }
 
-    void EditorShapeColliderComponent::UpdateTranslationOffset()
+    void EditorShapeColliderComponent::UpdateTransformOffset()
     {
         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             translationOffset, GetEntityId(), &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
-
-        m_colliderConfig.m_position = m_currentNonUniformScale * translationOffset;
+        
+        // Shapes have their own translation offset, so we need to account for the user possibly modifying both child entity and shape offset translation
+        AZ::Vector3 positionOffset = AZ::Vector3::CreateZero();
+        
+        // if the collider is on a child entity we take the entity TM offset
+        if (!GetEntity()->FindComponent<EditorRigidBodyComponent>() && !GetEntity()->FindComponent<EditorStaticRigidBodyComponent>()) 
+        {
+            positionOffset = GetLocalTM().GetTranslation();
+            m_colliderConfig.m_rotation = GetLocalTM().GetRotation();
+        }
+            
+        m_colliderConfig.m_position = m_currentNonUniformScale * (translationOffset + positionOffset);
     }
 
     void EditorShapeColliderComponent::UpdateSingleSidedSettings()

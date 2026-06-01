@@ -323,7 +323,7 @@ namespace JoltPhysics
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
         ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [&shapes](ColliderComponentRequests* handler)
             {
-                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> newShapes = handler->GetShapes();
+                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> newShapes = handler->GetShapes(); // TODO: not getting any of the shapes
                 shapes.insert(shapes.end(), newShapes.begin(), newShapes.end());
                 return true;
             });
@@ -331,7 +331,7 @@ namespace JoltPhysics
 
         if (m_cachedSceneInterface != nullptr)
         {
-            m_configuration.m_startSimulationEnabled = false; //enable physics will enable this when called.
+            m_configuration.m_startSimulationEnabled = false; //enable physics will enable this when called. TODO: remove
             m_rigidBodyHandle = m_cachedSceneInterface->AddSimulatedBody(m_attachedSceneHandle, &m_configuration);
             ApplyJoltSpecificConfiguration();
 
@@ -348,6 +348,8 @@ namespace JoltPhysics
             {
                 m_cachedSceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
             }
+            
+            m_cachedSceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
         }
 
         if (m_configuration.m_interpolateMotion)

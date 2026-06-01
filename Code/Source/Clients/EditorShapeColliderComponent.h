@@ -3,17 +3,21 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
+
 #include <JoltPhysics/ColliderShapeBus.h>
 #include <Editor/DebugDraw.h>
 // #include <Editor/PolygonPrismMeshUtils.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 
 namespace AzPhysics
 {
@@ -55,7 +59,7 @@ namespace JoltPhysics
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AZ::TransformNotificationBus::Handler
-        , protected DebugDraw::DisplayCallback
+        // , protected DebugDraw::DisplayCallback
         , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private JoltPhysics::ColliderShapeRequestBus::Handler
         , protected AzPhysics::SimulatedBodyComponentRequestsBus::Handler
@@ -80,6 +84,8 @@ namespace JoltPhysics
         //! Returns a collider configuration with the entity scale applied to the collider position.
         //! Non-uniform scale is not applied here, because it is already stored in the collider position.
         Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+        
+        // bool IsDebugDrawDisplayFlagEnabled() const;
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
@@ -108,6 +114,7 @@ namespace JoltPhysics
         AZ::Crc32 SingleSidedVisibility() const;
 
         // AZ::Component
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
 
@@ -132,18 +139,18 @@ namespace JoltPhysics
 
         // LmbrCentral::ShapeComponentNotificationBus
         void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason) override;
-
+        
         // DisplayCallback
-        void Display(const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay) const override;
+        // void Display(const AzFramework::ViewportInfo& viewportInfo,
+        //     AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
         // ColliderShapeRequestBus
         AZ::Aabb GetColliderShapeAabb() override;
         bool IsTrigger() override;
 
-        void UpdateTriggerSettings();
+        // void UpdateTriggerSettings(); // TODO: remove
         void UpdateSingleSidedSettings();
-        void UpdateTranslationOffset();
+        void UpdateTransformOffset();
 
         Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
@@ -162,7 +169,7 @@ namespace JoltPhysics
         AZStd::optional<bool> m_previousIsTrigger; //!< Stores the previous trigger setting if the shape is changed to one which does not support triggers.
         bool m_singleSided = false; //!< Used for 2d shapes like quad which may be treated as either single or doubled sided.
         AZStd::optional<bool> m_previousSingleSided; //!< Stores the previous single sided setting when unable to support single-sided shapes (such as when used with a dynamic rigid body).
-
+        
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_joltConfigChangedHandler;
         AZ::Transform m_cachedWorldTransform;
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.

@@ -417,13 +417,12 @@ namespace JoltPhysics
             newBody->m_sceneOwner = m_sceneHandle;
             newBody->m_bodyHandle = newBodyHandle;
             m_simulatedBodyAddedEvent.Signal(m_sceneHandle, newBodyHandle);
-
-            // TODO: Add bodies to queue for adding every StartSimulation step
-            // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
-            if (simulatedBodyConfig->m_startSimulationEnabled)
-            {
-                EnableSimulationOfBodyInternal(*newBody);
-            }
+            
+            // // Enable simulation by default (not signaling OnSimulationBodySimulationEnabled event)
+            // if (simulatedBodyConfig->m_startSimulationEnabled)
+            // {
+            //     EnableSimulationOfBodyInternal(*newBody); // TODO: Editor RBs should always start not Activated (asleep)
+            // }
 
             return newBodyHandle;
         }
@@ -852,7 +851,7 @@ namespace JoltPhysics
             {
                 if (const auto rigidBody = azdynamic_cast<JoltPhysics::RigidBody*>(&body))
                 {
-                    QueueBodyToAdd(joltBody, !rigidBody->ShouldStartAsleep()); // TODO: box not falling when in game mode
+                    QueueBodyToAdd(joltBody, !rigidBody->ShouldStartAsleep());
                 }
             }
             else if (azrtti_istypeof<JoltPhysics::StaticRigidBody>(body))

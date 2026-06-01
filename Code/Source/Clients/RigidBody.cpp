@@ -146,7 +146,7 @@ namespace JoltPhysics
             AZ_Warning("Jolt Rigid Body", false, "Trying to create Jolt rigid actor when it's already created");
             return;
         }
-        // We can't crate a Body without a shape. This will be replaced in AddShape()
+        // We can't crate a Body without a shape. This will be replaced in AddShape() if any are present on the entity
         JPH::EmptyShapeSettings emptySettings;
         JPH::Shape* emptyShape = emptySettings.Create().Get();
 
@@ -191,7 +191,6 @@ namespace JoltPhysics
         }
 
         m_joltRigidBody = m_owningSystem->GetBodyInterface().CreateBody(newBody);
-        // m_owningSystem->GetBodyInterface().AddBody(m_joltRigidBody->GetID(), JPH::EActivation::DontActivate); // TODO: finalize queuing in JoltScene
         
         if (m_joltRigidBody == nullptr)
         {
@@ -306,6 +305,8 @@ namespace JoltPhysics
         
         JPH::Ref<JPH::StaticCompoundShape> compoundShape = static_cast<JPH::StaticCompoundShape*>(result.Get().GetPtr());
         m_compoundShape = AZStd::make_shared<JoltPhysics::Shape>(compoundShape);
+        m_compoundShape->SetInternalPhysicsSystem(m_owningSystem);
+        m_compoundShape->AttachedToActor(m_joltRigidBody);
         
         {
             m_owningSystem->GetBodyInterface().SetShape(
@@ -314,9 +315,9 @@ namespace JoltPhysics
                 true,
                 JPH::EActivation::DontActivate
             );
-        } 
+        }
         
-        m_isReady = true;
+        m_isReady = true; // TODO: remove if we can use m_simulating instead
     }
 
     AZ::u32 RigidBody::GetShapeCount() const
@@ -646,14 +647,20 @@ namespace JoltPhysics
         }
         
         float closestHitDist = AZStd::numeric_limits<float>::max();
-        for (auto& shape : m_shapes) // TODO: maybe change to only call the compound shape
+        // for (auto& shape : m_shapes) // TODO: maybe change to only call the compound shape
+        // {
+        //     AzPhysics::SceneQueryHit hit = shape->RayCast(request, GetTransform());
+        //     if (hit && hit.m_distance < closestHitDist)
+        //     {
+        //         closestHit = hit;
+        //         closestHitDist = hit.m_distance;
+        //     }
+        // }
+        AzPhysics::SceneQueryHit hit = m_compoundShape->RayCast(request, GetTransform());
+        if (hit && hit.m_distance < closestHitDist)
         {
-            AzPhysics::SceneQueryHit hit = shape->RayCast(request, GetTransform());
-            if (hit && hit.m_distance < closestHitDist)
-            {
-                closestHit = hit;
-                closestHitDist = hit.m_distance;
-            }
+            closestHit = hit;
+            closestHitDist = hit.m_distance;
         }
         return closestHit;
     }

@@ -86,9 +86,11 @@ namespace JoltPhysics
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            configuration.m_startSimulationEnabled = false; // enable physics will enable this when called.
+            configuration.m_startSimulationEnabled = false; // enable physics will enable this when called. TODO: remove
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
             ApplyJoltSpecificConfiguration();
+            
+            sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
 
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());

@@ -37,6 +37,7 @@ namespace JoltPhysics
         , public AZ::EntityBus::Handler
         , protected AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TransformNotificationBus::Handler
+        , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private Physics::ColliderComponentEventBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AzFramework::BoundsRequestBus::Handler
@@ -67,7 +68,7 @@ namespace JoltPhysics
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("TransformService"));
-            required.push_back(AZ_CRC_CE("PhysicsColliderService"));
+            // required.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -98,6 +99,9 @@ namespace JoltPhysics
 
         // TransformBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+        
+        // LmbrCentral::ShapeComponentNotificationBus
+        void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason) override;
 
         // non-uniform scale handling
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);

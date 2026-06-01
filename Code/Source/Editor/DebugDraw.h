@@ -148,7 +148,7 @@ namespace JoltPhysics
 
             AZStd::string GetEntityName() const;
 
-            bool m_locallyEnabled = true; //!< Local setting to enable displaying the collider in editor view.
+            bool m_locallyEnabled = false; //!< Local setting to enable displaying the collider in editor view.
             AZ::EntityId m_entityId;
             const DisplayCallback* m_displayCallback = nullptr;
 

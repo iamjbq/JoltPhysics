@@ -3,9 +3,9 @@
 
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <Clients/BaseColliderComponent.h>
-#include <Clients/BoxColliderComponent.h>
-#include <Clients/CapsuleColliderComponent.h>
-#include <Clients/SphereColliderComponent.h>
+// #include <Clients/BoxColliderComponent.h>
+// #include <Clients/CapsuleColliderComponent.h>
+// #include <Clients/SphereColliderComponent.h>
 #include <Clients/ShapeColliderComponent.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Clients/StaticRigidBodyComponent.h>
@@ -18,9 +18,9 @@ namespace JoltPhysics
         {
             JoltPhysicsSystemComponent::CreateDescriptor(),
             BaseColliderComponent::CreateDescriptor(),
-            BoxColliderComponent::CreateDescriptor(),
-            SphereColliderComponent::CreateDescriptor(),
-            CapsuleColliderComponent::CreateDescriptor(),
+            // BoxColliderComponent::CreateDescriptor(),
+            // SphereColliderComponent::CreateDescriptor(),
+            // CapsuleColliderComponent::CreateDescriptor(),
             ShapeColliderComponent::CreateDescriptor(),
             RigidBodyComponent::CreateDescriptor(),
             StaticRigidBodyComponent::CreateDescriptor(),

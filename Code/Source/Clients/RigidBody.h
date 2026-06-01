@@ -50,6 +50,7 @@ namespace JoltPhysics
         AZ::u8 m_solverVelocityIterations = 0; //!< Higher values can improve stability at the cost of performance. 0 follows Jolt configuration value.
         AZ::u8 m_solverPositionIterations = 0; //!< Higher values can improve stability at the cost of performance. 0 follows Jolt configuration value.
         bool m_canSleep = true; //! Whether this body is allowed to sleep ever.
+        bool m_editorBody = false;
         
         AZ::u8 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u8>::max)(); ///< Visibility flags for config.
                                                                                 ///< Note: added parenthesis for std::numeric_limits is
@@ -133,6 +134,7 @@ namespace JoltPhysics
         void SetSleepThreshold(float threshold) override;
 
         bool ShouldStartAsleep() const { return m_startAsleep; }
+        void OverrideShouldStartAsleep(bool override) { m_startAsleep = override; } //!< Convenience function to disable bodies in the editor.
 
         void SetName(const AZStd::string& entityName);
         const AZStd::string& GetName() const;

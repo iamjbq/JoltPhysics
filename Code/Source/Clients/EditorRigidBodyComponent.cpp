@@ -4,7 +4,7 @@
 #include <AzFramework/Physics/NameConstants.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Clients/EditorRigidBodyComponent.h>
-#include <Clients/EditorPrimitiveShapeColliderComponent.h>
+// #include <Clients/EditorPrimitiveShapeColliderComponent.h>
 #include <Clients/EditorShapeColliderComponent.h>
 #include <Clients/JoltPhysicsEditorSystemComponent.h>
 #include <Clients/RigidBodyComponent.h>
@@ -12,8 +12,10 @@
 #include <System/JoltSystem.h>
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyBoolComboBoxCtrl.hxx>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 #include <LyViewPaneNames.h>
+#include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
 
 #include "Jolt/Physics/PhysicsSystem.h"
 
@@ -27,38 +29,38 @@ namespace JoltPhysics
 
             [[maybe_unused]] const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
             
-            for (const EditorPrimitiveShapeColliderComponent* collider : entity->FindComponents<EditorPrimitiveShapeColliderComponent>())
-            {
-                const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
-                const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
-                if (!hasNonUniformScaleComponent && !shapeConfigurationProxy.IsCylinderConfig())
-                {
-                    const Physics::ColliderConfiguration colliderConfigurationScaled = collider->GetColliderConfigurationScaled();
-                    AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                        colliderConfigurationScaled, shapeConfiguration);
-                    AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
-                    if (shape)
-                    {
-                        allShapes.emplace_back(shape);
-                    }
-                }
-                else
-                {
-                    const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
-                    auto convexConfig = Utils::CreateConvexFromPrimitive(colliderConfigurationUnscaled, shapeConfiguration,
-                        shapeConfigurationProxy.m_subdivisionLevel, shapeConfiguration.m_scale);
-                    auto colliderConfigurationNoOffset = colliderConfigurationUnscaled;
-                    colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
-                    colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
-
-                    if (convexConfig.has_value())
-                    {
-                        AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                            colliderConfigurationNoOffset, convexConfig.value());
-                        allShapes.emplace_back(shape);
-                    }
-                }
-            }
+            // for (const EditorPrimitiveShapeColliderComponent* collider : entity->FindComponents<EditorPrimitiveShapeColliderComponent>())
+            // {
+            //     const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
+            //     const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
+            //     if (!hasNonUniformScaleComponent && !shapeConfigurationProxy.IsCylinderConfig())
+            //     {
+            //         const Physics::ColliderConfiguration colliderConfigurationScaled = collider->GetColliderConfigurationScaled();
+            //         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
+            //             colliderConfigurationScaled, shapeConfiguration);
+            //         AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+            //         if (shape)
+            //         {
+            //             allShapes.emplace_back(shape);
+            //         }
+            //     }
+            //     else
+            //     {
+            //         const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
+            //         auto convexConfig = Utils::CreateConvexFromPrimitive(colliderConfigurationUnscaled, shapeConfiguration,
+            //             shapeConfigurationProxy.m_subdivisionLevel, shapeConfiguration.m_scale);
+            //         auto colliderConfigurationNoOffset = colliderConfigurationUnscaled;
+            //         colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+            //         colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
+            //
+            //         if (convexConfig.has_value())
+            //         {
+            //             AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
+            //                 colliderConfigurationNoOffset, convexConfig.value());
+            //             allShapes.emplace_back(shape);
+            //         }
+            //     }
+            // }
 
             // TODO: Implemented mesh collider
             // for (const EditorMeshColliderComponent* collider : entity->FindComponents<EditorMeshColliderComponent>())
@@ -86,17 +88,48 @@ namespace JoltPhysics
             //         allShapes.emplace_back(shape);
             //     }
             // }
-
-            for (const EditorShapeColliderComponent* shapeCollider : entity->FindComponents<EditorShapeColliderComponent>())
+            
+            // TODO: not currently finding any child shapes to build compound shape
+            if (entity->FindComponent(LmbrCentral::EditorCompoundShapeComponentTypeId))
             {
-                const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
-                const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
-                    shapeCollider->GetShapeConfigurations();
-                for (const auto& shapeConfig : shapeConfigs)
+                LmbrCentral::CompoundShapeConfiguration compoundShapeConfig;
+                LmbrCentral::CompoundShapeComponentRequestsBus::EventResult(
+                    compoundShapeConfig, entity->GetId(), &LmbrCentral::CompoundShapeComponentRequests::GetCompoundShapeConfiguration);
+                
+                for (const auto shapeEntityId : compoundShapeConfig.GetChildEntities())
                 {
-                    AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, *shapeConfig);
-                    AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
-                    allShapes.emplace_back(shape);
+                    if (shapeEntityId.IsValid())
+                    {
+                        const auto* shapeEntity = AzToolsFramework::GetEntityById(shapeEntityId);
+                        
+                        for (const EditorShapeColliderComponent* shapeCollider : shapeEntity->FindComponents<EditorShapeColliderComponent>())
+                        {
+                            const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
+                            const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
+                                shapeCollider->GetShapeConfigurations();
+                            for (const auto& shapeConfig : shapeConfigs)
+                            {
+                                AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, *shapeConfig);
+                                AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+                                allShapes.emplace_back(shape);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (entity->FindComponent<EditorShapeColliderComponent>())
+            {
+                for (const EditorShapeColliderComponent* shapeCollider : entity->FindComponents<EditorShapeColliderComponent>())
+                {
+                    const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
+                    const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
+                        shapeCollider->GetShapeConfigurations();
+                    for (const auto& shapeConfig : shapeConfigs)
+                    {
+                        AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, *shapeConfig);
+                        AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+                        allShapes.emplace_back(shape);
+                    }
                 }
             }
 
@@ -354,6 +387,8 @@ namespace JoltPhysics
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
+        
+        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
         Physics::ColliderComponentEventBus::Handler::BusConnect(entityId);
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
@@ -413,6 +448,7 @@ namespace JoltPhysics
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
+        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
@@ -537,6 +573,7 @@ namespace JoltPhysics
         colliderTransform.ExtractUniformScale();
 
         AzPhysics::RigidBodyConfiguration configuration = m_config;
+        configuration.m_startSimulationEnabled = m_joltSpecificConfig.m_colliderConfig.m_isSimulated; // Until we can sort out AzPhysics mismatches
         configuration.m_orientation = colliderTransform.GetRotation();
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
@@ -550,19 +587,18 @@ namespace JoltPhysics
                 sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorRigidBodyHandle)
                 ))
             {
-                void ApplyJoltSpecificConfiguration(); // Need to set collision and trigger configuration for Jolt Body
+                ApplyJoltSpecificConfiguration(); // Need to set collision and trigger configuration for Jolt Body
 
                 // AddSimulatedBody may update mass / CoM / Inertia tensor based on the config, so grab the updated values.
                 m_config.m_mass = body->GetMass();
                 m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
                 m_config.m_inertiaTensor = body->GetInertiaLocal();
-
-                // Set simulation disabled for this actor so it doesn't actually interact when the editor world is updated.
-                if (auto* joltBody = static_cast<JPH::Body*>(body->GetNativePointer()))
-                {
-                    auto* owningSystem = static_cast<JPH::PhysicsSystem*>(sceneInterface->GetScene(m_editorSceneHandle)->GetNativePointer());
-                    owningSystem->GetBodyInterface().DeactivateBody(joltBody->GetID());
-                }
+                
+                azdynamic_cast<JoltPhysics::RigidBody*>(body)->OverrideShouldStartAsleep(true); // Hopefully sets body to queue but not activate in editor only without changing config
+                
+                // Body is queued to add without activating so it doesn't actually interact when the editor world is updated.
+                sceneInterface->EnableSimulationOfBody(m_editorSceneHandle, m_editorRigidBodyHandle);
+ 
             }
         }
         AZ_Error("EditorRigidBodyComponent",
@@ -611,6 +647,19 @@ namespace JoltPhysics
     void EditorRigidBodyComponent::OnTransformChanged([[maybe_unused]]const AZ::Transform& local, [[maybe_unused]]const AZ::Transform& world)
     {
         SetShouldBeRecreated();
+    }
+
+    void EditorRigidBodyComponent::OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason)
+    {
+        // We're only handling the case where a compound shape is used to know when to rebuild the body
+        if (GetEntity()->FindComponent(LmbrCentral::EditorCompoundShapeComponentTypeId))
+        {
+            if (changeReason == LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged ||
+                changeReason == LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged)
+            {
+                SetShouldBeRecreated();
+            }
+        }
     }
 
     void EditorRigidBodyComponent::OnNonUniformScaleChanged([[maybe_unused]] const AZ::Vector3& scale)
