@@ -2,20 +2,28 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/containers/vector.h>
+
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
+
+#include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
+
 #include <JoltPhysics/ColliderComponentBus.h>
 #include <JoltPhysics/MathConversions.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Clients/RigidBody.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Clients/Shape.h>
+#include <Entity/EntityTypes.h>
 
+#include "Utils.h"
 #include "Jolt/Physics/PhysicsSystem.h"
+#include "System/CollisionLayerFilters.h"
 
 namespace JoltPhysics
 {
@@ -321,12 +329,28 @@ namespace JoltPhysics
         SetupConfiguration();
         // Add shapes
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
+        
         ColliderComponentRequestBus::EnumerateHandlersId(GetEntityId(), [&shapes](ColliderComponentRequests* handler)
             {
-                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> newShapes = handler->GetShapes(); // TODO: not getting any of the shapes
+                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> newShapes = handler->GetShapes();
                 shapes.insert(shapes.end(), newShapes.begin(), newShapes.end());
                 return true;
             });
+        
+        LmbrCentral::CompoundShapeConfiguration compoundShapeConfig;
+        LmbrCentral::CompoundShapeComponentRequestsBus::EventResult(
+            compoundShapeConfig, GetEntityId(), &LmbrCentral::CompoundShapeComponentRequests::GetCompoundShapeConfiguration);
+                
+        for (const auto shapeEntityId : compoundShapeConfig.GetChildEntities())
+        {
+            ColliderComponentRequestBus::EnumerateHandlersId(shapeEntityId, [&shapes](ColliderComponentRequests* handler)
+                {
+                    AZStd::vector<AZStd::shared_ptr<Physics::Shape>> newShapes = handler->GetShapes();
+                    shapes.insert(shapes.end(), newShapes.begin(), newShapes.end());
+                    return true;
+                });
+        }
+        
         m_configuration.m_colliderAndShapeData = shapes;
 
         if (m_cachedSceneInterface != nullptr)
@@ -348,8 +372,6 @@ namespace JoltPhysics
             {
                 m_cachedSceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
             }
-            
-            m_cachedSceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
         }
 
         if (m_configuration.m_interpolateMotion)

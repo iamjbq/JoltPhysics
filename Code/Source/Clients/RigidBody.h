@@ -150,7 +150,7 @@ namespace JoltPhysics
         //! Called after all collider info is collected.
         //! Combines all primitive shape colliders on a body into one StaticCompoundShape.
         //! This shape cannot be edited without re-constructing it.
-        void BuildCompoundShape();
+        void BuildFinalShape();
         
     private:
         void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration);

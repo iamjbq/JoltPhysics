@@ -663,17 +663,16 @@ namespace JoltPhysics
     
     void EditorShapeColliderComponent::Init()
     {
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
+                m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Tag, false);
+                m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
+                m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::CollisionLayer, false);
+                m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::ContactOffset, false);
     }
 
     // AZ::Component
     void EditorShapeColliderComponent::Activate()
     {
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Tag, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::CollisionLayer, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::ContactOffset, false);
-        
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());

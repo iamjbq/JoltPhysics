@@ -279,7 +279,7 @@ namespace JoltPhysics
         AZ_UNUSED(includeAllShapesInMassCalculation)
     }
 
-    void RigidBody::BuildCompoundShape()
+    void RigidBody::BuildFinalShape()
     {
         if (m_shapes.empty())
         {

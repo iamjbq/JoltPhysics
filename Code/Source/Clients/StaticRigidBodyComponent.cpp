@@ -1,6 +1,4 @@
 #include "StaticRigidBodyComponent.h"
-#include <Clients/StaticRigidBody.h>
-#include <Utils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -9,8 +7,14 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzCore/Component/Entity.h>
+#include <AzFramework/Physics/CollisionBus.h>
 
+#include "System/CollisionLayerFilters.h"
 #include <JoltPhysics/ColliderComponentBus.h>
+#include <Clients/StaticRigidBody.h>
+#include <Utils.h>
+
+#include <Jolt/Physics/PhysicsSystem.h>
 
 namespace JoltPhysics
 {
@@ -89,8 +93,6 @@ namespace JoltPhysics
             configuration.m_startSimulationEnabled = false; // enable physics will enable this when called. TODO: remove
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
             ApplyJoltSpecificConfiguration();
-            
-            sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
 
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
@@ -239,7 +241,7 @@ namespace JoltPhysics
         {
             if (auto* joltBody = static_cast<JPH::Body*>(body->GetNativePointer()))
             {
-                constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltBroadPhaseLayer::Static));
+                constexpr auto newBPLayer = JPH::BroadPhaseLayer(static_cast<AZ::u8>(JoltPhysics::JoltBroadPhaseLayer::Static));
                 
                 AzPhysics::CollisionGroup group;
                 Physics::CollisionRequestBus::BroadcastResult(group,

@@ -16,6 +16,7 @@
 #include <JoltPhysics/Debug/JoltDebugConfiguration.h>
 #include <JoltPhysics/Debug/JoltDebugInterface.h>
 #include <Clients/RigidBody.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace JoltPhysics
 {
@@ -38,7 +39,7 @@ namespace JoltPhysics
         , protected AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
-        , private Physics::ColliderComponentEventBus::Handler
+        , private Physics::ColliderComponentEventBus::MultiHandler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AzFramework::BoundsRequestBus::Handler
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
@@ -131,7 +132,9 @@ namespace JoltPhysics
         void InitPhysicsTickHandler();
         void PrePhysicsTick();
         void OnConfigurationChanged();
-
+        
+        AZStd::unordered_set<AZ::EntityId> m_compoundShapeEntities;
+        
         JoltPhysics::Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
         
         EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.

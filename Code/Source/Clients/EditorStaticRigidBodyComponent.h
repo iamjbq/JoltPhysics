@@ -1,6 +1,10 @@
 #pragma once
 
+#include <AzCore/Component/EntityBus.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
+#include "RigidBody.h"
 
 namespace JoltPhysics
 {

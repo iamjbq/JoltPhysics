@@ -6,6 +6,8 @@
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 
+#include "RigidBody.h"
+
 namespace AzPhysics
 {
     struct SimulatedBody;
@@ -28,7 +30,7 @@ namespace JoltPhysics
         StaticRigidBodyComponent();
         explicit StaticRigidBodyComponent(AzPhysics::SceneHandle sceneHandle);
         StaticRigidBodyComponent(
-            const RigidBodyConfiguration& joltSpecificConfig,
+            const JoltPhysics::RigidBodyConfiguration& joltSpecificConfig,
             AzPhysics::SceneHandle sceneHandle);
         ~StaticRigidBodyComponent();
 

@@ -4,6 +4,9 @@
 
 #include <Clients/EditorStaticRigidBodyComponent.h>
 #include <Clients/StaticRigidBodyComponent.h>
+#include <UI/PropertyEditor/PropertyEditorAPI.h>
+
+#include "System/JoltSystem.h"
 
 namespace JoltPhysics
 {

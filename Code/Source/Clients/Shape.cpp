@@ -52,8 +52,12 @@ namespace JoltPhysics
 
     Shape::~Shape()
     {
-        m_joltShape->Release();
-        m_joltShape = nullptr;
+        for (auto material : m_materials)
+        {
+            material->GetJoltMaterial()->Release();
+        }
+        m_materials.clear();
+        m_joltShape.release();
         m_attachedBody = nullptr;
     }
 
