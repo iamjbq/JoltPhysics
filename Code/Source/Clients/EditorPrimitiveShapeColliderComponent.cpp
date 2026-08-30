@@ -515,7 +515,7 @@ namespace JoltPhysics
     void EditorPrimitiveShapeColliderComponent::UpdateCollider()
     {
         UpdateShapeConfiguration();
-        CreateStaticEditorCollider();
+        // CreateStaticEditorCollider();
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 
@@ -540,8 +540,9 @@ namespace JoltPhysics
         AZStd::shared_ptr<Physics::ColliderConfiguration> colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(
             GetColliderConfigurationScaled());
         AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = m_proxyShapeConfiguration.CloneCurrent();
-
+        
         if (m_proxyShapeConfiguration.IsNonUniformlyScaledPrimitive() || m_proxyShapeConfiguration.IsCylinderConfig())
+        // if (m_proxyShapeConfiguration.IsNonUniformlyScaledPrimitive())
         {
             auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), *(shapeConfig.get()),
                 m_proxyShapeConfiguration.m_subdivisionLevel, shapeConfig->m_scale);
@@ -1010,8 +1011,8 @@ namespace JoltPhysics
                 return colliderLocalTransform.TransformPoint(point);
             });
 
-        const AZ::Vector3 scale = m_proxyShapeConfiguration.m_cylinder.m_configuration.m_scale;
-        m_proxyShapeConfiguration.m_cylinder.m_configuration = Utils::CreateJoltCookedMeshConfiguration(samplePoints, scale).value(); // TODO: Crash here
+        // const AZ::Vector3 scale = m_proxyShapeConfiguration.m_cylinder.m_configuration.m_scale;
+        // m_proxyShapeConfiguration.m_cylinder.m_configuration = Utils::CreateJoltCookedMeshConfiguration(samplePoints, scale).value(); // TODO: Crash here
     }
 
     AZ::Aabb EditorPrimitiveShapeColliderComponent::GetWorldBounds() const
