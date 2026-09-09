@@ -1,4 +1,4 @@
-# JoltPhysics for O3DE
+# Jolt Physics for O3DE
 
 This repo is a standalone gem which adds [Jolt](https://github.com/jrouwe/JoltPhysics) as a physics backend to the Open 3D Engine. It uses O3DE AzPhysics interface and targets comparable functionality with the existing PhysX gems. The goal is to maintain API compatibility between PhysX and Jolt, with most of the implementation detail being hidden from the user.
 
