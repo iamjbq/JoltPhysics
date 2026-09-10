@@ -2,10 +2,10 @@
     "gem_name": "JoltPhysics",
     "version": "1.0.0",
     "display_name": "Jolt Physics",
-    "license": "",
-    "license_url": "",
+    "license": "MIT License",
+    "license_url": "https://github.com/iamjbq/JoltPhysics/blob/initial-release/LICENSE",
     "origin": "Jason Quinn",
-    "origin_url": "",
+    "origin_url": "https://github.com/iamjbq/JoltPhysics",
     "type": "Code",
     "summary": "An implementation of the Jolt physics system",
     "canonical_tags": [
@@ -20,8 +20,8 @@
         ""
     ],
     "icon_path": "preview.png",
-    "requirements": "Notice of any requirements for this Gem i.e. This requires X other gem",
-    "documentation_url": "Link to any documentation of your Gem",
+    "requirements": "",
+    "documentation_url": "",
     "dependencies": [
     ],
     "repo_uri": "",
