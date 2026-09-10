@@ -12,7 +12,6 @@ This repo is a standalone gem which adds [Jolt](https://github.com/jrouwe/JoltPh
 - [ ] Heightfield collider - partially complete
 - [ ] ConvexHull collider
 - [ ] Mesh collider
-- [ ] Other advanced colliders (static and mutable compound colliders)
 - [ ] Soft bodies
 - [ ] Joints
 - [ ] Vehicle systems (motors, wheels, controller)
