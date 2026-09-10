@@ -361,7 +361,7 @@ namespace JoltPhysics
 
     AzPhysics::SimulatedBodyHandle JoltScene::AddSimulatedBody(const AzPhysics::SimulatedBodyConfiguration* simulatedBodyConfig)
     {
-        // TODO: Missing character config, ragdoll, articulation
+        // TODO: Missing character config, ragdoll
 
         AzPhysics::SimulatedBody* newBody = nullptr;
         AZ::Crc32 newBodyCrc;
@@ -382,10 +382,6 @@ namespace JoltPhysics
         // else if (azrtti_istypeof<Physics::RagdollConfiguration>(simulatedBodyConfig))
         // {
         //     newBody = Internal::CreateRagdollBody(this, azdynamic_cast<const Physics::RagdollConfiguration*>(simulatedBodyConfig));
-        // }
-        // else if (azrtti_istypeof<ArticulationLinkConfiguration>(simulatedBodyConfig))
-        // {
-        //     newBody = JoltPhysics::CreateArticulationLink(azdynamic_cast<const ArticulationLinkConfiguration*>(simulatedBodyConfig));
         // }
         else
         {
