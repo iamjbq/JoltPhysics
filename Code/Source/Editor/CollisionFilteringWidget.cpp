@@ -72,5 +72,3 @@ namespace JoltPhysics
         }
     }
 }
-
-#include <Editor/moc_CollisionFilteringWidget.cpp>

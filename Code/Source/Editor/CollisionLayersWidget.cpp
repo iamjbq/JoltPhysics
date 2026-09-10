@@ -186,5 +186,3 @@ namespace JoltPhysics
         }
     } // namespace Editor
 } // namespace JoltPhysics
-
-#include <Editor/moc_CollisionLayersWidget.cpp>

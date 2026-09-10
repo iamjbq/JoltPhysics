@@ -1,4 +1,5 @@
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Utils.h>
@@ -115,7 +116,6 @@ namespace JoltPhysics
         };
 
         /// Widget for editing collision groups.
-        ///
         class CollisionGroupsWidget
             : public QWidget
         {

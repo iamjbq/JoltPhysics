@@ -9,7 +9,6 @@
 
 #include "EditorWindow.h"
 #include "LyViewPaneNames.h"
-// #include <LyViewPaneNames.h>
 
 namespace JoltPhysics
 {
@@ -117,5 +116,3 @@ namespace JoltPhysics
         }
     } // namespace Editor
 } // namespace JoltPhysics
-
-#include <Editor/moc_CollisionGroupWidget.cpp>

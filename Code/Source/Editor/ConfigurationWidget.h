@@ -24,7 +24,6 @@ namespace JoltPhysics
         // class PvdWidget;
 
         /// Widget for editing Jolt configuration and settings.
-        ///
         class ConfigurationWidget
             : public QWidget
             , public ConfigurationWindowRequestBus::Handler

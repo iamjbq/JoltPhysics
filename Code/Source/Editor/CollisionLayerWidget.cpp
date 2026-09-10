@@ -8,7 +8,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include "EditorWindow.h"
-// #include <LyViewPaneNames.h>
+#include "lyViewPaneNames.h"
 
 namespace JoltPhysics
 {
@@ -113,5 +113,3 @@ namespace JoltPhysics
         }
     } // namespace Editor
 } // namespace JoltPhysics
-
-#include <Editor/moc_CollisionLayerWidget.cpp>

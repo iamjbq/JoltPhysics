@@ -110,5 +110,3 @@ namespace JoltPhysics
         }
     }
 }
-
-#include <Editor/moc_ConfigurationWidget.cpp>

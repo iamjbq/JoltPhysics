@@ -27,7 +27,7 @@ namespace JoltPhysics
             m_checkBox->setContentsMargins(0, 0, 0, 0);
             m_checkBox->setEnabled(!cell.row.m_readOnly);
 
-            connect(m_checkBox, &QCheckBox::stateChanged, this, &Cell::OnCheckboxChanged);
+            connect(m_checkBox, &QCheckBox::checkStateChanged, this, &Cell::OnCheckboxChanged);
 
             QHBoxLayout* layout = new QHBoxLayout();
             layout->setAlignment(Qt::AlignHCenter);
@@ -584,5 +584,3 @@ namespace JoltPhysics
         }
     } // namespace Editor
 } // namespace JoltPhysics
-
-#include <Editor/moc_CollisionGroupsWidget.cpp>

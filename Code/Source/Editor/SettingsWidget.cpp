@@ -85,5 +85,3 @@ namespace JoltPhysics
         }
     } // Editor
 } // JoltPhysics
-
-#include <Editor/moc_SettingsWidget.cpp>
