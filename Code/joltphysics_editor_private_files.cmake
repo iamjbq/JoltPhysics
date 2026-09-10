@@ -6,8 +6,8 @@ set(FILES
     Source/Clients/ComponentDescriptors.h
     Source/Clients/EditorPrimitiveShapeColliderComponent.cpp
     Source/Clients/EditorPrimitiveShapeColliderComponent.h
-    Source/Clients/EditorShapeColliderComponent.cpp
-    Source/Clients/EditorShapeColliderComponent.h
+#    Source/Clients/EditorShapeColliderComponent.cpp
+#    Source/Clients/EditorShapeColliderComponent.h
     Source/Clients/EditorStaticRigidBodyComponent.cpp
     Source/Clients/EditorStaticRigidBodyComponent.h
     Source/Clients/EditorRigidBodyComponent.cpp

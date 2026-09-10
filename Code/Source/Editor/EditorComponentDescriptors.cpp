@@ -2,7 +2,7 @@
 
 #include <Clients/JoltPhysicsEditorSystemComponent.h>
 #include <Clients/EditorPrimitiveShapeColliderComponent.h>
-#include <Clients/EditorShapeColliderComponent.h>
+// #include <Clients/EditorShapeColliderComponent.h>
 #include <Clients/EditorRigidBodyComponent.h>
 #include <Clients/EditorStaticRigidBodyComponent.h>
 #include <Editor/JoltEditorSettingsRegistryManager.h>
@@ -16,7 +16,7 @@ namespace JoltPhysics
             JoltPhysicsEditorSystemComponent::CreateDescriptor(),
             JoltPhysicsSystemComponent::CreateDescriptor(),
             EditorPrimitiveShapeColliderComponent::CreateDescriptor(),
-            EditorShapeColliderComponent::CreateDescriptor(),
+            // EditorShapeColliderComponent::CreateDescriptor(),
             EditorRigidBodyComponent::CreateDescriptor(),
             EditorStaticRigidBodyComponent::CreateDescriptor(),
         };
