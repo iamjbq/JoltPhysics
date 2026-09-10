@@ -216,8 +216,7 @@ namespace JoltPhysics
         void UpdateCylinderCookedMesh();
 
         void UpdateCollider();
-        void CreateStaticEditorCollider();
-
+        
         void BuildDebugDrawMesh() const;
 
         EditorProxyShapeConfig m_proxyShapeConfiguration;

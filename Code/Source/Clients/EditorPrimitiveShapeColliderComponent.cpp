@@ -317,6 +317,7 @@ namespace JoltPhysics
 
     void EditorPrimitiveShapeColliderComponent::Activate()
     {
+        // Hide the config properties which don't correspond with Jolt collision shapes
         m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::CollisionLayer, false);
         m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
         m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::ContactOffset, false);
@@ -515,67 +516,7 @@ namespace JoltPhysics
     void EditorPrimitiveShapeColliderComponent::UpdateCollider()
     {
         UpdateShapeConfiguration();
-        // CreateStaticEditorCollider();
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
-    }
-
-    void EditorPrimitiveShapeColliderComponent::CreateStaticEditorCollider()
-    {
-        m_cachedAabbDirty = true;
-
-        if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
-        {
-            m_colliderDebugDraw.ClearCachedGeometry();
-            return;
-        }
-
-        AZ::Transform colliderTransform = GetWorldTM();
-        colliderTransform.ExtractUniformScale();
-        AzPhysics::StaticRigidBodyConfiguration configuration;
-        configuration.m_orientation = colliderTransform.GetRotation();
-        configuration.m_position = colliderTransform.GetTranslation();
-        configuration.m_entityId = GetEntityId();
-        configuration.m_debugName = GetEntity()->GetName();
-
-        AZStd::shared_ptr<Physics::ColliderConfiguration> colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(
-            GetColliderConfigurationScaled());
-        AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = m_proxyShapeConfiguration.CloneCurrent();
-        
-        if (m_proxyShapeConfiguration.IsNonUniformlyScaledPrimitive() || m_proxyShapeConfiguration.IsCylinderConfig())
-        // if (m_proxyShapeConfiguration.IsNonUniformlyScaledPrimitive())
-        {
-            auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), *(shapeConfig.get()),
-                m_proxyShapeConfiguration.m_subdivisionLevel, shapeConfig->m_scale);
-            Physics::ColliderConfiguration colliderConfigurationNoOffset = *colliderConfig;
-            colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
-            colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
-
-            if (convexConfig.has_value())
-            {
-                AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                    colliderConfigurationNoOffset, convexConfig.value());
-                configuration.m_colliderAndShapeData = shape;
-            }
-        }
-        else
-        {
-            configuration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
-        }
-
-        // if (m_sceneInterface)
-        // {
-        //     //remove the previous body if any
-        //     if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
-        //     {
-        //         m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-        //     }
-        //
-        //     m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
-        // }
-
-        m_colliderDebugDraw.ClearCachedGeometry();
-
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void EditorPrimitiveShapeColliderComponent::BuildDebugDrawMesh() const
@@ -600,7 +541,7 @@ namespace JoltPhysics
             {
                 JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_scaledPrimitive.value());
                 // physx::PxGeometryHolder pxGeometryHolder;
-                // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
+                // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached // TODO: learn how non-uniform shapes are created, and if ptr caching is needed
                 m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
             }
         }
