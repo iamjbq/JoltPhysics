@@ -14,7 +14,6 @@
 
 #include <Clients/EditorRigidBodyComponent.h>
 #include <Clients/EditorPrimitiveShapeColliderComponent.h>
-// #include <Clients/EditorShapeColliderComponent.h>
 #include <Clients/JoltPhysicsEditorSystemComponent.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Utils.h>
@@ -89,52 +88,6 @@ namespace JoltPhysics
             //     {
             //         AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
             //         allShapes.emplace_back(shape);
-            //     }
-            // }
-            
-            // for (const EditorShapeColliderComponent* shapeCollider : entity->FindComponents<EditorShapeColliderComponent>())
-            // {
-            //     const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
-            //     const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
-            //         shapeCollider->GetShapeConfigurations();
-            //     for (const auto& shapeConfig : shapeConfigs)
-            //     {
-            //         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, *shapeConfig);
-            //         AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
-            //         allShapes.emplace_back(shape);
-            //     }
-            // }
-            
-            // // TODO: not currently finding any child shapes to build compound shape
-            // if (entity->FindComponent(LmbrCentral::EditorCompoundShapeComponentTypeId))
-            // {
-            //     LmbrCentral::CompoundShapeConfiguration compoundShapeConfig;
-            //     LmbrCentral::CompoundShapeComponentRequestsBus::EventResult(
-            //         compoundShapeConfig, entity->GetId(), &LmbrCentral::CompoundShapeComponentRequests::GetCompoundShapeConfiguration);
-            //     
-            //     for (const auto shapeEntityId : compoundShapeConfig.GetChildEntities())
-            //     {
-            //         if (shapeEntityId.IsValid())
-            //         {
-            //             const auto* shapeEntity = AzToolsFramework::GetEntityById(shapeEntityId);
-            //             
-            //             for (const EditorShapeColliderComponent* shapeCollider : shapeEntity->FindComponents<EditorShapeColliderComponent>())
-            //             {
-            //                 if (shapeCollider == nullptr)
-            //                 {
-            //                     break;
-            //                 }
-            //                 const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
-            //                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
-            //                     shapeCollider->GetShapeConfigurations();
-            //                 for (const auto& shapeConfig : shapeConfigs)
-            //                 {
-            //                     AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(colliderConfig, *shapeConfig);
-            //                     AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
-            //                     allShapes.emplace_back(shape);
-            //                 }
-            //             }
-            //         }
             //     }
             // }
             
@@ -361,6 +314,7 @@ namespace JoltPhysics
 
     void EditorRigidBodyComponent::Activate()
     {
+        // Hide the config properties which don't correspond with Jolt bodies
         m_joltSpecificConfig.m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::MaterialSelection, false);
         m_joltSpecificConfig.m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Offset, false);
         m_joltSpecificConfig.m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::Tag, false);
@@ -646,7 +600,7 @@ namespace JoltPhysics
     void EditorRigidBodyComponent::OnColliderChanged()
     {
         AZ_Printf("EditorRigidBodyComponent::OnColliderChanged", "Collider config was changed")
-        //recreate the rigid body when collider changes
+        // Recreate the rigid body when collider changes
         SetShouldBeRecreated();
     }
 
