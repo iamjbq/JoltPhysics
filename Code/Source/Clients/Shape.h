@@ -22,6 +22,39 @@ namespace Physics
 namespace JoltPhysics
 {
     class Material;
+    
+    //! Shape configuration class for cylinder, not provided by AzPhysics
+    class CylinderShapeConfiguration : public Physics::ShapeConfiguration
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CylinderShapeConfiguration, AZ::SystemAllocator);
+        AZ_RTTI(CylinderShapeConfiguration, "{CF57C837-CD4B-4DF4-84AB-D893CA246564}", ShapeConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+        
+        CylinderShapeConfiguration(
+            float height = Physics::ShapeConstants::DefaultCylinderHeight,
+            float radius = Physics::ShapeConstants::DefaultCylinderRadius,
+            const AZ::Vector3& scale = Physics::ShapeConstants::DefaultScale,
+            AZ::u8 subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount
+            );
+            
+
+        Physics::ShapeType GetShapeType() const override { return Physics::ShapeType::Cylinder; }
+        AZStd::shared_ptr<ShapeConfiguration> Clone() const override
+        {
+            return AZStd::make_shared<CylinderShapeConfiguration>(*this);
+        }
+        
+        // AZ::Capsule ToCylinder(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
+        
+        float m_height = Physics::ShapeConstants::DefaultCapsuleHeight;
+        float m_radius = Physics::ShapeConstants::DefaultCapsuleRadius;
+        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
+
+        // private:
+        //     void OnHeightChanged();
+        //     void OnRadiusChanged();
+    };
 
     class Shape
         : public Physics::Shape

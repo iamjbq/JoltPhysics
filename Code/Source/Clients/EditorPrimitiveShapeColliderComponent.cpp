@@ -18,40 +18,9 @@
 
 namespace JoltPhysics
 {
-    void EditorProxyCylinderShapeConfig::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<EditorProxyCylinderShapeConfig>()
-                ->Version(1)
-                ->Field("Configuration", &EditorProxyCylinderShapeConfig::m_configuration)
-                ->Field("Subdivision", &EditorProxyCylinderShapeConfig::m_subdivisionCount)
-                ->Field("Height", &EditorProxyCylinderShapeConfig::m_height)
-                ->Field("Radius", &EditorProxyCylinderShapeConfig::m_radius)
-            ;
-
-            if (auto* editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<EditorProxyCylinderShapeConfig>("EditorProxyCylinderShapeConfig", "Proxy structure to wrap cylinder data")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_configuration,
-                        "Configuration", "Jolt cylinder collider configuration.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_subdivisionCount,
-                        "Subdivision", "Cylinder subdivision count.")
-                        ->Attribute(AZ::Edit::Attributes::Min, Utils::MinFrustumSubdivisions)
-                        ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxFrustumSubdivisions)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, "Height", "Cylinder height.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Radius", "Cylinder radius.")
-                    ;
-            }
-        }
-    }
-
     void EditorProxyShapeConfig::Reflect(AZ::ReflectContext* context)
     {
-        EditorProxyCylinderShapeConfig::Reflect(context);
+        CylinderShapeConfiguration::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -272,9 +241,9 @@ namespace JoltPhysics
         case Physics::ShapeType::Capsule:
             return m_capsule;
         case Physics::ShapeType::Cylinder:
-            return m_cylinder.m_configuration;
-        case Physics::ShapeType::CookedMesh:
-            return m_cookedMesh;
+            return m_cylinder;
+        // case Physics::ShapeType::CookedMesh:
+        //     return m_cookedMesh;
         default:
             AZ_Warning("EditorProxyShapeConfig", false, "Unsupported shape type");
             return m_box;
@@ -290,9 +259,9 @@ namespace JoltPhysics
         case Physics::ShapeType::Capsule:
             return AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_capsule);
         case Physics::ShapeType::Cylinder:
-            return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cylinder.m_configuration);
-        case Physics::ShapeType::CookedMesh:
-            return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cookedMesh);
+            return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cylinder);
+        // case Physics::ShapeType::CookedMesh:
+        //     return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cookedMesh);
         default:
             AZ_Warning("EditorProxyShapeConfig", false, "Unsupported shape type, defaulting to Box.");
             [[fallthrough]];
@@ -303,7 +272,7 @@ namespace JoltPhysics
 
     bool EditorProxyShapeConfig::IsNonUniformlyScaledPrimitive() const
     {
-        return m_hasNonUniformScale && (Utils::IsPrimitiveShape(GetCurrent()) || IsCylinderConfig());
+        return m_hasNonUniformScale && Utils::IsPrimitiveShape(GetCurrent());
     }
 
     bool EditorProxyShapeConfig::ShowingSubdivisionLevel() const
@@ -522,26 +491,21 @@ namespace JoltPhysics
     void EditorPrimitiveShapeColliderComponent::BuildDebugDrawMesh() const
     {
         const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
-        if (m_proxyShapeConfiguration.IsCylinderConfig())
+        if (!m_hasNonUniformScale)
         {
-            JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_proxyShapeConfiguration.m_cylinder.m_configuration);
-            // Utils::CreatePxGeometryFromConfig(
-            //     m_proxyShapeConfiguration.m_cylinder.m_configuration, pxGeometryHolder); // this will cause the native mesh to be cached
-            m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.m_cylinder.m_configuration, shapeIndex);
-        }
-        else if (!m_hasNonUniformScale)
-        {
+            // TODO: add cylinder to BuildMeshes
             m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.GetCurrent(), shapeIndex);
         }
         else
         {
+            // TODO: add cylinder to CreateConvexFromPrimitive since Jolt treats cylinders as primitive
             m_scaledPrimitive = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), m_proxyShapeConfiguration.GetCurrent(),
                 m_proxyShapeConfiguration.m_subdivisionLevel, m_proxyShapeConfiguration.GetCurrent().m_scale);
             if (m_scaledPrimitive.has_value())
             {
                 JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_scaledPrimitive.value());
                 // physx::PxGeometryHolder pxGeometryHolder;
-                // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached // TODO: learn how non-uniform shapes are created, and if ptr caching is needed
+                // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
                 m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
             }
         }
@@ -553,8 +517,8 @@ namespace JoltPhysics
         m_colliderDebugDraw.DrawMesh(
             debugDisplay,
             GetColliderConfigurationNoOffset(),
-            m_proxyShapeConfiguration.m_cylinder.m_configuration,
-            m_proxyShapeConfiguration.m_cylinder.m_configuration.m_scale,
+            m_proxyShapeConfiguration.m_cylinder,
+            m_proxyShapeConfiguration.m_cylinder.m_scale,
             shapeIndex);
     }
 

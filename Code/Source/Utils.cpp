@@ -296,7 +296,8 @@ namespace JoltPhysics
             return
                 shapeType == Physics::ShapeType::Box ||
                 shapeType == Physics::ShapeType::Capsule ||
-                shapeType == Physics::ShapeType::Sphere;
+                shapeType == Physics::ShapeType::Sphere ||
+                shapeType == Physics::ShapeType::Cylinder;
         }
 
         // Returns a point list of the frustum extents based on the supplied frustum parameters.

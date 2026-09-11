@@ -18,6 +18,7 @@
 
 #include <JoltPhysics/ColliderShapeBus.h>
 #include <JoltPhysics/EditorColliderComponentRequestBus.h>
+#include <Clients/Shape.h>
 
 #include <Editor/DebugDraw.h>
 
@@ -29,22 +30,6 @@ namespace AzPhysics
 
 namespace JoltPhysics
 {
-    //! Edit context wrapper for cylinder specific parameters and cached geometry.
-    struct EditorProxyCylinderShapeConfig
-    {
-        AZ_CLASS_ALLOCATOR(EditorProxyCylinderShapeConfig, AZ::SystemAllocator);
-        AZ_TYPE_INFO(EditorProxyCylinderShapeConfig, "{EEB0EF2E-F4AA-432B-B808-A30BDF2283DE}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        //! Cylinder specific parameters.
-        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
-        float m_height = Physics::ShapeConstants::DefaultCylinderHeight;
-        float m_radius = Physics::ShapeConstants::DefaultCylinderRadius;
-
-        //! Configuration stores the convex geometry for the cylinder and shape scale.
-        Physics::CookedMeshShapeConfiguration m_configuration;
-    };
-
     //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
@@ -59,7 +44,7 @@ namespace JoltPhysics
         Physics::SphereShapeConfiguration m_sphere;
         Physics::BoxShapeConfiguration m_box;
         Physics::CapsuleShapeConfiguration m_capsule;
-        EditorProxyCylinderShapeConfig m_cylinder;
+        JoltPhysics::CylinderShapeConfiguration m_cylinder;
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
         Physics::CookedMeshShapeConfiguration m_cookedMesh;
