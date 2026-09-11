@@ -352,7 +352,7 @@ namespace JoltPhysics
                 {
                     AZ::u32 index1 = vertex + 0;
                     AZ::u32 index2 = vertex + 1;
-                    AZ::u32 index3 = vertex + 3;
+                    AZ::u32 index3 = vertex + 2;
                     
                     AZ::Vector3 a = JoltMathConvert(JPH::Vec3(vertices[index1]));
                     AZ::Vector3 b = JoltMathConvert(JPH::Vec3(vertices[index2]));
