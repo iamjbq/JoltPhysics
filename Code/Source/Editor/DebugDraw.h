@@ -7,13 +7,17 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-// #include <PhysX/MeshAsset.h>
 #include <JoltPhysics/Debug/JoltDebugConfiguration.h>
 #include <JoltPhysics/Debug/JoltDebugInterface.h>
 
 namespace AZ
 {
     class ReflectContext;
+}
+
+namespace JPH
+{
+    class Shape;
 }
 
 namespace JoltPhysics
@@ -142,9 +146,9 @@ namespace JoltPhysics
                 AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
                 const AZ::Vector3& meshScale = AZ::Vector3::CreateOne()) const;
 
-            // void BuildTriangleMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const;
-            //
-            // void BuildConvexMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const;
+            void BuildTriangleMesh(JPH::Shape* meshData, AZ::u32 geomIndex) const;
+            
+            void BuildConvexMesh(JPH::Shape* meshData, AZ::u32 geomIndex) const;
 
             AZStd::string GetEntityName() const;
 

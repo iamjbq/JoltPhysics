@@ -17,6 +17,10 @@
 #include <JoltPhysics/Debug/JoltDebugInterface.h>
 #include <JoltPhysics/MathConversions.h>
 
+#include "Jolt/Geometry/ConvexHullBuilder.h"
+#include "Jolt/Physics/Collision/Shape/ConvexHullShape.h"
+#include "Jolt/Physics/Collision/Shape/MeshShape.h"
+
 namespace JoltPhysics
 {
     namespace DebugDraw
@@ -267,23 +271,23 @@ namespace JoltPhysics
             break;
             case Physics::ShapeType::CookedMesh:
             {
-                // const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
-                // const physx::PxBase* constMeshData = static_cast<const physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
-                //
-                // // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
-                // physx::PxBase* meshData = const_cast<physx::PxBase*>(constMeshData);
-                //
-                // if (meshData)
-                // {
-                //     if (meshData->is<physx::PxTriangleMesh>())
-                //     {
-                //         BuildTriangleMesh(meshData, geomIndex);
-                //     }
-                //     else
-                //     {
-                //         BuildConvexMesh(meshData, geomIndex);
-                //     }
-                // }
+                const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
+                const JPH::Shape* constShape = static_cast<const JPH::Shape*>(cookedMeshConfig.GetCachedNativeMesh());
+                
+                // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
+                JPH::Shape* shape = const_cast<JPH::Shape*>(constShape);
+                
+                if (shape)
+                {
+                    if (shape->GetSubType() == JPH::EShapeSubType::Mesh)
+                    {
+                        BuildTriangleMesh(shape, geomIndex);
+                    }
+                    else
+                    {
+                        BuildConvexMesh(shape, geomIndex);
+                    }
+                }
                 AZ_Error("Jolt", false,
                     "DebugDraw::Collider::BuildMeshes: Cannot currently pass CookedMesh configuration since it is not implemented. "
                     "Entity %s, ID: %llu", GetEntityName().c_str(), m_entityId);
@@ -313,78 +317,71 @@ namespace JoltPhysics
             }
         }
 
-        // void Collider::BuildTriangleMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const
-        // {
-        //     GeometryData& geom = m_geometry[geomIndex];
-        //
-        //     AZStd::unordered_map<int, AZStd::vector<AZ::u32>>& triangleIndexesByMaterialSlot = geom.m_triangleIndexesByMaterialSlot;
-        //     AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
-        //     AZStd::vector<AZ::Vector3>& points = geom.m_points;
-        //     AZStd::vector<AZ::u32>& indices = geom.m_indices;
-        //
-        //     physx::PxTriangleMeshGeometry mesh = physx::PxTriangleMeshGeometry(reinterpret_cast<physx::PxTriangleMesh*>(meshData));
-        //
-        //     const physx::PxTriangleMesh* triangleMesh = mesh.triangleMesh;
-        //     const physx::PxVec3* vertices = triangleMesh->getVertices();
-        //     const AZ::u32 vertCount = triangleMesh->getNbVertices();
-        //     const AZ::u32 triangleCount = triangleMesh->getNbTriangles();
-        //     const void* triangles = triangleMesh->getTriangles();
-        //
-        //     verts.reserve(vertCount);
-        //     indices.reserve(triangleCount * 3);
-        //     points.reserve(triangleCount * 3 * 2);
-        //     triangleIndexesByMaterialSlot.clear();
-        //
-        //     physx::PxTriangleMeshFlags triangleMeshFlags = triangleMesh->getTriangleMeshFlags();
-        //     const bool mesh16BitVertexIndices = triangleMeshFlags.isSet(physx::PxTriangleMeshFlag::Enum::e16_BIT_INDICES);
-        //
-        //     auto GetVertIndex = [=](AZ::u32 index) -> AZ::u32
-        //     {
-        //         if (mesh16BitVertexIndices)
-        //         {
-        //             return reinterpret_cast<const physx::PxU16*>(triangles)[index];
-        //         }
-        //         else
-        //         {
-        //             return reinterpret_cast<const physx::PxU32*>(triangles)[index];
-        //         }
-        //     };
-        //
-        //     for (AZ::u32 vertIndex = 0; vertIndex < vertCount; ++vertIndex)
-        //     {
-        //         AZ::Vector3 vert = PxMathConvert(vertices[vertIndex]);
-        //         verts.push_back(vert);
-        //     }
-        //
-        //     for (AZ::u32 triangleIndex = 0; triangleIndex < triangleCount * 3; triangleIndex += 3)
-        //     {
-        //         AZ::u32 index1 = GetVertIndex(triangleIndex);
-        //         AZ::u32 index2 = GetVertIndex(triangleIndex + 1);
-        //         AZ::u32 index3 = GetVertIndex(triangleIndex + 2);
-        //
-        //         AZ::Vector3 a = verts[index1];
-        //         AZ::Vector3 b = verts[index2];
-        //         AZ::Vector3 c = verts[index3];
-        //         indices.push_back(index1);
-        //         indices.push_back(index2);
-        //         indices.push_back(index3);
-        //
-        //         points.push_back(a);
-        //         points.push_back(b);
-        //         points.push_back(b);
-        //         points.push_back(c);
-        //         points.push_back(c);
-        //         points.push_back(a);
-        //
-        //         const physx::PxMaterialTableIndex materialIndex = triangleMesh->getTriangleMaterialIndex(triangleIndex / 3);
-        //         const int slotIndex = static_cast<const int>(materialIndex);
-        //         triangleIndexesByMaterialSlot[slotIndex].push_back(index1);
-        //         triangleIndexesByMaterialSlot[slotIndex].push_back(index2);
-        //         triangleIndexesByMaterialSlot[slotIndex].push_back(index3);
-        //     }
-        // }
-        //
-        // void Collider::BuildConvexMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const
+        void Collider::BuildTriangleMesh(JPH::Shape* meshData, AZ::u32 geomIndex) const
+        {
+            GeometryData& geom = m_geometry[geomIndex];
+        
+            AZStd::unordered_map<int, AZStd::vector<AZ::u32>>& triangleIndexesByMaterialSlot = geom.m_triangleIndexesByMaterialSlot;
+            AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
+            AZStd::vector<AZ::Vector3>& points = geom.m_points;
+            AZStd::vector<AZ::u32>& indices = geom.m_indices;
+        
+            auto* mesh = reinterpret_cast<JPH::MeshShape*>(meshData);
+            
+            const JPH::uint maxTriangles = mesh->GetStats().mNumTriangles;
+            JPH::Float3 vertices[maxTriangles * 3];
+            const JPH::PhysicsMaterial* materials[maxTriangles];
+            
+            verts.reserve(maxTriangles * 3);
+            indices.reserve(maxTriangles * 3);
+            points.reserve(maxTriangles * 3 * 2);
+            triangleIndexesByMaterialSlot.clear();
+            
+            // Start iterating triangles
+            JPH::Shape::GetTrianglesContext ctx;
+            mesh->GetTrianglesStart(ctx, mesh->GetLocalBounds(), mesh->GetCenterOfMass(), JPH::Quat::sIdentity(), JPH::Vec3::sOne());
+            for (;;)
+            {
+                // Fetch next triangles
+                int triangleCount = mesh->GetTrianglesNext(ctx, maxTriangles, vertices, materials);
+                if (triangleCount == 0)
+                    break;
+                
+                const JPH::PhysicsMaterial** material = materials;
+                for (int vertex = 0, vertexMax = 3 * triangleCount; vertex < vertexMax; vertex += 3, material++)
+                {
+                    AZ::u32 index1 = vertex + 0;
+                    AZ::u32 index2 = vertex + 1;
+                    AZ::u32 index3 = vertex + 3;
+                    
+                    AZ::Vector3 a = JoltMathConvert(JPH::Vec3(vertices[index1]));
+                    AZ::Vector3 b = JoltMathConvert(JPH::Vec3(vertices[index2]));
+                    AZ::Vector3 c = JoltMathConvert(JPH::Vec3(vertices[index3]));
+                    
+                    verts.push_back(a);
+                    verts.push_back(b);
+                    verts.push_back(c);
+                    
+                    indices.push_back(index1);
+                    indices.push_back(index2);
+                    indices.push_back(index3);
+                    
+                    points.push_back(a);
+                    points.push_back(b);
+                    points.push_back(b);
+                    points.push_back(c);
+                    points.push_back(c);
+                    points.push_back(a);
+                    
+                    const int slotIndex = vertex / 3; // TODO: corresponds to material slot index for asset in editor, so double check this works
+                    triangleIndexesByMaterialSlot[slotIndex].push_back(index1);
+                    triangleIndexesByMaterialSlot[slotIndex].push_back(index2);
+                    triangleIndexesByMaterialSlot[slotIndex].push_back(index3);
+                }
+            }
+        }
+        
+        // void Collider::BuildConvexMesh(JPH::Shape* meshData, AZ::u32 geomIndex) const
         // {
         //     GeometryData& geom = m_geometry[geomIndex];
         //
@@ -554,7 +551,8 @@ namespace JoltPhysics
             debugDisplay.SetLineWidth(ColliderLineWidth);
             debugDisplay.PopMatrix();
         }
-
+        
+        // TODO: don't provide a cooked mesh config
         void Collider::DrawMesh(AzFramework::DebugDisplayRequests& debugDisplay,
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::CookedMeshShapeConfiguration& meshConfig,
