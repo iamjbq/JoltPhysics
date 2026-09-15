@@ -62,7 +62,8 @@ namespace JoltPhysics
 
             void SetDisplayFlag(bool enable);
             bool IsDisplayFlagEnabled() const;
-
+            
+            //! Caches triangle or convex hull data for debug display. All Jolt shapes provide access to triangles for drawing
             void BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const;
 
             struct ElementDebugInfo
