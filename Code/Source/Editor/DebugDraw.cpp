@@ -240,77 +240,75 @@ namespace JoltPhysics
             verts.clear();
             indices.clear();
             points.clear();
-            
-            
 
-            // switch (shapeConfig.GetShapeType())
-            // {
-            // case Physics::ShapeType::Sphere:
-            // {
-            //     const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfig);
-            //     AZ::Vector3 boxMax = AZ::Vector3(sphereConfig.m_scale * sphereConfig.m_radius);
-            //     AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(-boxMax, boxMax);
-            //     BuildAABBVerts(aabb, verts, points, indices);
-            // }
-            // break;
-            // case Physics::ShapeType::Box:
-            // {
-            //     const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfig);
-            //     AZ::Vector3 boxMax = boxConfig.m_scale * 0.5f * boxConfig.m_dimensions;
-            //     AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(-boxMax, boxMax);
-            //     BuildAABBVerts(aabb, verts, points, indices);
-            // }
-            // break;
-            // case Physics::ShapeType::Capsule:
-            // {
-            //     const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfig);
-            //     LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
-            //         &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-            //         capsuleConfig.m_radius * capsuleConfig.m_scale.GetX(),
-            //         capsuleConfig.m_height * capsuleConfig.m_scale.GetZ(),
-            //         16, 8, verts, indices, points);
-            // }
-            // break;
-            // case Physics::ShapeType::CookedMesh:
-            // {
-            //     const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
-            //     const JPH::Shape* constShape = static_cast<const JPH::Shape*>(cookedMeshConfig.GetCachedNativeMesh());
-            //     
-            //     // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
-            //     JPH::Shape* shape = const_cast<JPH::Shape*>(constShape);
-            //     
-            //     if (shape)
-            //     {
-            //         if (shape->GetSubType() == JPH::EShapeSubType::Mesh)
-            //         {
-            //             BuildTriangleMesh(shape, geomIndex);
-            //         }
-            //         else
-            //         {
-            //             BuildConvexMesh(shape, geomIndex);
-            //         }
-            //     }
-            //     AZ_Error("Jolt", false,
-            //         "DebugDraw::Collider::BuildMeshes: Cannot currently pass CookedMesh configuration since it is not implemented. "
-            //         "Entity %s, ID: %llu", GetEntityName().c_str(), m_entityId);
-            //     break;
-            // }
-            // case Physics::ShapeType::PhysicsAsset:
-            // {
-            //     AZ_Error("Jolt", false,
-            //         "DebugDraw::Collider::BuildMeshes: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
-            //         "Please iterate over m_colliderShapes in the asset and call this function for each of them. "
-            //         "Entity %s, ID: %llu", GetEntityName().c_str(), m_entityId);
-            //     break;
-            // }
-            //
-            // default:
-            // {
-            //     AZ_Error("Jolt", false, "DebugDraw::Collider::BuildMeshes: Unsupported ShapeType %d. Entity %s, ID: %llu",
-            //         static_cast<AZ::u32>(shapeConfig.GetShapeType()), GetEntityName().c_str(), m_entityId);
-            //     break;
-            // }
-            // }
+            switch (shapeConfig.GetShapeType())
+            {
+            case Physics::ShapeType::Sphere:
+            {
+                const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfig);
+                AZ::Vector3 boxMax = AZ::Vector3(sphereConfig.m_scale * sphereConfig.m_radius);
+                AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(-boxMax, boxMax);
+                BuildAABBVerts(aabb, verts, points, indices);
+            }
+            break;
+            case Physics::ShapeType::Box:
+            {
+                const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfig);
+                AZ::Vector3 boxMax = boxConfig.m_scale * 0.5f * boxConfig.m_dimensions;
+                AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(-boxMax, boxMax);
+                BuildAABBVerts(aabb, verts, points, indices);
+            }
+            break;
+            case Physics::ShapeType::Capsule:
+            {
+                const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfig);
+                LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
+                    &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
+                    capsuleConfig.m_radius * capsuleConfig.m_scale.GetX(),
+                    capsuleConfig.m_height * capsuleConfig.m_scale.GetZ(),
+                    16, 8, verts, indices, points);
+            }
+            break;
+            case Physics::ShapeType::CookedMesh:
+            {
+                const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
+                const JPH::Shape* constShape = static_cast<const JPH::Shape*>(cookedMeshConfig.GetCachedNativeMesh());
+                
+                // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
+                JPH::Shape* shape = const_cast<JPH::Shape*>(constShape);
+                
+                if (shape)
+                {
+                    if (shape->GetSubType() == JPH::EShapeSubType::Mesh)
+                    {
+                        BuildTriangleMesh(shape, geomIndex);
+                    }
+                    else
+                    {
+                        BuildConvexMesh(shape, geomIndex);
+                    }
+                }
+                AZ_Error("Jolt", false,
+                    "DebugDraw::Collider::BuildMeshes: Cannot currently pass CookedMesh configuration since it is not implemented. "
+                    "Entity %s, ID: %llu", GetEntityName().c_str(), m_entityId);
+                break;
+            }
+            case Physics::ShapeType::PhysicsAsset:
+            {
+                AZ_Error("Jolt", false,
+                    "DebugDraw::Collider::BuildMeshes: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
+                    "Please iterate over m_colliderShapes in the asset and call this function for each of them. "
+                    "Entity %s, ID: %llu", GetEntityName().c_str(), m_entityId);
+                break;
+            }
+
+            default:
+            {
+                AZ_Error("Jolt", false, "DebugDraw::Collider::BuildMeshes: Unsupported ShapeType %d. Entity %s, ID: %llu",
+                    static_cast<AZ::u32>(shapeConfig.GetShapeType()), GetEntityName().c_str(), m_entityId);
+                break;
+            }
+            }
 
             if ((indices.size() / 3) >= TrianglesWarningThreshold)
             {
@@ -342,7 +340,7 @@ namespace JoltPhysics
             // Start iterating triangles
             JPH::Shape::GetTrianglesContext ctx;
             mesh->GetTrianglesStart(ctx, mesh->GetLocalBounds(), mesh->GetCenterOfMass(), JPH::Quat::sIdentity(), JPH::Vec3::sOne());
-            while (true)
+            for (;;)
             {
                 // Fetch next triangles
                 int triangleCount = mesh->GetTrianglesNext(ctx, maxTriangles, vertices, materials);
@@ -383,72 +381,53 @@ namespace JoltPhysics
             }
         }
         
-        void Collider::BuildConvexMesh(JPH::Shape* meshData, AZ::u32 geomIndex) const
-        {
-            GeometryData& geom = m_geometry[geomIndex];
-        
-            AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
-            AZStd::vector<AZ::Vector3>& points = geom.m_points;
-            
-            
-            auto* hull = reinterpret_cast<JPH::ConvexHullShape*>(meshData);
-            const JPH::uint faceCount = hull->GetNumFaces();
-            
-            points.reserve(hull->GetNumPoints());
-            
-            for (int faceIdx = 0; faceIdx < faceCount; faceIdx++)
-            {
-                JPH::uint numVerticesInFace = hull->GetNumVerticesInFace(faceIdx);
-                JPH::uint verticesIndices[numVerticesInFace];
-                
-                hull->GetFaceVertices(faceIdx, numVerticesInFace, verticesIndices);
-                
-                for (JPH::uint point = 0; point < numVerticesInFace; point++)
-                {
-                    // hull->GetPoint(verticesIndices[point]);
-                }
-            }
-        
-            // physx::PxConvexMeshGeometry mesh = physx::PxConvexMeshGeometry(reinterpret_cast<physx::PxConvexMesh*>(meshData));
-            // const physx::PxConvexMesh* convexMesh = mesh.convexMesh;
-            // const physx::PxU8* pxIndices = convexMesh->getIndexBuffer();
-            // const physx::PxVec3* pxVertices = convexMesh->getVertices();
-            // const AZ::u32 numPolys = convexMesh->getNbPolygons();
-            //
-            // for (AZ::u32 polygonIndex = 0; polygonIndex < numPolys; ++polygonIndex)
-            // {
-            //     physx::PxHullPolygon poly;
-            //     convexMesh->getPolygonData(polygonIndex, poly);
-            //
-            //     AZ::u32 index1 = 0;
-            //     AZ::u32 index2 = 1;
-            //     AZ::u32 index3 = 2;
-            //
-            //     const AZ::Vector3 a = PxMathConvert(pxVertices[pxIndices[poly.mIndexBase + index1]]);
-            //     const AZ::u32 triangleCount = poly.mNbVerts - 2;
-            //
-            //     for (AZ::u32 triangleIndex = 0; triangleIndex < triangleCount; ++triangleIndex)
-            //     {
-            //         AZ_Assert(index3 < poly.mNbVerts, "Implementation error: attempted to index outside range of polygon vertices.");
-            //
-            //         const AZ::Vector3 b = PxMathConvert(pxVertices[pxIndices[poly.mIndexBase + index2]]);
-            //         const AZ::Vector3 c = PxMathConvert(pxVertices[pxIndices[poly.mIndexBase + index3]]);
-            //
-            //         verts.push_back(a);
-            //         verts.push_back(b);
-            //         verts.push_back(c);
-            //
-            //         points.push_back(a);
-            //         points.push_back(b);
-            //         points.push_back(b);
-            //         points.push_back(c);
-            //         points.push_back(c);
-            //         points.push_back(a);
-            //
-            //         index2 = index3++;
-            //     }
-            // }
-        }
+        // void Collider::BuildConvexMesh(JPH::Shape* meshData, AZ::u32 geomIndex) const
+        // {
+        //     GeometryData& geom = m_geometry[geomIndex];
+        //
+        //     AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
+        //     AZStd::vector<AZ::Vector3>& points = geom.m_points;
+        //
+        //     physx::PxConvexMeshGeometry mesh = physx::PxConvexMeshGeometry(reinterpret_cast<physx::PxConvexMesh*>(meshData));
+        //     const physx::PxConvexMesh* convexMesh = mesh.convexMesh;
+        //     const physx::PxU8* pxIndices = convexMesh->getIndexBuffer();
+        //     const physx::PxVec3* pxVertices = convexMesh->getVertices();
+        //     const AZ::u32 numPolys = convexMesh->getNbPolygons();
+        //
+        //     for (AZ::u32 polygonIndex = 0; polygonIndex < numPolys; ++polygonIndex)
+        //     {
+        //         physx::PxHullPolygon poly;
+        //         convexMesh->getPolygonData(polygonIndex, poly);
+        //
+        //         AZ::u32 index1 = 0;
+        //         AZ::u32 index2 = 1;
+        //         AZ::u32 index3 = 2;
+        //
+        //         const AZ::Vector3 a = PxMathConvert(pxVertices[pxIndices[poly.mIndexBase + index1]]);
+        //         const AZ::u32 triangleCount = poly.mNbVerts - 2;
+        //
+        //         for (AZ::u32 triangleIndex = 0; triangleIndex < triangleCount; ++triangleIndex)
+        //         {
+        //             AZ_Assert(index3 < poly.mNbVerts, "Implementation error: attempted to index outside range of polygon vertices.");
+        //
+        //             const AZ::Vector3 b = PxMathConvert(pxVertices[pxIndices[poly.mIndexBase + index2]]);
+        //             const AZ::Vector3 c = PxMathConvert(pxVertices[pxIndices[poly.mIndexBase + index3]]);
+        //
+        //             verts.push_back(a);
+        //             verts.push_back(b);
+        //             verts.push_back(c);
+        //
+        //             points.push_back(a);
+        //             points.push_back(b);
+        //             points.push_back(b);
+        //             points.push_back(c);
+        //             points.push_back(c);
+        //             points.push_back(a);
+        //
+        //             index2 = index3++;
+        //         }
+        //     }
+        // }
 
         AZ::Color Collider::CalcDebugColor(const Physics::ColliderConfiguration& colliderConfig
             , const ElementDebugInfo& elementDebugInfo) const
@@ -573,6 +552,7 @@ namespace JoltPhysics
             debugDisplay.PopMatrix();
         }
         
+        // TODO: don't provide a cooked mesh config
         void Collider::DrawMesh(AzFramework::DebugDisplayRequests& debugDisplay,
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::CookedMeshShapeConfiguration& meshConfig,

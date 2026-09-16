@@ -197,11 +197,9 @@ namespace JoltPhysics
         case Physics::ShapeType::Capsule:
             m_capsule = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
             break;
-        case Physics::ShapeType::Cylinder:
-            m_cylinder = static_cast<const JoltPhysics::CylinderShapeConfiguration&>(shapeConfiguration);
-        // case Physics::ShapeType::CookedMesh:
-        //     m_cookedMesh = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
-        //     break;
+        case Physics::ShapeType::CookedMesh:
+            m_cookedMesh = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
+            break;
         default:
             AZ_Warning("EditorProxyShapeConfig", false, "Invalid shape type!");
         }
@@ -258,8 +256,6 @@ namespace JoltPhysics
         {
         case Physics::ShapeType::Sphere:
             return AZStd::make_shared<Physics::SphereShapeConfiguration>(m_sphere);
-        case Physics::ShapeType::Box:
-            return AZStd::make_shared<Physics::BoxShapeConfiguration>(m_box);
         case Physics::ShapeType::Capsule:
             return AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_capsule);
         case Physics::ShapeType::Cylinder:
@@ -269,6 +265,8 @@ namespace JoltPhysics
         default:
             AZ_Warning("EditorProxyShapeConfig", false, "Unsupported shape type, defaulting to Box.");
             [[fallthrough]];
+        case Physics::ShapeType::Box:
+            return AZStd::make_shared<Physics::BoxShapeConfiguration>(m_box);
         }
     }
 
@@ -394,6 +392,7 @@ namespace JoltPhysics
     {
         if (auto* joltSystem = GetJoltSystem())
         {
+            // TODO: wonder if this should be in Activate so updates don't have a delay after selecting the entity
             joltSystem->RegisterSystemConfigurationChangedEvent(m_joltConfigChangedHandler);
         }
     }
@@ -411,7 +410,6 @@ namespace JoltPhysics
         auto buildGameEntityScaledPrimitive = [gameEntity](AZStd::shared_ptr<Physics::ColliderConfiguration>& colliderConfig,
             Physics::ShapeConfiguration& shapeConfig, AZ::u8 subdivisionLevel)
         {
-            // TODO: Non-uniform primitive shapes need to be converted to convex hulls
             auto scaledPrimitiveConfig = Utils::CreateConvexFromPrimitive(*colliderConfig,
                 shapeConfig, subdivisionLevel, shapeConfig.m_scale);
             if (scaledPrimitiveConfig.has_value())
@@ -465,7 +463,7 @@ namespace JoltPhysics
         case Physics::ShapeType::Cylinder:
             UpdateCylinderCookedMesh();
             buildGameEntityScaledPrimitive(
-                sharedColliderConfig, m_proxyShapeConfiguration.m_cylinder, m_proxyShapeConfiguration.m_subdivisionLevel);
+                sharedColliderConfig, m_proxyShapeConfiguration.m_cylinder.m_configuration, m_proxyShapeConfiguration.m_subdivisionLevel);
             break;
         case Physics::ShapeType::CookedMesh:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
@@ -492,26 +490,25 @@ namespace JoltPhysics
 
     void EditorPrimitiveShapeColliderComponent::BuildDebugDrawMesh() const
     {
-        constexpr AZ::u32 shapeIndex = 0; // Only one mesh built from the primitive collider
-        JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_proxyShapeConfiguration.GetCurrent());
-        m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
-        
-        // if (!m_hasNonUniformScale)
-        // {
-        //     m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.GetCurrent(), shapeIndex);
-        // }
-        // else
-        // {
-        //     m_scaledPrimitive = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), m_proxyShapeConfiguration.GetCurrent(),
-        //         m_proxyShapeConfiguration.m_subdivisionLevel, m_proxyShapeConfiguration.GetCurrent().m_scale);
-        //     if (m_scaledPrimitive.has_value())
-        //     {
-        //         JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_scaledPrimitive.value());
-        //         // physx::PxGeometryHolder pxGeometryHolder;
-        //         // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
-        //         m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
-        //     }
-        // }
+        const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
+        if (!m_hasNonUniformScale)
+        {
+            // TODO: add cylinder to BuildMeshes
+            m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.GetCurrent(), shapeIndex);
+        }
+        else
+        {
+            // TODO: add cylinder to CreateConvexFromPrimitive since Jolt treats cylinders as primitive
+            m_scaledPrimitive = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), m_proxyShapeConfiguration.GetCurrent(),
+                m_proxyShapeConfiguration.m_subdivisionLevel, m_proxyShapeConfiguration.GetCurrent().m_scale);
+            if (m_scaledPrimitive.has_value())
+            {
+                JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_scaledPrimitive.value());
+                // physx::PxGeometryHolder pxGeometryHolder;
+                // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
+                m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
+            }
+        }
     }
 
     void EditorPrimitiveShapeColliderComponent::DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
@@ -881,11 +878,11 @@ namespace JoltPhysics
     {
         UpdateShapeConfigurationScale();
 
-        // if (m_proxyShapeConfiguration.IsCylinderConfig())
-        // {
-        //     // Create cooked cylinder convex
-        //     UpdateCylinderCookedMesh();
-        // }
+        if (m_proxyShapeConfiguration.IsCylinderConfig())
+        {
+            // Create cooked cylinder convex
+            UpdateCylinderCookedMesh();
+        }
     }
 
     void EditorPrimitiveShapeColliderComponent::UpdateCylinderCookedMesh()

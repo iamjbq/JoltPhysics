@@ -22,20 +22,19 @@
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 // #include <AzFramework/Physics/CollisionBus.h>
 
-#include <Jolt/Jolt.h>
-#include "Jolt/Math/Vec3.h"
-// #include <Jolt/Physics/Collision/ObjectLayer.h>
-#include "Jolt/Physics/Collision/Shape/Shape.h"
-#include "Jolt/Physics/Collision/Shape/BoxShape.h"
-#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
-#include "Jolt/Physics/Collision/Shape/SphereShape.h"
-#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
-#include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
-// #include "Jolt/Physics/Collision/Shape/MeshShape.h"
-// #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
-// #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+// #include <Jolt/Jolt.h>
+// #include "Jolt/Math/Vec3.h"
+// // #include <Jolt/Physics/Collision/ObjectLayer.h>
+// #include "Jolt/Physics/Collision/Shape/Shape.h"
+// #include "Jolt/Physics/Collision/Shape/BoxShape.h"
+// #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+// // #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
+// #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
+// // #include "Jolt/Physics/Collision/Shape/MeshShape.h"
+// // #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
+// #include "Jolt/Physics/Collision/Shape/SphereShape.h"
+// // #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
+// #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <JoltPhysics/Utils.h>
@@ -47,188 +46,248 @@
 
 #include <Utils.h>
 
-#include "Jolt/Geometry/ConvexHullBuilder.h"
-#include "Jolt/Physics/Collision/Shape/ConvexHullShape.h"
-
 namespace JoltPhysics
 {
     namespace Utils
     {
-        // AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(
-        //     const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale)
+        // JPH::ShapeSettings* CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration)
         // {
-        //     Physics::CookedMeshShapeConfiguration shapeConfig;
-        //
-        //     AZStd::vector<AZ::u8> cookedData;
-        //     bool cookingResult = false;
-        //     Physics::SystemRequestBus::BroadcastResult(cookingResult, &Physics::SystemRequests::CookConvexMeshToMemory,
-        //         points.data(), aznumeric_cast<AZ::u32>(points.size()), cookedData);
-        //     shapeConfig.SetCookedMeshData(cookedData.data(), cookedData.size(),
-        //         Physics::CookedMeshShapeConfiguration::MeshType::Convex);
-        //     shapeConfig.m_scale = scale;
-        //
-        //     if (!cookingResult)
+        //     if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
         //     {
-        //         AZ_Error("Jolt", false, "Jolt cooking of mesh data failed");
-        //         return {};
+        //         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
+        //             AZStd::to_string(shapeConfiguration.m_scale).c_str());
         //     }
         //
-        //     return shapeConfig;
+        //     auto shapeType = shapeConfiguration.GetShapeType();
+        //
+        //     switch (shapeType)
+        //     {
+        //     case Physics::ShapeType::Sphere:
+        //     {
+        //         const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
+        //         if (sphereConfig.m_radius <= 0.0f)
+        //         {
+        //             AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius);
+        //         }
+        //         return new JPH::SphereShapeSettings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement());
+        //     }
+        //     case Physics::ShapeType::Box:
+        //     {
+        //         const auto& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
+        //         if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
+        //         {
+        //             AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for box dimensions %s",
+        //                 AZStd::to_string(boxConfig.m_dimensions).c_str());
+        //         }
+        //         return new JPH::BoxShapeSettings(JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale));
+        //     }
+        //     case Physics::ShapeType::Capsule:
+        //     {
+        //         const auto& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
+        //         float height = capsuleConfig.m_height * capsuleConfig.m_scale.GetZ();
+        //         float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(), capsuleConfig.m_scale.GetY());
+        //
+        //         if (height <= 0.0f || radius <= 0.0f)
+        //         {
+        //             AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
+        //                 capsuleConfig.m_height, capsuleConfig.m_radius);
+        //         }
+        //
+        //         float halfHeight = 0.5f * height - radius;
+        //         if (halfHeight <= 0.0f)
+        //         {
+        //             AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in capsule configuration (height: %f, radius: %f)",
+        //                 capsuleConfig.m_height, capsuleConfig.m_radius);
+        //             halfHeight = std::numeric_limits<float>::epsilon();
+        //         }
+        //         return new JPH::CapsuleShapeSettings(halfHeight, radius);
+        //     }
+        //     case Physics::ShapeType::Native:
+        //     {
+        //         const auto& nativeShapeConfig = static_cast<const Physics::NativeShapeConfiguration&>(shapeConfiguration);
+        //         AZ::Vector3 scale = nativeShapeConfig.m_nativeShapeScale * nativeShapeConfig.m_scale;
+        //         AZ_UNUSED(scale)
+        //         // physx::PxBase* meshData = reinterpret_cast<physx::PxBase*>(nativeShapeConfig.m_nativeShapePtr);
+        //         // return MeshDataToPxGeometry(meshData, pxGeometry, scale);
+        //         return nullptr;
+        //     }
+        //     case Physics::ShapeType::CookedMesh:
+        //     {
+        //         const Physics::CookedMeshShapeConfiguration& constCookedMeshShapeConfig =
+        //             static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
+        //
+        //         // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+        //         // native mesh pointer that gets stored in the configuration.
+        //         Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+        //             const_cast<Physics::CookedMeshShapeConfiguration&>(constCookedMeshShapeConfig);
+        //         AZ_UNUSED(cookedMeshShapeConfig)
+        //         // physx::PxBase* nativeMeshObject = nullptr;
+        //         //
+        //         // // Use the cached mesh object if it is there, otherwise create one and save in the shape configuration
+        //         // if (cookedMeshShapeConfig.GetCachedNativeMesh())
+        //         // {
+        //         //     nativeMeshObject = static_cast<physx::PxBase*>(cookedMeshShapeConfig.GetCachedNativeMesh());
+        //         // }
+        //         // else
+        //         // {
+        //         //     nativeMeshObject = CreateNativeMeshObjectFromCookedData(
+        //         //         cookedMeshShapeConfig.GetCookedMeshData(),
+        //         //         cookedMeshShapeConfig.GetMeshType());
+        //         //
+        //         //     if (nativeMeshObject)
+        //         //     {
+        //         //         cookedMeshShapeConfig.SetCachedNativeMesh(nativeMeshObject);
+        //         //     }
+        //         //     else
+        //         //     {
+        //         //         AZ_Warning("Jolt Rigid Body", false,
+        //         //             "Unable to create a mesh object from the CookedMeshShapeConfiguration buffer. "
+        //         //             "Please check if the data was cooked correctly.");
+        //         //         return false;
+        //         //     }
+        //         // }
+        //         //
+        //         // return MeshDataToPxGeometry(nativeMeshObject, pxGeometry, cookedMeshShapeConfig.m_scale);
+        //         return nullptr;
+        //     }
+        //     case Physics::ShapeType::PhysicsAsset:
+        //     {
+        //         AZ_Assert(false,
+        //             "CreatePxGeometryFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
+        //             "Please iterate over m_colliderShapes in the asset and call this function for each of them.");
+        //         return nullptr;
+        //     }
+        //     case Physics::ShapeType::Heightfield:
+        //     {
+        //         const Physics::HeightfieldShapeConfiguration& constHeightfieldConfig =
+        //             static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+        //
+        //         // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+        //         // native heightfield pointer that gets stored in the configuration.
+        //         Physics::HeightfieldShapeConfiguration& heightfieldConfig =
+        //             const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+        //         AZ_UNUSED(heightfieldConfig)
+        //         // CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
+        //         // break;
+        //         return nullptr;
+        //     }
+        //     default:
+        //         AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType);
+        //         return nullptr;
+        //     }
         // }
 
-        AZStd::optional<Physics::ConvexHullShapeConfiguration> CreateConvexFromPrimitive(
-            const Physics::ColliderConfiguration& colliderConfig,
-            const Physics::ShapeConfiguration& primitiveShapeConfig, const AZ::Vector3& scale, [[maybe_unused]] AZ::u8 subdivisionLevel)
+        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(
+            const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale)
         {
-            JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(colliderConfig, primitiveShapeConfig);
-            
-            Physics::ConvexHullShapeConfiguration hullConfig;
-            int trianglesUsed;
-            
-            AZStd::vector<JPH::Vec3> verts;
-            AZStd::vector<JPH::Vec3> points;
-            AZStd::vector<JPH::uint32> indices;
-            // JPH::ConvexHullShapeSettings
-            const JPH::uint maxTriangles = 450; // Euler's formula triangle mesh to unique points
-            JPH::Float3 vertices[maxTriangles * 3];
-            const JPH::PhysicsMaterial* materials[1]; // Only one for a convex hull
-            
-            verts.reserve(maxTriangles * 3);
-            indices.reserve(maxTriangles * 3);
-            points.reserve(maxTriangles * 3 * 2);
-            
-            // Start iterating triangles
-            JPH::Shape::GetTrianglesContext ctx;
-            shape->GetTrianglesStart(ctx, shape->GetLocalBounds(), shape->GetCenterOfMass(), JPH::Quat::sIdentity(), JoltMathConvert(scale));
-            while (true)
+            Physics::CookedMeshShapeConfiguration shapeConfig;
+
+            AZStd::vector<AZ::u8> cookedData;
+            bool cookingResult = false;
+            Physics::SystemRequestBus::BroadcastResult(cookingResult, &Physics::SystemRequests::CookConvexMeshToMemory,
+                points.data(), aznumeric_cast<AZ::u32>(points.size()), cookedData);
+            shapeConfig.SetCookedMeshData(cookedData.data(), cookedData.size(),
+                Physics::CookedMeshShapeConfiguration::MeshType::Convex);
+            shapeConfig.m_scale = scale;
+
+            if (!cookingResult)
             {
-                // Fetch next triangles
-                trianglesUsed = shape->GetTrianglesNext(ctx, maxTriangles, vertices, materials);
-                if (trianglesUsed == 0)
-                    break;
-                
-                const JPH::PhysicsMaterial** material = materials;
-                for (int vertex = 0, vertexMax = 3 * trianglesUsed; vertex < vertexMax; vertex += 3, material++)
-                {
-                    JPH::uint32 index1 = vertex + 0;
-                    JPH::uint32 index2 = vertex + 1;
-                    JPH::uint32 index3 = vertex + 2;
-                    
-                    JPH::Vec3 a = JPH::Vec3(vertices[index1]);
-                    JPH::Vec3 b = JPH::Vec3(vertices[index2]);
-                    JPH::Vec3 c = JPH::Vec3(vertices[index3]);
-                    
-                    verts.push_back(a);
-                    verts.push_back(b);
-                    verts.push_back(c);
-                    
-                    indices.push_back(index1);
-                    indices.push_back(index2);
-                    indices.push_back(index3);
-                    
-                    points.push_back(a);
-                    points.push_back(b);
-                    points.push_back(b);
-                    points.push_back(c);
-                    points.push_back(c);
-                    points.push_back(a);
-                    
-                    // const int slotIndex = vertex / 3;
-                    // triangleIndexesByMaterialSlot[slotIndex].push_back(index1);
-                    // triangleIndexesByMaterialSlot[slotIndex].push_back(index2);
-                    // triangleIndexesByMaterialSlot[slotIndex].push_back(index3);
-                }
+                AZ_Error("Jolt", false, "Jolt cooking of mesh data failed");
+                return {};
             }
-            
-            hullConfig.m_vertexData = points.data();
-            hullConfig.m_vertexCount = points.size();
-            hullConfig.m_vertexStride = 
-            
-            // AZ::u8 subdivisionLevelClamped = AZ::GetClamp(subdivisionLevel, MinCapsuleSubdivisionLevel, MaxCapsuleSubdivisionLevel);
-            //
-            // auto applyColliderOffset = [&colliderConfig](const AZ::Vector3 point) {
-            //     return colliderConfig.m_rotation.TransformVector(point) + colliderConfig.m_position;
-            // };
-            //
-            // auto shapeType = primitiveShapeConfig.GetShapeType();
-            // switch (shapeType)
-            // {
-            // case Physics::ShapeType::Box:
-            // {
-            //     auto boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(primitiveShapeConfig);
-            //     AZStd::vector<AZ::Vector3> points;
-            //     points.reserve(8);
-            //     const float x = 0.5f * boxConfig.m_dimensions.GetX();
-            //     const float y = 0.5f * boxConfig.m_dimensions.GetY();
-            //     const float z = 0.5f * boxConfig.m_dimensions.GetZ();
-            //     points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, -z)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, +z)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, -z)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, +z)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, -z)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, +z)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, -z)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, +z)));
-            // return CreateJoltCookedMeshConfiguration(points, scale);
-            // }
-            // break;
-            // case Physics::ShapeType::Capsule:
-            // {
-            //     auto capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(primitiveShapeConfig);
-            //     const AZ::u8 numLayers = subdivisionLevelClamped;
-            //     const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
-            //     AZStd::vector<AZ::Vector3> points;
-            //     points.reserve(2 * numLayers * numPerLayer + 2);
-            //     points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(0.5f * capsuleConfig.m_height)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-0.5f * capsuleConfig.m_height)));
-            //     for (AZ::u8 layerIndex = 0; layerIndex < numLayers; layerIndex++)
-            //     {
-            //         const float theta = (layerIndex + 1) * AZ::Constants::HalfPi / aznumeric_cast<float>(numLayers);
-            //         const float layerRadius = capsuleConfig.m_radius * AZ::Sin(theta);
-            //         const float layerHeight = 0.5f * capsuleConfig.m_height + capsuleConfig.m_radius * (AZ::Cos(theta) - 1.0f);
-            //         for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
-            //         {
-            //             const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
-            //             points.push_back(applyColliderOffset(AZ::Vector3(
-            //                 layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
-            //             points.push_back(applyColliderOffset(AZ::Vector3(
-            //                 layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), -layerHeight)));
-            //         }
-            //     }
-            //     return CreateJoltCookedMeshConfiguration(points, scale);
-            // }
-            // break;
-            // case Physics::ShapeType::Sphere:
-            // {
-            //     auto sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(primitiveShapeConfig);
-            //     const AZ::u8 numLayers = 2 * subdivisionLevelClamped;
-            //     const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
-            //     AZStd::vector<AZ::Vector3> points;
-            //     points.reserve((numLayers - 1) * numPerLayer + 2);
-            //     points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(sphereConfig.m_radius)));
-            //     points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-sphereConfig.m_radius)));
-            //
-            //     for (AZ::u8 layerIndex = 1; layerIndex < numLayers; layerIndex++)
-            //     {
-            //         const float theta = layerIndex * AZ::Constants::Pi / aznumeric_cast<float>(numLayers);
-            //         const float layerRadius = sphereConfig.m_radius * AZ::Sin(theta);
-            //         const float layerHeight = sphereConfig.m_radius * AZ::Cos(theta);
-            //         for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
-            //         {
-            //             const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
-            //             points.push_back(applyColliderOffset(AZ::Vector3(
-            //                 layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
-            //         }
-            //     }
-            //     return CreateJoltCookedMeshConfiguration(points, scale);
-            // }
-            // break;
-            // case Physics::ShapeType::CookedMesh:
-            //     return static_cast<const Physics::CookedMeshShapeConfiguration&>(primitiveShapeConfig);
-            // default:
-            //     AZ_Error("Jolt Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
-            //     return {};
-            // }
+
+            return shapeConfig;
+        }
+
+        AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateConvexFromPrimitive(
+            const Physics::ColliderConfiguration& colliderConfig,
+            const Physics::ShapeConfiguration& primitiveShapeConfig, AZ::u8 subdivisionLevel, const AZ::Vector3& scale)
+        {
+            AZ::u8 subdivisionLevelClamped = AZ::GetClamp(subdivisionLevel, MinCapsuleSubdivisionLevel, MaxCapsuleSubdivisionLevel);
+
+            auto applyColliderOffset = [&colliderConfig](const AZ::Vector3 point) {
+                return colliderConfig.m_rotation.TransformVector(point) + colliderConfig.m_position;
+            };
+
+            auto shapeType = primitiveShapeConfig.GetShapeType();
+            switch (shapeType)
+            {
+            case Physics::ShapeType::Box:
+            {
+                auto boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(primitiveShapeConfig);
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(8);
+                const float x = 0.5f * boxConfig.m_dimensions.GetX();
+                const float y = 0.5f * boxConfig.m_dimensions.GetY();
+                const float z = 0.5f * boxConfig.m_dimensions.GetZ();
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, +z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, -z)));
+                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, +z)));
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Capsule:
+            {
+                auto capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve(2 * numLayers * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(0.5f * capsuleConfig.m_height)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-0.5f * capsuleConfig.m_height)));
+                for (AZ::u8 layerIndex = 0; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = (layerIndex + 1) * AZ::Constants::HalfPi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = capsuleConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = 0.5f * capsuleConfig.m_height + capsuleConfig.m_radius * (AZ::Cos(theta) - 1.0f);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), -layerHeight)));
+                    }
+                }
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::Sphere:
+            {
+                auto sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(primitiveShapeConfig);
+                const AZ::u8 numLayers = 2 * subdivisionLevelClamped;
+                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                AZStd::vector<AZ::Vector3> points;
+                points.reserve((numLayers - 1) * numPerLayer + 2);
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(sphereConfig.m_radius)));
+                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-sphereConfig.m_radius)));
+
+                for (AZ::u8 layerIndex = 1; layerIndex < numLayers; layerIndex++)
+                {
+                    const float theta = layerIndex * AZ::Constants::Pi / aznumeric_cast<float>(numLayers);
+                    const float layerRadius = sphereConfig.m_radius * AZ::Sin(theta);
+                    const float layerHeight = sphereConfig.m_radius * AZ::Cos(theta);
+                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    {
+                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                        points.push_back(applyColliderOffset(AZ::Vector3(
+                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                    }
+                }
+                return CreateJoltCookedMeshConfiguration(points, scale);
+            }
+            break;
+            case Physics::ShapeType::CookedMesh:
+                return static_cast<const Physics::CookedMeshShapeConfiguration&>(primitiveShapeConfig);
+            default:
+                AZ_Error("Jolt Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
+                return {};
+            }
         }
 
         bool IsPrimitiveShape(const Physics::ShapeConfiguration& shapeConfig)
@@ -333,25 +392,14 @@ namespace JoltPhysics
                 return nullptr;
             }
             
-            // Ensure scale is applying properly
-            JPH::Vec3 finalScale = JPH::Vec3::sOne();
-            JPH::Ref<JPH::Shape> newShape = outResult.Get();
-            if (newShape->IsValidScale(JoltMathConvert(shapeConfiguration.m_scale)))
-            {
-                finalScale = JoltMathConvert(shapeConfiguration.m_scale);
-            }
-            else
-            {
-                AZ_Warning("Jolt Rigid Body", false, "Scale was invalid for shape and will be ignored.")
-            }
-            
-            JPH::Ref offsetShapeSettings = new JPH::RotatedTranslatedShapeSettings(
+            JPH::Ref<JPH::RotatedTranslatedShapeSettings> offsetShapeSettings = new JPH::RotatedTranslatedShapeSettings(
                 JoltMathConvert(colliderConfiguration.m_position),
                 JoltMathConvert(colliderConfiguration.m_rotation),
-                newShape->ScaleShape(finalScale).Get()
-                );
+                outResult.Get());
             
-            return offsetShapeSettings->Create().Get();
+            auto offsetShape = offsetShapeSettings->Create().Get();
+            
+            return offsetShape;
         }
 
         bool ComputeJoltShapeFromConfig(
@@ -377,7 +425,7 @@ namespace JoltPhysics
                         return false;
                     }
 
-                    JPH::SphereShapeSettings settings(sphereConfig.m_radius, inMaterials.front());
+                    JPH::SphereShapeSettings settings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
                     break;
@@ -393,7 +441,7 @@ namespace JoltPhysics
                     }
 
                     JPH::BoxShapeSettings settings(
-                        JoltMathConvert(boxConfig.m_dimensions * 0.5f),
+                        JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale),
                         JPH::cDefaultConvexRadius,
                         inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
@@ -403,8 +451,8 @@ namespace JoltPhysics
             case Physics::ShapeType::Capsule:
                 {
                     const auto& capsuleConfig = dynamic_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
-                    float height = capsuleConfig.m_height;
-                    float radius = capsuleConfig.m_radius;
+                    float height = capsuleConfig.m_height * capsuleConfig.m_scale.GetZ();
+                    float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(), capsuleConfig.m_scale.GetY());
 
                     if (height <= 0.0f || radius <= 0.0f)
                     {
@@ -422,33 +470,6 @@ namespace JoltPhysics
                     }
 
                     JPH::CapsuleShapeSettings settings(halfHeight, radius, inMaterials.front());
-                    settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
-                    break;
-                }
-            case Physics::ShapeType::Cylinder:
-                {
-                    const auto& cylinderConfig = dynamic_cast<const JoltPhysics::CylinderShapeConfiguration&>(shapeConfiguration);
-                    float height = cylinderConfig.m_height;
-                    float radius = cylinderConfig.m_radius;
-
-                    if (height <= 0.0f || radius <= 0.0f)
-                    {
-                        AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for cylinder dimensions (height: %f, radius: %f)",
-                            cylinderConfig.m_height, cylinderConfig.m_radius)
-                        return false;
-                    }
-
-                    float halfHeight = 0.5f * height;
-                    if (halfHeight <= 0.0f)
-                    {
-                        // TODO: check if this is true for cylinders
-                        AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in cylinder configuration (height: %f, radius: %f)",
-                            cylinderConfig.m_height, cylinderConfig.m_radius)
-                        halfHeight = std::numeric_limits<float>::epsilon();
-                    }
-
-                    JPH::CylinderShapeSettings settings(halfHeight, radius, JPH::cDefaultConvexRadius, inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
                     break;
@@ -835,96 +856,97 @@ namespace JoltPhysics
         {
             return GetTransformScale(entityId) * GetNonUniformScale(entityId);
         }
-        
+
+        // TODO:
         namespace Geometry
         {
-            // PointList GenerateBoxPoints(const AZ::Vector3& min, const AZ::Vector3& max)
-            // {
-            //     PointList pointList;
-            //
-            //     auto size = max - min;
-            //
-            //     const auto minSamples = 2.f;
-            //     const auto maxSamples = 8.f;
-            //     const auto desiredSampleDelta = 2.f;
-            //
-            //     // How many sample in each axis
-            //     int numSamples[] =
-            //     {
-            //         static_cast<int>(AZ::GetClamp(size.GetX() / desiredSampleDelta, minSamples, maxSamples)),
-            //         static_cast<int>(AZ::GetClamp(size.GetY() / desiredSampleDelta, minSamples, maxSamples)),
-            //         static_cast<int>(AZ::GetClamp(size.GetZ() / desiredSampleDelta, minSamples, maxSamples))
-            //     };
-            //
-            //     float sampleDelta[] =
-            //     {
-            //         size.GetX() / static_cast<float>(numSamples[0] - 1),
-            //         size.GetY() / static_cast<float>(numSamples[1] - 1),
-            //         size.GetZ() / static_cast<float>(numSamples[2] - 1),
-            //     };
-            //
-            //     for (auto i = 0; i < numSamples[0]; ++i)
-            //     {
-            //         for (auto j = 0; j < numSamples[1]; ++j)
-            //         {
-            //             for (auto k = 0; k < numSamples[2]; ++k)
-            //             {
-            //                 pointList.emplace_back(
-            //                     min.GetX() + i * sampleDelta[0],
-            //                     min.GetY() + j * sampleDelta[1],
-            //                     min.GetZ() + k * sampleDelta[2]
-            //                 );
-            //             }
-            //         }
-            //     }
-            //
-            //     return pointList;
-            // }
-            //
-            // PointList GenerateSpherePoints(float radius)
-            // {
-            //     PointList points;
-            //
-            //     int nSamples = static_cast<int>(radius * 5);
-            //     nSamples = AZ::GetClamp(nSamples, 5, 512);
-            //
-            //     // Draw arrows using Fibonacci sphere
-            //     float offset = 2.f / nSamples;
-            //     float increment = AZ::Constants::Pi * (3.f - sqrt(5.f));
-            //     for (int i = 0; i < nSamples; ++i)
-            //     {
-            //         float phi = ((i + 1) % nSamples) * increment;
-            //         float y = ((i * offset) - 1) + (offset / 2.f);
-            //         float r = aznumeric_cast<float>(sqrt(1 - pow(y, 2)));
-            //         float x = cos(phi) * r;
-            //         float z = sin(phi) * r;
-            //         points.emplace_back(x * radius, y * radius, z * radius);
-            //     }
-            //     return points;
-            // }
-            //
-            // PointList GenerateCylinderPoints(float height, float radius)
-            // {
-            //     PointList points;
-            //     AZ::Vector3 base(0.f, 0.f, -height * 0.5f);
-            //     AZ::Vector3 radiusVector(radius, 0.f, 0.f);
-            //
-            //     const auto sides = AZ::GetClamp(radius, 3.f, 8.f);
-            //     const auto segments = AZ::GetClamp(height * 0.5f, 2.f, 8.f);
-            //     const auto angleDelta = AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoPi / sides);
-            //     const auto segmentDelta = height / (segments - 1);
-            //     for (auto segment = 0; segment < segments; ++segment)
-            //     {
-            //         for (auto side = 0; side < sides; ++side)
-            //         {
-            //             auto point = base + radiusVector;
-            //             points.emplace_back(point);
-            //             radiusVector = angleDelta.TransformVector(radiusVector);
-            //         }
-            //         base += AZ::Vector3(0, 0, segmentDelta);
-            //     }
-            //     return points;
-            // }
+            PointList GenerateBoxPoints(const AZ::Vector3& min, const AZ::Vector3& max)
+            {
+                PointList pointList;
+
+                auto size = max - min;
+
+                const auto minSamples = 2.f;
+                const auto maxSamples = 8.f;
+                const auto desiredSampleDelta = 2.f;
+
+                // How many sample in each axis
+                int numSamples[] =
+                {
+                    static_cast<int>(AZ::GetClamp(size.GetX() / desiredSampleDelta, minSamples, maxSamples)),
+                    static_cast<int>(AZ::GetClamp(size.GetY() / desiredSampleDelta, minSamples, maxSamples)),
+                    static_cast<int>(AZ::GetClamp(size.GetZ() / desiredSampleDelta, minSamples, maxSamples))
+                };
+
+                float sampleDelta[] =
+                {
+                    size.GetX() / static_cast<float>(numSamples[0] - 1),
+                    size.GetY() / static_cast<float>(numSamples[1] - 1),
+                    size.GetZ() / static_cast<float>(numSamples[2] - 1),
+                };
+
+                for (auto i = 0; i < numSamples[0]; ++i)
+                {
+                    for (auto j = 0; j < numSamples[1]; ++j)
+                    {
+                        for (auto k = 0; k < numSamples[2]; ++k)
+                        {
+                            pointList.emplace_back(
+                                min.GetX() + i * sampleDelta[0],
+                                min.GetY() + j * sampleDelta[1],
+                                min.GetZ() + k * sampleDelta[2]
+                            );
+                        }
+                    }
+                }
+
+                return pointList;
+            }
+
+            PointList GenerateSpherePoints(float radius)
+            {
+                PointList points;
+
+                int nSamples = static_cast<int>(radius * 5);
+                nSamples = AZ::GetClamp(nSamples, 5, 512);
+
+                // Draw arrows using Fibonacci sphere
+                float offset = 2.f / nSamples;
+                float increment = AZ::Constants::Pi * (3.f - sqrt(5.f));
+                for (int i = 0; i < nSamples; ++i)
+                {
+                    float phi = ((i + 1) % nSamples) * increment;
+                    float y = ((i * offset) - 1) + (offset / 2.f);
+                    float r = aznumeric_cast<float>(sqrt(1 - pow(y, 2)));
+                    float x = cos(phi) * r;
+                    float z = sin(phi) * r;
+                    points.emplace_back(x * radius, y * radius, z * radius);
+                }
+                return points;
+            }
+
+            PointList GenerateCylinderPoints(float height, float radius)
+            {
+                PointList points;
+                AZ::Vector3 base(0.f, 0.f, -height * 0.5f);
+                AZ::Vector3 radiusVector(radius, 0.f, 0.f);
+
+                const auto sides = AZ::GetClamp(radius, 3.f, 8.f);
+                const auto segments = AZ::GetClamp(height * 0.5f, 2.f, 8.f);
+                const auto angleDelta = AZ::Quaternion::CreateRotationZ(AZ::Constants::TwoPi / sides);
+                const auto segmentDelta = height / (segments - 1);
+                for (auto segment = 0; segment < segments; ++segment)
+                {
+                    for (auto side = 0; side < sides; ++side)
+                    {
+                        auto point = base + radiusVector;
+                        points.emplace_back(point);
+                        radiusVector = angleDelta.TransformVector(radiusVector);
+                    }
+                    base += AZ::Vector3(0, 0, segmentDelta);
+                }
+                return points;
+            }
 
             // void GetBoxGeometry(const physx::PxBoxGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
             // {
