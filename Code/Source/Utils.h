@@ -9,19 +9,13 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/optional.h>
 
-#include <Jolt/Jolt.h>
-#include "Jolt/Math/Vec3.h"
+// #include <Jolt/Jolt.h>
 // #include <Jolt/Physics/Collision/ObjectLayer.h>
-#include "Jolt/Physics/Collision/Shape/Shape.h"
-#include "Jolt/Physics/Collision/Shape/BoxShape.h"
-#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+
 // #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
-#include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
 // #include "Jolt/Physics/Collision/Shape/MeshShape.h"
 // #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
-#include "Jolt/Physics/Collision/Shape/SphereShape.h"
 // #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 namespace AzPhysics
 {

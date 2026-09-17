@@ -14,6 +14,10 @@
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include "Jolt/Physics/Body/BodyCreationSettings.h"
 #include "Jolt/Physics/Collision/Shape/EmptyShape.h"
+#include "Jolt/Physics/Body/BodyLock.h"
+#include "Jolt/Physics/Collision/Shape/EmptyShape.h"
+#include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
+#include "Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h"
 
 #include <Utils.h>
 #include <Clients/Shape.h>
@@ -22,9 +26,6 @@
 #include <JoltPhysics/MathConversions.h>
 #include <JoltPhysics/NativeTypeIdentifiers.h>
 
-#include "Jolt/Physics/Body/BodyLock.h"
-#include "Jolt/Physics/Collision/Shape/EmptyShape.h"
-#include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
 
 namespace JoltPhysics
 {
