@@ -496,8 +496,8 @@ namespace JoltPhysics
             const Physics::SphereShapeConfiguration& sphereShapeConfig,
             const AZ::Vector3& colliderScale) const
         {
-            const float scaledSphereRadius =
-                (Utils::GetTransformScale(m_entityId) * colliderScale).GetMaxElement() * sphereShapeConfig.m_radius;
+            const float scaledSphereRadius = colliderScale.GetMaxElement() * sphereShapeConfig.m_radius;
+                // (Utils::GetTransformScale(m_entityId) * colliderScale).GetMaxElement() * sphereShapeConfig.m_radius;
 
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
             // debugDisplay.SetColor(CalcDebugColor(colliderConfig));
@@ -516,7 +516,8 @@ namespace JoltPhysics
             const AZ::Vector3& colliderScale) const
         {
             // The resulting scale is the product of the scale in the entity's transform and the collider scale.
-            const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
+            // const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
+            const AZ::Vector3 resultantScale = colliderScale;
 
             // Scale the box parameters using the desired method (uniform or non-uniform).
             const AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f * resultantScale;
@@ -540,12 +541,13 @@ namespace JoltPhysics
             AZStd::vector<AZ::u32> indices;
 
             // The resulting scale is the product of the scale in the entity's transform and the collider scale.
-            const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
+            // const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
+            const AZ::Vector3 resultantScale = colliderScale;
 
             // Scale the capsule parameters using the desired method (uniform or non-uniform).
             AZ::Vector2 scaledCapsuleParameters = AZ::Vector2(capsuleShapeConfig.m_radius, capsuleShapeConfig.m_height);
             scaledCapsuleParameters *= AZ::Vector2(AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()), resultantScale.GetZ());
-
+            
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
 
             // LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
@@ -571,7 +573,8 @@ namespace JoltPhysics
             const AZ::Vector3& colliderScale) const
         {
             // The resulting scale is the product of the scale in the entity's transform and the collider scale.
-            const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
+            // const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
+            const AZ::Vector3 resultantScale = colliderScale;
 
             // Scale the cylinder parameters using the desired method.
             AZ::Vector2 scaledCapsuleParameters = AZ::Vector2(cylinderShapeConfig.m_radius, cylinderShapeConfig.m_height);
