@@ -501,7 +501,7 @@ namespace JoltPhysics
 
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
             // debugDisplay.SetColor(CalcDebugColor(colliderConfig));
-            // debugDisplay.DrawBall(AZ::Vector3::CreateZero(), scaledSphereRadius);
+            // debugDisplay.DrawBall(AZ::Vector3::CreateZero(), scaledSphereRadius);c
             
             debugDisplay.SetColor(WireframeColor);
             debugDisplay.SetLineWidth(ColliderLineWidth);

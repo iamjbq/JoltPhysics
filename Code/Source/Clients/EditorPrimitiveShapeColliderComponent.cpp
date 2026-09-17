@@ -497,7 +497,7 @@ namespace JoltPhysics
     void EditorPrimitiveShapeColliderComponent::BuildDebugDrawMesh() const
     {
         const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
-        if (!m_hasNonUniformScale)
+        // if (!m_hasNonUniformScale)
         {
             m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.GetCurrent(), shapeIndex);
         }
@@ -545,16 +545,16 @@ namespace JoltPhysics
         switch (m_proxyShapeConfiguration.m_shapeType)
         {
         case Physics::ShapeType::Sphere:
-            m_colliderDebugDraw.DrawSphere(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_sphere);
+            m_colliderDebugDraw.DrawSphere(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_sphere, m_proxyShapeConfiguration.m_sphere.m_scale);
             break;
         case Physics::ShapeType::Box:
-            m_colliderDebugDraw.DrawBox(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_box);
+            m_colliderDebugDraw.DrawBox(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_box, m_proxyShapeConfiguration.m_box.m_scale);
             break;
         case Physics::ShapeType::Capsule:
-            m_colliderDebugDraw.DrawCapsule(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_capsule);
+            m_colliderDebugDraw.DrawCapsule(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_capsule, m_proxyShapeConfiguration.m_capsule.m_scale);
             break;
         case Physics::ShapeType::Cylinder:
-            m_colliderDebugDraw.DrawCylinder(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_cylinder);
+            m_colliderDebugDraw.DrawCylinder(debugDisplay, m_configuration, m_proxyShapeConfiguration.m_cylinder, m_proxyShapeConfiguration.m_cylinder.m_scale);
             break;
         }
     }
@@ -563,11 +563,11 @@ namespace JoltPhysics
     void EditorPrimitiveShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay) const
     {
-        if (!m_colliderDebugDraw.HasCachedGeometry())
-        {
-            BuildDebugDrawMesh();
-        }
-        else
+        // if (!m_colliderDebugDraw.HasCachedGeometry())
+        // {
+        //     BuildDebugDrawMesh();
+        // }
+        // else
         {
             DisplayPrimitiveCollider(debugDisplay); // DrawBox/Sphere/Capsule/Cylinder
         }
