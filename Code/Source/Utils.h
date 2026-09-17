@@ -89,9 +89,7 @@ namespace JoltPhysics
         //! @return Either a valid cooked mesh or none if the cooking failed.
         //!
         AZStd::optional<Physics::CookedMeshShapeConfiguration> CreateJoltCookedMeshConfiguration(const AZStd::vector<AZ::Vector3>& points, const AZ::Vector3& scale);
-
-        // JPH::ShapeSettings* CreateJoltShapeSettingsFromConfig(const Physics::ShapeConfiguration& shapeConfiguration);
-
+        
         JPH::Ref<JPH::Shape> CreateJoltShapeFromConfig(
             const Physics::ColliderConfiguration& colliderConfiguration,
             const Physics::ShapeConfiguration& shapeConfiguration
