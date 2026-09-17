@@ -22,19 +22,20 @@
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 // #include <AzFramework/Physics/CollisionBus.h>
 
-// #include <Jolt/Jolt.h>
-// #include "Jolt/Math/Vec3.h"
-// // #include <Jolt/Physics/Collision/ObjectLayer.h>
-// #include "Jolt/Physics/Collision/Shape/Shape.h"
-// #include "Jolt/Physics/Collision/Shape/BoxShape.h"
-// #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
-// // #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
+#include <Jolt/Jolt.h>
+#include <Jolt/Math/Vec3.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
+#include "Jolt/Physics/Collision/Shape/SphereShape.h"
+#include "Jolt/Physics/Collision/Shape/BoxShape.h"
+#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include "Jolt/Physics/Collision/Shape/CylinderShape.h"
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+// #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
 // #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
-// // #include "Jolt/Physics/Collision/Shape/MeshShape.h"
-// // #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
-// #include "Jolt/Physics/Collision/Shape/SphereShape.h"
-// // #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
-// #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+// #include "Jolt/Physics/Collision/Shape/MeshShape.h"
+// #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
+// #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
 
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <JoltPhysics/Utils.h>
@@ -470,6 +471,33 @@ namespace JoltPhysics
                     }
 
                     JPH::CapsuleShapeSettings settings(halfHeight, radius, inMaterials.front());
+                    settings.SetDensity(inMaterials.front()->GetDensity());
+                    outResult = settings.Create();
+                    break;
+                }
+            case Physics::ShapeType::Cylinder:
+                {
+                    const auto& cylinderConfig = dynamic_cast<const JoltPhysics::CylinderShapeConfiguration&>(shapeConfiguration);
+                    float height = cylinderConfig.m_height * cylinderConfig.m_scale.GetZ();
+                    float radius = cylinderConfig.m_radius * AZ::GetMax(cylinderConfig.m_scale.GetX(), cylinderConfig.m_scale.GetY());
+
+                    if (height <= 0.0f || radius <= 0.0f)
+                    {
+                        AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for cylinder dimensions (height: %f, radius: %f)",
+                            cylinderConfig.m_height, cylinderConfig.m_radius)
+                        return false;
+                    }
+
+                    float halfHeight = 0.5f * height;
+                    if (halfHeight <= 0.0f)
+                    {
+                        // TODO: check if this is true for cylinders
+                        AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in cylinder configuration (height: %f, radius: %f)",
+                            cylinderConfig.m_height, cylinderConfig.m_radius)
+                        halfHeight = std::numeric_limits<float>::epsilon();
+                    }
+
+                    JPH::CylinderShapeSettings settings(halfHeight, radius, JPH::cDefaultConvexRadius, inMaterials.front());
                     settings.SetDensity(inMaterials.front()->GetDensity());
                     outResult = settings.Create();
                     break;
