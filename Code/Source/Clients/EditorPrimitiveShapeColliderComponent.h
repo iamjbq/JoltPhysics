@@ -123,8 +123,6 @@ namespace JoltPhysics
         void Activate() override;
         void Deactivate() override;
 
-        void UpdateShapeConfiguration();
-
         // AzToolsFramework::EntitySelectionEvents overrides ...
         void OnSelected() override;
         void OnDeselected() override;
@@ -133,9 +131,9 @@ namespace JoltPhysics
         void Display(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
-        void DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
-        void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
-        void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void DisplayPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        // void DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        // void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
 
         // TransformBus overrides ...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -186,7 +184,8 @@ namespace JoltPhysics
         AZ::Transform GetColliderLocalTransform() const;
 
         AZ::u32 OnConfigurationChanged();
-        void UpdateShapeConfigurationScale();
+        void UpdateShapeConfiguration();
+        // void UpdateShapeConfigurationScale(); // This is redundant
 
         // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
@@ -196,9 +195,6 @@ namespace JoltPhysics
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
         AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
-
-        // Cylinder collider
-        void UpdateCylinderCookedMesh();
 
         void UpdateCollider();
         
