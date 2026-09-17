@@ -10,6 +10,8 @@
 #include <JoltPhysics/Debug/JoltDebugConfiguration.h>
 #include <JoltPhysics/Debug/JoltDebugInterface.h>
 
+#include <Clients/Shape.h>
+
 namespace AZ
 {
     class ReflectContext;
@@ -96,6 +98,11 @@ namespace JoltPhysics
             void DrawCapsule(AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig,
                 const Physics::CapsuleShapeConfiguration& capsuleShapeConfig,
+                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
+            
+            void DrawCylinder(AzFramework::DebugDisplayRequests& debugDisplay,
+                const Physics::ColliderConfiguration& colliderConfig,
+                const JoltPhysics::CylinderShapeConfiguration& cylinderShapeConfig,
                 const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
 
             void DrawMesh(AzFramework::DebugDisplayRequests& debugDisplay,

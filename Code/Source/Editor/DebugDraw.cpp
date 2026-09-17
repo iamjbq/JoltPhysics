@@ -30,7 +30,8 @@ namespace JoltPhysics
         const AZ::Color WarningColor(1.0f, 0.0f, 0.0f, 1.0f);
         const float WarningFrequency = 1.0f; // the number of times per second to flash
 
-        const AZ::Color WireframeColor(0.0f, 0.0f, 0.0f, 0.7f);
+        const AZ::Color WireframeColor = AZ::Colors::Cyan;
+        // const AZ::Color WireframeColor(0.0f, 0.0f, 0.0f, 0.7f);
         const float ColliderLineWidth = 2.0f;
 
         void OpenJoltSettingsWindow()
@@ -245,6 +246,7 @@ namespace JoltPhysics
             {
             case Physics::ShapeType::Sphere:
             {
+                // TODO: not sure we need to build a box around the sphere here
                 const auto& sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfig);
                 AZ::Vector3 boxMax = AZ::Vector3(sphereConfig.m_scale * sphereConfig.m_radius);
                 AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(-boxMax, boxMax);
@@ -269,6 +271,12 @@ namespace JoltPhysics
                     16, 8, verts, indices, points);
             }
             break;
+            case Physics::ShapeType::Cylinder:
+                {
+                    // const auto& cylinderConfig = static_cast<const JoltPhysics::CylinderShapeConfiguration&>(shapeConfig);
+                    // TODO: unscaled cylinder only
+                }
+                break;
             case Physics::ShapeType::CookedMesh:
             {
                 const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
@@ -328,22 +336,22 @@ namespace JoltPhysics
         
             auto* mesh = reinterpret_cast<JPH::MeshShape*>(meshData);
             
-            const JPH::uint maxTriangles = mesh->GetStats().mNumTriangles;
-            JPH::Float3 vertices[maxTriangles * 3];
-            const JPH::PhysicsMaterial* materials[maxTriangles];
+            // JPH::uint maxTriangles = mesh->GetStats().mNumTriangles;
+            JPH::Float3 vertices[MaxTrianglesRange * 3];
+            const JPH::PhysicsMaterial* materials[MaxTrianglesRange];
             
-            verts.reserve(maxTriangles * 3);
-            indices.reserve(maxTriangles * 3);
-            points.reserve(maxTriangles * 3 * 2);
+            verts.reserve(MaxTrianglesRange * 3);
+            indices.reserve(MaxTrianglesRange * 3);
+            points.reserve(MaxTrianglesRange * 3 * 2);
             triangleIndexesByMaterialSlot.clear();
             
             // Start iterating triangles
             JPH::Shape::GetTrianglesContext ctx;
             mesh->GetTrianglesStart(ctx, mesh->GetLocalBounds(), mesh->GetCenterOfMass(), JPH::Quat::sIdentity(), JPH::Vec3::sOne());
-            for (;;)
+            while (true)
             {
                 // Fetch next triangles
-                int triangleCount = mesh->GetTrianglesNext(ctx, maxTriangles, vertices, materials);
+                int triangleCount = mesh->GetTrianglesNext(ctx, MaxTrianglesRange, vertices, materials);
                 if (triangleCount == 0)
                     break;
                 
@@ -381,12 +389,12 @@ namespace JoltPhysics
             }
         }
         
-        // void Collider::BuildConvexMesh(JPH::Shape* meshData, AZ::u32 geomIndex) const
-        // {
-        //     GeometryData& geom = m_geometry[geomIndex];
+        void Collider::BuildConvexMesh([[maybe_unused]] JPH::Shape* meshData, [[maybe_unused]] AZ::u32 geomIndex) const
+        {
+        // GeometryData& geom = m_geometry[geomIndex];
         //
-        //     AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
-        //     AZStd::vector<AZ::Vector3>& points = geom.m_points;
+        // AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
+        // AZStd::vector<AZ::Vector3>& points = geom.m_points;
         //
         //     physx::PxConvexMeshGeometry mesh = physx::PxConvexMeshGeometry(reinterpret_cast<physx::PxConvexMesh*>(meshData));
         //     const physx::PxConvexMesh* convexMesh = mesh.convexMesh;
@@ -427,7 +435,7 @@ namespace JoltPhysics
         //             index2 = index3++;
         //         }
         //     }
-        // }
+        }
 
         AZ::Color Collider::CalcDebugColor(const Physics::ColliderConfiguration& colliderConfig
             , const ElementDebugInfo& elementDebugInfo) const
@@ -492,9 +500,11 @@ namespace JoltPhysics
                 (Utils::GetTransformScale(m_entityId) * colliderScale).GetMaxElement() * sphereShapeConfig.m_radius;
 
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
-            debugDisplay.SetColor(CalcDebugColor(colliderConfig));
-            debugDisplay.DrawBall(AZ::Vector3::CreateZero(), scaledSphereRadius);
+            // debugDisplay.SetColor(CalcDebugColor(colliderConfig));
+            // debugDisplay.DrawBall(AZ::Vector3::CreateZero(), scaledSphereRadius);
+            
             debugDisplay.SetColor(WireframeColor);
+            debugDisplay.SetLineWidth(ColliderLineWidth);
             debugDisplay.DrawWireSphere(AZ::Vector3::CreateZero(), scaledSphereRadius);
             debugDisplay.PopMatrix();
         }
@@ -510,13 +520,12 @@ namespace JoltPhysics
 
             // Scale the box parameters using the desired method (uniform or non-uniform).
             const AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f * resultantScale;
-
-            const AZ::Color& faceColor = CalcDebugColor(colliderConfig);
-
+            
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
-            debugDisplay.SetColor(faceColor);
-            debugDisplay.DrawSolidBox(-scaledBoxParameters, scaledBoxParameters);
+            // debugDisplay.SetColor(CalcDebugColor(colliderConfig));
+            // debugDisplay.DrawSolidBox(-scaledBoxParameters, scaledBoxParameters);
             debugDisplay.SetColor(WireframeColor);
+            debugDisplay.SetLineWidth(ColliderLineWidth);
             debugDisplay.DrawWireBox(-scaledBoxParameters, scaledBoxParameters);
             debugDisplay.PopMatrix();
         }
@@ -539,20 +548,42 @@ namespace JoltPhysics
 
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
 
-            LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
-                &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-                scaledCapsuleParameters.GetX(),
-                scaledCapsuleParameters.GetY(),
-                16, 8, verts, indices, points);
+            // LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
+            //     &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
+            //     scaledCapsuleParameters.GetX(),
+            //     scaledCapsuleParameters.GetY(),
+            //     16, 8, verts, indices, points);
 
-            const AZ::Color& faceColor = CalcDebugColor(colliderConfig);
-            debugDisplay.DrawTrianglesIndexed(verts, indices, faceColor);
-            debugDisplay.DrawLines(points, WireframeColor);
+            // const AZ::Color& faceColor = CalcDebugColor(colliderConfig);
+            // debugDisplay.DrawTrianglesIndexed(verts, indices, faceColor);
+            
+            const float straightHeight = scaledCapsuleParameters.GetY() - 2 * scaledCapsuleParameters.GetX();
+            debugDisplay.SetColor(WireframeColor);
             debugDisplay.SetLineWidth(ColliderLineWidth);
+            debugDisplay.DrawWireCapsule(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisY(), scaledCapsuleParameters.GetX(), straightHeight);
+            // debugDisplay.DrawLines(points, WireframeColor);
+            debugDisplay.PopMatrix();
+        }
+
+        void Collider::DrawCylinder(AzFramework::DebugDisplayRequests& debugDisplay,
+            const Physics::ColliderConfiguration& colliderConfig,
+            const JoltPhysics::CylinderShapeConfiguration& cylinderShapeConfig, 
+            const AZ::Vector3& colliderScale) const
+        {
+            // The resulting scale is the product of the scale in the entity's transform and the collider scale.
+            const AZ::Vector3 resultantScale = Utils::GetTransformScale(m_entityId) * colliderScale;
+
+            // Scale the cylinder parameters using the desired method.
+            AZ::Vector2 scaledCapsuleParameters = AZ::Vector2(cylinderShapeConfig.m_radius, cylinderShapeConfig.m_height);
+            scaledCapsuleParameters *= AZ::Vector2(AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()), resultantScale.GetZ());
+            
+            debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
+            debugDisplay.SetColor(WireframeColor);
+            debugDisplay.SetLineWidth(ColliderLineWidth);
+            debugDisplay.DrawWireCylinder(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), scaledCapsuleParameters.GetX(), scaledCapsuleParameters.GetY());
             debugDisplay.PopMatrix();
         }
         
-        // TODO: don't provide a cooked mesh config
         void Collider::DrawMesh(AzFramework::DebugDisplayRequests& debugDisplay,
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::CookedMeshShapeConfiguration& meshConfig,
