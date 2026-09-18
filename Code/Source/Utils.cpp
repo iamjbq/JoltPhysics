@@ -551,7 +551,7 @@ namespace JoltPhysics
 
             if (!isAssetShape)
             {
-                if (!hasNonUniformScale)
+                if (!hasNonUniformScale) // TODO: should check by shape type, not if uniform scale
                 {
                     if (JPH::Ref<JPH::Shape> shape = CreateJoltShapeFromConfig(colliderConfiguration, shapeConfiguration))
                     {
@@ -568,7 +568,6 @@ namespace JoltPhysics
                     auto convexPrimitive = Utils::CreateConvexFromPrimitive(colliderConfiguration, shapeConfiguration, subdivisionLevel, shapeConfiguration.m_scale);
                     if (convexPrimitive.has_value())
                     {
-                        // TODO: For now we aren't working with meshes
                         // if (CreatePxGeometryFromConfig(convexPrimitive.value(), geometryHolder))
                         // {
                         //     Physics::ColliderConfiguration colliderConfigurationNoOffset = colliderConfiguration;

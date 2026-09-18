@@ -25,15 +25,13 @@ namespace JoltPhysics
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorProxyShapeConfig>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("ShapeType", &EditorProxyShapeConfig::m_shapeType)
                 ->Field("Sphere", &EditorProxyShapeConfig::m_sphere)
                 ->Field("Box", &EditorProxyShapeConfig::m_box)
                 ->Field("Capsule", &EditorProxyShapeConfig::m_capsule)
                 ->Field("Cylinder", &EditorProxyShapeConfig::m_cylinder)
-                ->Field("HasNonUniformScale", &EditorProxyShapeConfig::m_hasNonUniformScale)
-                ->Field("SubdivisionLevel", &EditorProxyShapeConfig::m_subdivisionLevel)
-                ;
+                ->Field("HasNonUniformScale", &EditorProxyShapeConfig::m_hasNonUniformScale);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -60,14 +58,7 @@ namespace JoltPhysics
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_cylinder, "Cylinder", "Configuration of cylinder shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCylinderConfig)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_subdivisionLevel, "Subdivision level",
-                        "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.")
-                        ->Attribute(AZ::Edit::Attributes::Min, Utils::MinCapsuleSubdivisionLevel)
-                        ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxCapsuleSubdivisionLevel)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::ShowingSubdivisionLevel)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ;
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged);
             }
         }
     }
@@ -111,11 +102,10 @@ namespace JoltPhysics
             serializeContext->Class<EditorPrimitiveShapeColliderComponent, EditorComponentBase>()
                 ->Version(1)
                 ->Field("ShapeConfiguration", &EditorPrimitiveShapeColliderComponent::m_proxyShapeConfiguration)
+                ->Field("ColliderConfiguration", &EditorPrimitiveShapeColliderComponent::m_configuration)
                 ->Field("DebugDrawSettings", &EditorPrimitiveShapeColliderComponent::m_colliderDebugDraw)
                 ->Field("ComponentMode", &EditorPrimitiveShapeColliderComponent::m_componentModeDelegate)
-                ->Field("HasNonUniformScale", &EditorPrimitiveShapeColliderComponent::m_hasNonUniformScale)
-                ->Field("ColliderConfiguration", &EditorPrimitiveShapeColliderComponent::m_configuration)
-                ;
+                ->Field("HasNonUniformScale", &EditorPrimitiveShapeColliderComponent::m_hasNonUniformScale);
 
             if (auto editContext = serializeContext->GetEditContext())
             {
@@ -131,15 +121,14 @@ namespace JoltPhysics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_proxyShapeConfiguration, "Shape Configuration", "Configuration of the shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings", "Debug draw settings.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrimitiveShapeColliderComponent::OnConfigurationChanged)
-                    ;
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_colliderDebugDraw,
+                        "Debug draw settings", "Debug draw settings.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrimitiveShapeColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
     }
@@ -199,9 +188,6 @@ namespace JoltPhysics
             break;
         case Physics::ShapeType::Cylinder:
             m_cylinder = static_cast<const JoltPhysics::CylinderShapeConfiguration&>(shapeConfiguration);
-        // case Physics::ShapeType::CookedMesh:
-        //     m_cookedMesh = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
-        //     break;
         default:
             AZ_Warning("EditorProxyShapeConfig", false, "Invalid shape type!");
         }
@@ -244,8 +230,6 @@ namespace JoltPhysics
             return m_capsule;
         case Physics::ShapeType::Cylinder:
             return m_cylinder;
-        // case Physics::ShapeType::CookedMesh:
-        //     return m_cookedMesh;
         default:
             AZ_Warning("EditorProxyShapeConfig", false, "Unsupported shape type");
             return m_box;
@@ -264,9 +248,6 @@ namespace JoltPhysics
             return AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_capsule);
         case Physics::ShapeType::Cylinder:
             return AZStd::make_shared<JoltPhysics::CylinderShapeConfiguration>(m_cylinder);
-        // case Physics::ShapeType::CookedMesh:
-        //     return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cookedMesh);
-        [[fallthrough]];
         default:
             AZ_Warning("EditorProxyShapeConfig", false, "Unsupported shape type, defaulting to Box.");
             return nullptr;
@@ -494,54 +475,8 @@ namespace JoltPhysics
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 
-    void EditorPrimitiveShapeColliderComponent::BuildDebugDrawMesh() const
-    {
-        const AZ::u32 shapeIndex = 0; // There's only one mesh gets built from the primitive collider, hence use geomIndex 0.
-        // if (!m_hasNonUniformScale)
-        {
-            m_colliderDebugDraw.BuildMeshes(m_proxyShapeConfiguration.GetCurrent(), shapeIndex);
-        }
-        // else
-        // {
-        //     m_scaledPrimitive = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), m_proxyShapeConfiguration.GetCurrent(),
-        //         m_proxyShapeConfiguration.m_subdivisionLevel, m_proxyShapeConfiguration.GetCurrent().m_scale);
-        //     if (m_scaledPrimitive.has_value())
-        //     {
-        //         JPH::Ref<JPH::Shape> shape = Utils::CreateJoltShapeFromConfig(GetColliderConfiguration(), m_scaledPrimitive.value());
-        //         // physx::PxGeometryHolder pxGeometryHolder;
-        //         // Utils::CreatePxGeometryFromConfig(m_scaledPrimitive.value(), pxGeometryHolder); // this will cause the native mesh to be cached
-        //         m_colliderDebugDraw.BuildMeshes(m_scaledPrimitive.value(), shapeIndex);
-        //     }
-        // }
-    }
-
-    // void EditorPrimitiveShapeColliderComponent::DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
-    // {
-        // const AZ::u32 shapeIndex = 0;
-        // m_colliderDebugDraw.DrawMesh(
-        //     debugDisplay,
-        //     GetColliderConfigurationNoOffset(),
-        //     m_proxyShapeConfiguration.m_cylinder,
-        //     m_proxyShapeConfiguration.m_cylinder.m_scale,
-        //     shapeIndex);
-    // }
-
-    // void EditorPrimitiveShapeColliderComponent::DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
-    // {
-    //     if (m_scaledPrimitive.has_value())
-    //     {
-    //         const AZ::u32 shapeIndex = 0;
-    //         Physics::ColliderConfiguration colliderConfigNoOffset = m_configuration;
-    //         colliderConfigNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
-    //         colliderConfigNoOffset.m_position = AZ::Vector3::CreateZero();
-    //         m_colliderDebugDraw.DrawMesh(debugDisplay, colliderConfigNoOffset, m_scaledPrimitive.value(),
-    //             GetWorldTM().GetUniformScale() * m_cachedNonUniformScale, shapeIndex);
-    //     }
-    // }
-
     void EditorPrimitiveShapeColliderComponent::DisplayPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
-        // TODO: not being drawn with non-uniform scale being set 
         switch (m_proxyShapeConfiguration.m_shapeType)
         {
         case Physics::ShapeType::Sphere:
@@ -559,18 +494,10 @@ namespace JoltPhysics
         }
     }
     
-    // TODO: Remove any use of meshes
     void EditorPrimitiveShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay) const
     {
-        // if (!m_colliderDebugDraw.HasCachedGeometry())
-        // {
-        //     BuildDebugDrawMesh();
-        // }
-        // else
-        {
-            DisplayPrimitiveCollider(debugDisplay); // DrawBox/Sphere/Capsule/Cylinder
-        }
+        DisplayPrimitiveCollider(debugDisplay); // DrawBox/Sphere/Capsule/Cylinder
     }
 
     AZ::Vector3 EditorPrimitiveShapeColliderComponent::GetDimensions() const
@@ -634,7 +561,7 @@ namespace JoltPhysics
         {
             m_cachedAabb = JoltPhysics::Utils::GetColliderAabb(GetWorldTM()
                 , m_hasNonUniformScale
-                , m_proxyShapeConfiguration.m_subdivisionLevel
+                , 8 // Temporary value.
                 , m_proxyShapeConfiguration.GetCurrent()
                 , m_configuration);
             m_cachedAabbDirty = false;
@@ -642,12 +569,6 @@ namespace JoltPhysics
 
         return m_cachedAabb;
     }
-
-    // void EditorPrimitiveShapeColliderComponent::UpdateShapeConfigurationScale()
-    // {
-    //     auto& shapeConfiguration = m_proxyShapeConfiguration.GetCurrent();
-    //     shapeConfiguration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
-    // }
 
     void EditorPrimitiveShapeColliderComponent::EnablePhysics()
     {
@@ -864,8 +785,6 @@ namespace JoltPhysics
     {
         auto& shapeConfiguration = m_proxyShapeConfiguration.GetCurrent();
         shapeConfiguration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
-        
-        // UpdateShapeConfigurationScale(); // TODO: This is only called once from here
     }
 
     AZ::Aabb EditorPrimitiveShapeColliderComponent::GetWorldBounds() const

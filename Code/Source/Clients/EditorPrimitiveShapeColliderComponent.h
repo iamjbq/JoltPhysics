@@ -46,8 +46,6 @@ namespace JoltPhysics
         Physics::CapsuleShapeConfiguration m_capsule;
         JoltPhysics::CylinderShapeConfiguration m_cylinder;
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
-        AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
-        Physics::CookedMeshShapeConfiguration m_cookedMesh;
 
         bool IsSphereConfig() const;
         bool IsBoxConfig() const;
@@ -132,8 +130,6 @@ namespace JoltPhysics
             AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
         void DisplayPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
-        // void DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
-        // void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
 
         // TransformBus overrides ...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -185,7 +181,6 @@ namespace JoltPhysics
 
         AZ::u32 OnConfigurationChanged();
         void UpdateShapeConfiguration();
-        // void UpdateShapeConfigurationScale(); // This is redundant
 
         // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
@@ -197,8 +192,6 @@ namespace JoltPhysics
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         void UpdateCollider();
-        
-        void BuildDebugDrawMesh() const;
 
         EditorProxyShapeConfig m_proxyShapeConfiguration;
         Physics::ColliderConfiguration m_configuration;
