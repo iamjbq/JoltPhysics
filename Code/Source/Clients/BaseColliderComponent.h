@@ -98,7 +98,7 @@ namespace JoltPhysics
 
         /// Updates the scale of shape configurations to reflect the scale from the transform component.
         /// Specific collider components should override this function.
-        virtual void UpdateScaleForShapeConfigs();
+        virtual void UpdateScaleForShapeConfigs(){}
 
         ShapeInfoCache m_shapeInfoCache;
         AzPhysics::ShapeColliderPairList m_shapeConfigList;

@@ -47,10 +47,10 @@ set(FILES
 		Source/Clients/BoxColliderComponent.h
 		Source/Clients/CapsuleColliderComponent.cpp
 		Source/Clients/CapsuleColliderComponent.h
+		Source/Clients/CylinderColliderComponent.cpp
+		Source/Clients/CylinderColliderComponent.h
 		Source/Clients/SphereColliderComponent.cpp
 		Source/Clients/SphereColliderComponent.h
-        Source/Clients/ShapeColliderComponent.cpp
-		Source/Clients/ShapeColliderComponent.h
 
 		Source/Debug/JoltDebug.cpp
 		Source/Debug/JoltDebug.h

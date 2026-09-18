@@ -10,6 +10,7 @@
 
 #include <Clients/BoxColliderComponent.h>
 #include <Clients/CapsuleColliderComponent.h>
+#include <Clients/CylinderColliderComponent.h>
 #include <Clients/SphereColliderComponent.h>
 #include <Clients/EditorStaticRigidBodyComponent.h>
 #include <Utils.h>
@@ -411,7 +412,7 @@ namespace JoltPhysics
                 AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_proxyShapeConfiguration.m_capsule)) });
             break;
         case Physics::ShapeType::Cylinder:
-            colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
+            colliderComponent = gameEntity->CreateComponent<CylinderColliderComponent>();
             colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
                 AZStd::make_shared<JoltPhysics::CylinderShapeConfiguration>(m_proxyShapeConfiguration.m_cylinder)) });
             break;

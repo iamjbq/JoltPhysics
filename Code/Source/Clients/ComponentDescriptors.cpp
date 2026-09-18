@@ -5,8 +5,8 @@
 #include <Clients/BaseColliderComponent.h>
 #include <Clients/BoxColliderComponent.h>
 #include <Clients/CapsuleColliderComponent.h>
+#include <Clients/CylinderColliderComponent.h>
 #include <Clients/SphereColliderComponent.h>
-#include <Clients/ShapeColliderComponent.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Clients/StaticRigidBodyComponent.h>
 
@@ -21,7 +21,7 @@ namespace JoltPhysics
             BoxColliderComponent::CreateDescriptor(),
             SphereColliderComponent::CreateDescriptor(),
             CapsuleColliderComponent::CreateDescriptor(),
-            ShapeColliderComponent::CreateDescriptor(),
+            CylinderColliderComponent::CreateDescriptor(),
             RigidBodyComponent::CreateDescriptor(),
             StaticRigidBodyComponent::CreateDescriptor(),
         };

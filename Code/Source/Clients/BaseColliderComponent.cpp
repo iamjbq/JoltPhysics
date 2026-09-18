@@ -74,7 +74,6 @@ namespace JoltPhysics
             auto* shape = static_cast<JoltPhysics::Shape*>(shapes[0]->GetNativePointer());
             const auto* joltShape = static_cast<JPH::Shape*>(shape->GetNativePointer());
             
-            
             JPH::AABox shapeBounds = joltShape->GetLocalBounds();
             shapeBounds.Translate(joltShape->GetCenterOfMass());
 
@@ -254,14 +253,6 @@ namespace JoltPhysics
         ColliderShapeRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         ColliderComponentRequestBus::Handler::BusDisconnect();
-    }
-
-    void BaseColliderComponent::UpdateScaleForShapeConfigs()
-    {
-        // Overridden by each collider component
-        
-        // TODO: temp until a CylinderColliderComponent is made
-        m_shapeConfigList[0].second->m_scale = Utils::GetOverallScale(GetEntityId());
     }
 
     bool BaseColliderComponent::InitShapes()
