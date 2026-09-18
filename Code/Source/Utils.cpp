@@ -343,7 +343,7 @@ namespace JoltPhysics
                             cylinderConfig.m_height, cylinderConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
-                    
+                
                     JPH::Ref<JPH::CylinderShape> newCylinder = new JPH::CylinderShape(halfHeight, radius, JPH::cDefaultConvexRadius, joltMaterials.front());
                     newCylinder->SetDensity(joltMaterials.front()->GetDensity());
                     newShape = newCylinder;

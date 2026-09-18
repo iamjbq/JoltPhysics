@@ -387,7 +387,7 @@ namespace JoltPhysics
     {
         m_joltConfigChangedHandler.Disconnect();
     }
-    // TODO: the non-uniform scale doesn't appear to be making it to shape creation
+    
     void EditorPrimitiveShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto sharedColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(m_configuration);
