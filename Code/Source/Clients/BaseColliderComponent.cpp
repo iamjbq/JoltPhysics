@@ -259,6 +259,9 @@ namespace JoltPhysics
     void BaseColliderComponent::UpdateScaleForShapeConfigs()
     {
         // Overridden by each collider component
+        
+        // TODO: temp until a CylinderColliderComponent is made
+        m_shapeConfigList[0].second->m_scale = Utils::GetOverallScale(GetEntityId());
     }
 
     bool BaseColliderComponent::InitShapes()

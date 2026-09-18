@@ -27,6 +27,6 @@ namespace JoltPhysics
             return;
         }
 
-        m_shapeConfigList[0].second->m_scale = AZ::Vector3(Utils::GetTransformScale(GetEntityId()));
+        m_shapeConfigList[0].second->m_scale = Utils::GetOverallScale(GetEntityId());
     }
 } // JoltPhysics
