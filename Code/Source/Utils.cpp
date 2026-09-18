@@ -243,6 +243,13 @@ namespace JoltPhysics
         JPH::Ref<JPH::Shape> CreateJoltShapeFromConfig(const Physics::ColliderConfiguration& colliderConfiguration,
                                                        const Physics::ShapeConfiguration& shapeConfiguration)
         {
+            if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
+            {
+                AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
+                    AZStd::to_string(shapeConfiguration.m_scale).c_str())
+                return nullptr;
+            }
+            
             // TODO: maybe can be moved to body level AddShape before set?
             // We get the materials from the collider config here and extract them to set on a shape
             // We can't set Jolt materials on base shapes because we need to know the type
@@ -254,39 +261,7 @@ namespace JoltPhysics
                 joltMaterials[materialIndex] = materials[materialIndex]->GetJoltMaterial();
             }
 
-            JPH::Shape::ShapeResult outResult;
-            if (!Utils::ComputeJoltShapeFromConfig(shapeConfiguration, outResult, joltMaterials))
-            {
-                return nullptr;
-            }
-
-            if (outResult.HasError()) // This should never be true if the above condition passes
-            {
-                AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
-                return nullptr;
-            }
-            
-            JPH::Ref<JPH::RotatedTranslatedShapeSettings> offsetShapeSettings = new JPH::RotatedTranslatedShapeSettings(
-                JoltMathConvert(colliderConfiguration.m_position),
-                JoltMathConvert(colliderConfiguration.m_rotation),
-                outResult.Get());
-            
-            auto offsetShape = offsetShapeSettings->Create().Get();
-            
-            return offsetShape;
-        }
-
-        bool ComputeJoltShapeFromConfig(
-            const Physics::ShapeConfiguration& shapeConfiguration,
-            JPH::Shape::ShapeResult& outResult,
-            AZStd::vector<const JoltPhysicsMaterial*>& inMaterials)
-        {
-            if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
-            {
-                AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
-                    AZStd::to_string(shapeConfiguration.m_scale).c_str())
-                return false;
-            }
+            JPH::Ref<JPH::Shape> newShape = nullptr;
 
             switch (auto shapeType = shapeConfiguration.GetShapeType())
             {
@@ -296,12 +271,12 @@ namespace JoltPhysics
                     if (sphereConfig.m_radius <= 0.0f)
                     {
                         AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius)
-                        return false;
+                        return nullptr;
                     }
-
-                    JPH::SphereShapeSettings settings(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), inMaterials.front());
-                    settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
+                    
+                    JPH::Ref<JPH::SphereShape> newSphere = new JPH::SphereShape(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), joltMaterials.front());
+                    newSphere->SetDensity(joltMaterials.front()->GetDensity());
+                    newShape = newSphere;
                     break;
                 }
             case Physics::ShapeType::Box:
@@ -311,15 +286,15 @@ namespace JoltPhysics
                     {
                         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for box dimensions %s",
                             AZStd::to_string(boxConfig.m_dimensions).c_str())
-                        return false;
+                        return nullptr;
                     }
-
-                    JPH::BoxShapeSettings settings(
+                    
+                    JPH::Ref<JPH::BoxShape> newBox = new JPH::BoxShape(
                         JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale),
                         JPH::cDefaultConvexRadius,
-                        inMaterials.front());
-                    settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
+                        joltMaterials.front());
+                    newBox->SetDensity(joltMaterials.front()->GetDensity());
+                    newShape = newBox;
                     break;
                 }
             case Physics::ShapeType::Capsule:
@@ -327,12 +302,12 @@ namespace JoltPhysics
                     const auto& capsuleConfig = dynamic_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
                     float height = capsuleConfig.m_height * capsuleConfig.m_scale.GetZ();
                     float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(), capsuleConfig.m_scale.GetY());
-
+    
                     if (height <= 0.0f || radius <= 0.0f)
                     {
                         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
                             capsuleConfig.m_height, capsuleConfig.m_radius)
-                        return false;
+                        return nullptr;
                     }
 
                     float halfHeight = 0.5f * height - radius;
@@ -342,10 +317,10 @@ namespace JoltPhysics
                             capsuleConfig.m_height, capsuleConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
-
-                    JPH::CapsuleShapeSettings settings(halfHeight, radius, inMaterials.front());
-                    settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
+                    
+                    JPH::Ref<JPH::CapsuleShape> newCapsule = new JPH::CapsuleShape(halfHeight, radius, joltMaterials.front());
+                    newCapsule->SetDensity(joltMaterials.front()->GetDensity());
+                    newShape = newCapsule;
                     break;
                 }
             case Physics::ShapeType::Cylinder:
@@ -358,21 +333,20 @@ namespace JoltPhysics
                     {
                         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for cylinder dimensions (height: %f, radius: %f)",
                             cylinderConfig.m_height, cylinderConfig.m_radius)
-                        return false;
+                        return nullptr;
                     }
 
                     float halfHeight = 0.5f * height;
                     if (halfHeight <= 0.0f)
                     {
-                        // TODO: check if this is true for cylinders
                         AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in cylinder configuration (height: %f, radius: %f)",
                             cylinderConfig.m_height, cylinderConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
-
-                    JPH::CylinderShapeSettings settings(halfHeight, radius, JPH::cDefaultConvexRadius, inMaterials.front());
-                    settings.SetDensity(inMaterials.front()->GetDensity());
-                    outResult = settings.Create();
+                    
+                    JPH::Ref<JPH::CylinderShape> newCylinder = new JPH::CylinderShape(halfHeight, radius, JPH::cDefaultConvexRadius, joltMaterials.front());
+                    newCylinder->SetDensity(joltMaterials.front()->GetDensity());
+                    newShape = newCylinder;
                     break;
                 }
             case Physics::ShapeType::PhysicsAsset:
@@ -380,7 +354,7 @@ namespace JoltPhysics
                     AZ_Assert(false,
                         "CreateJoltShapeFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
                         "Please iterate over m_colliderShapes in the asset and call this function for each of them.")
-                    return false;
+                    return nullptr;
                 }
             case Physics::ShapeType::Heightfield:
                 {
@@ -397,10 +371,21 @@ namespace JoltPhysics
                 }
             default:
                 AZ_Warning("Jolt Rigid Body", false, "Shape not supported in Jolt. Shape Type: %d", shapeType)
-                return false;
+                return nullptr;
             }
 
-            return true;
+            if (!newShape.GetPtr())
+            {
+                AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
+                return nullptr;
+            }
+            
+            JPH::Ref<JPH::RotatedTranslatedShapeSettings> offsetShapeSettings = new JPH::RotatedTranslatedShapeSettings(
+                JoltMathConvert(colliderConfiguration.m_position),
+                JoltMathConvert(colliderConfiguration.m_rotation),
+                newShape);
+            
+            return offsetShapeSettings->Create().Get();
         }
 
         AZStd::vector<float> ConvertHeightfieldSamples(const Physics::HeightfieldShapeConfiguration& heightfield,

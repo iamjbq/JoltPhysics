@@ -95,11 +95,6 @@ namespace JoltPhysics
             const Physics::ShapeConfiguration& shapeConfiguration
         );
 
-        bool ComputeJoltShapeFromConfig(
-            const Physics::ShapeConfiguration& shapeConfiguration,
-            JPH::Shape::ShapeResult& outResult,
-            AZStd::vector<const JoltPhysicsMaterial*>& inMaterials);
-
         AZStd::vector<float> ConvertHeightfieldSamples(
             const Physics::HeightfieldShapeConfiguration& heightfield,
             const size_t startCol, const size_t startRow,

@@ -301,11 +301,13 @@ namespace JoltPhysics
         EditorPrimitiveColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
+        
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
         AZ::NonUniformScaleRequestBus::Event(
             entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
+        // Check if Non-Uniform Scale Component is on Entity
         m_hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entityId) != nullptr);
         m_proxyShapeConfiguration.m_hasNonUniformScale = m_hasNonUniformScale;
 
@@ -385,80 +387,36 @@ namespace JoltPhysics
     {
         m_joltConfigChangedHandler.Disconnect();
     }
-
+    // TODO: the non-uniform scale doesn't appear to be making it to shape creation
     void EditorPrimitiveShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto sharedColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(m_configuration);
         BaseColliderComponent* colliderComponent = nullptr;
 
-        auto buildGameEntityScaledPrimitive = [gameEntity](AZStd::shared_ptr<Physics::ColliderConfiguration>& colliderConfig,
-            Physics::ShapeConfiguration& shapeConfig, AZ::u8 subdivisionLevel)
-        {
-            auto scaledPrimitiveConfig = Utils::CreateConvexFromPrimitive(*colliderConfig,
-                shapeConfig, subdivisionLevel, shapeConfig.m_scale);
-            if (scaledPrimitiveConfig.has_value())
-            {
-                colliderConfig->m_rotation = AZ::Quaternion::CreateIdentity();
-                colliderConfig->m_position = AZ::Vector3::CreateZero();
-                BaseColliderComponent* colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
-                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig,
-                    AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledPrimitiveConfig.value())) });
-            }
-        };
-
         switch (m_proxyShapeConfiguration.m_shapeType)
         {
         case Physics::ShapeType::Sphere:
-            // if (!m_hasNonUniformScale)
-            {
-                colliderComponent = gameEntity->CreateComponent<SphereColliderComponent>();
-                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
-                    AZStd::make_shared<Physics::SphereShapeConfiguration>(m_proxyShapeConfiguration.m_sphere)) });
-            }
-            // else
-            // {
-            //     buildGameEntityScaledPrimitive(sharedColliderConfig, m_proxyShapeConfiguration.m_sphere, m_proxyShapeConfiguration.m_subdivisionLevel);
-            // }
+            colliderComponent = gameEntity->CreateComponent<SphereColliderComponent>();
+            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
+                AZStd::make_shared<Physics::SphereShapeConfiguration>(m_proxyShapeConfiguration.m_sphere)) });
             break;
         case Physics::ShapeType::Box:
-            // if (!m_hasNonUniformScale)
-            {
-                colliderComponent = gameEntity->CreateComponent<BoxColliderComponent>();
-                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
-                    AZStd::make_shared<Physics::BoxShapeConfiguration>(m_proxyShapeConfiguration.m_box)) });
-            }
-            // else
-            // {
-            //     buildGameEntityScaledPrimitive(sharedColliderConfig, m_proxyShapeConfiguration.m_box, m_proxyShapeConfiguration.m_subdivisionLevel);
-            // }
+            colliderComponent = gameEntity->CreateComponent<BoxColliderComponent>();
+            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
+                AZStd::make_shared<Physics::BoxShapeConfiguration>(m_proxyShapeConfiguration.m_box)) });
             break;
         case Physics::ShapeType::Capsule:
-            // if (!m_hasNonUniformScale)
-            {
-                colliderComponent = gameEntity->CreateComponent<CapsuleColliderComponent>();
-                colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
-                    AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_proxyShapeConfiguration.m_capsule)) });
-            }
-            // else
-            // {
-            //     buildGameEntityScaledPrimitive(sharedColliderConfig, m_proxyShapeConfiguration.m_capsule, m_proxyShapeConfiguration.m_subdivisionLevel);
-            // }
+            colliderComponent = gameEntity->CreateComponent<CapsuleColliderComponent>();
+            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
+                AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_proxyShapeConfiguration.m_capsule)) });
             break;
         case Physics::ShapeType::Cylinder:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
             colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
                 AZStd::make_shared<JoltPhysics::CylinderShapeConfiguration>(m_proxyShapeConfiguration.m_cylinder)) });
-            
-            // buildGameEntityScaledPrimitive(
-            //     sharedColliderConfig, m_proxyShapeConfiguration.m_cylinder, m_proxyShapeConfiguration.m_subdivisionLevel);
-            break;
-        case Physics::ShapeType::CookedMesh:
-            // colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
-            // colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(sharedColliderConfig,
-            //     AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_proxyShapeConfiguration.m_cookedMesh)) });
             break;
         default:
-            AZ_Warning("EditorColliderComponent", false, "Unsupported shape type for building game entity!");
+            AZ_Warning("EditorColliderComponent", false, "Unsupported shape type for building game entity! Shape Type: %d", m_proxyShapeConfiguration.m_shapeType);
             break;
         }
     }
@@ -561,7 +519,7 @@ namespace JoltPhysics
         {
             m_cachedAabb = JoltPhysics::Utils::GetColliderAabb(GetWorldTM()
                 , m_hasNonUniformScale
-                , 8 // Temporary value.
+                , 16 // Temporary value.
                 , m_proxyShapeConfiguration.GetCurrent()
                 , m_configuration);
             m_cachedAabbDirty = false;
