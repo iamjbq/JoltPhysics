@@ -573,7 +573,7 @@ namespace JoltPhysics
             debugDisplay.DepthTestOff();
             debugDisplay.SetColor(WireframeColor);
             debugDisplay.SetLineWidth(ColliderLineWidth);
-            debugDisplay.DrawWireCylinder(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), scaledCapsuleParameters.GetX(), scaledCapsuleParameters.GetY());
+            debugDisplay.DrawWireCylinder(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisY(), scaledCapsuleParameters.GetX(), scaledCapsuleParameters.GetY());
             debugDisplay.DepthTestOn();
             debugDisplay.PopMatrix();
         }
