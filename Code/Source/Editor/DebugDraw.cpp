@@ -497,15 +497,13 @@ namespace JoltPhysics
             const AZ::Vector3& colliderScale) const
         {
             const float scaledSphereRadius = colliderScale.GetMaxElement() * sphereShapeConfig.m_radius;
-                // (Utils::GetTransformScale(m_entityId) * colliderScale).GetMaxElement() * sphereShapeConfig.m_radius;
-
-            debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
-            // debugDisplay.SetColor(CalcDebugColor(colliderConfig));
-            // debugDisplay.DrawBall(AZ::Vector3::CreateZero(), scaledSphereRadius);c
             
+            debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
+            debugDisplay.DepthTestOff();
             debugDisplay.SetColor(WireframeColor);
             debugDisplay.SetLineWidth(ColliderLineWidth);
             debugDisplay.DrawWireSphere(AZ::Vector3::CreateZero(), scaledSphereRadius);
+            debugDisplay.DepthTestOn();
             debugDisplay.PopMatrix();
         }
 
@@ -523,11 +521,11 @@ namespace JoltPhysics
             const AZ::Vector3 scaledBoxParameters = boxShapeConfig.m_dimensions * 0.5f * resultantScale;
             
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
-            // debugDisplay.SetColor(CalcDebugColor(colliderConfig));
-            // debugDisplay.DrawSolidBox(-scaledBoxParameters, scaledBoxParameters);
+            debugDisplay.DepthTestOff();
             debugDisplay.SetColor(WireframeColor);
             debugDisplay.SetLineWidth(ColliderLineWidth);
             debugDisplay.DrawWireBox(-scaledBoxParameters, scaledBoxParameters);
+            debugDisplay.DepthTestOn();
             debugDisplay.PopMatrix();
         }
 
@@ -547,23 +545,14 @@ namespace JoltPhysics
             // Scale the capsule parameters using the desired method (uniform or non-uniform).
             AZ::Vector2 scaledCapsuleParameters = AZ::Vector2(capsuleShapeConfig.m_radius, capsuleShapeConfig.m_height);
             scaledCapsuleParameters *= AZ::Vector2(AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()), resultantScale.GetZ());
+            const float straightHeight = scaledCapsuleParameters.GetY() - 2 * scaledCapsuleParameters.GetX();
             
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
-
-            // LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
-            //     &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-            //     scaledCapsuleParameters.GetX(),
-            //     scaledCapsuleParameters.GetY(),
-            //     16, 8, verts, indices, points);
-
-            // const AZ::Color& faceColor = CalcDebugColor(colliderConfig);
-            // debugDisplay.DrawTrianglesIndexed(verts, indices, faceColor);
-            
-            const float straightHeight = scaledCapsuleParameters.GetY() - 2 * scaledCapsuleParameters.GetX();
+            debugDisplay.DepthTestOff();
             debugDisplay.SetColor(WireframeColor);
             debugDisplay.SetLineWidth(ColliderLineWidth);
             debugDisplay.DrawWireCapsule(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisY(), scaledCapsuleParameters.GetX(), straightHeight);
-            // debugDisplay.DrawLines(points, WireframeColor);
+            debugDisplay.DepthTestOn();
             debugDisplay.PopMatrix();
         }
 
@@ -581,9 +570,11 @@ namespace JoltPhysics
             scaledCapsuleParameters *= AZ::Vector2(AZ::GetMax(resultantScale.GetX(), resultantScale.GetY()), resultantScale.GetZ());
             
             debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
+            debugDisplay.DepthTestOff();
             debugDisplay.SetColor(WireframeColor);
             debugDisplay.SetLineWidth(ColliderLineWidth);
             debugDisplay.DrawWireCylinder(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), scaledCapsuleParameters.GetX(), scaledCapsuleParameters.GetY());
+            debugDisplay.DepthTestOn();
             debugDisplay.PopMatrix();
         }
         
