@@ -26,6 +26,8 @@ set(FILES
 		Source/JoltSceneQueryHelpers.cpp
 		Source/JoltSceneQueryHelpers.h
 
+		Source/Character/CharacterController.cpp
+		Source/Character/CharacterController.h
 
 		Source/Clients/DefaultWorldComponent.cpp
 		Source/Clients/DefaultWorldComponent.h
