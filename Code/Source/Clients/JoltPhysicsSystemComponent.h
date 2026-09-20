@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 
+#include <JoltPhysics/SystemComponentBus.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <Clients/DefaultWorldComponent.h>
 
@@ -34,6 +35,7 @@ namespace JoltPhysics
     class JoltPhysicsSystemComponent
         : public AZ::Component
         , public Physics::SystemRequestBus::Handler
+        , public JoltPhysics::SystemRequestsBus::Handler
         , private Physics::CollisionRequestBus::Handler
         , public AZ::TickBus::Handler
     {
@@ -51,6 +53,12 @@ namespace JoltPhysics
         ~JoltPhysicsSystemComponent();
 
     protected:
+        // JoltPhysics::SystemRequestBus overrides...
+        JPH::Ref<JPH::ConvexHullShape> CreateConvexHull(const void* vertices, AZ::u32 vertexNum, AZ::u32 vertexStride) override;
+        JPH::Ref<JPH::ConvexHullShape> CreateConvexHullFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) override;
+        JPH::Ref<JPH::MeshShape> CreateTriangleMeshFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) override;
+        JPH::Ref<JPH::HeightFieldShape> CreateHeightField(const float* samples, size_t numColumns, size_t numRows) override;
+        
         // Physics::SystemRequestBus overrides...
         AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
         void ReleaseNativeMeshObject(void* nativeMeshObject) override;

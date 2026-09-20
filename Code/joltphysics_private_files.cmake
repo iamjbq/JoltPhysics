@@ -1,6 +1,7 @@
 
 set(FILES
 		Include/JoltPhysics/JoltPhysicsBus.h
+		Include/JoltPhysics/SystemComponentBus.h
 		Include/JoltPhysics/JoltPhysicsTypeIds.h
 		Include/JoltPhysics/JoltRigidBodyInterface.h
 		Include/JoltPhysics/JoltPhysicsTypes.h
@@ -15,6 +16,8 @@ set(FILES
 		Include/JoltPhysics/ColliderComponentBus.h
 		Include/JoltPhysics/ColliderShapeBus.h
 		Include/JoltPhysics/NativeTypeIdentifiers.h
+		Include/JoltPhysics/MeshColliderComponentBus.h
+		Include/JoltPhysics/MeshAsset.h
 
 		Include/JoltPhysics/Debug/JoltDebugConfiguration.h
 		Include/JoltPhysics/Debug/JoltDebugInterface.h
@@ -57,6 +60,9 @@ set(FILES
 		Source/Debug/JoltDebug.cpp
 		Source/Debug/JoltDebug.h
 		Source/Debug/JoltDebugConfiguration.cpp
+		
+		Source/Pipeline/MeshAssetHandler.cpp
+		Source/Pipeline/MeshAssetHandler.h
 
 #		Source/System/JoltAllocator.cpp
 		Source/System/JoltAllocator.h

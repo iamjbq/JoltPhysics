@@ -13,6 +13,7 @@
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include "JoltPhysics/Material/JoltMaterialConfiguration.h"
 #include <JoltPhysics/Debug/JoltDebugInterface.h>
+#include <JoltPhysics/MeshAsset.h>
 
 namespace JoltPhysics
 {
@@ -20,6 +21,8 @@ namespace JoltPhysics
 
     void JoltPhysicsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        Pipeline::MeshAsset::Reflect(context);
+        
         // These were bundled in void ReflectPhysXOnlyApi(AZ::ReflectContext* context) in PhysX
         JoltSystemConfiguration::Reflect(context);
         MaterialConfiguration::Reflect(context);
@@ -87,7 +90,7 @@ namespace JoltPhysics
             m_physicsSystem.Unregister(this);
         }
     }
-
+    
     void JoltPhysicsSystemComponent::Init()
     {
         if (m_physicsSystem.Get() == nullptr)
@@ -115,6 +118,7 @@ namespace JoltPhysics
         m_defaultWorldComponent.Activate();
 
         Physics::SystemRequestBus::Handler::BusConnect();
+        JoltPhysics::SystemRequestsBus::Handler::BusConnect();
         Physics::CollisionRequestBus::Handler::BusConnect();
 
         ActivateSimulation();
@@ -124,7 +128,7 @@ namespace JoltPhysics
     {
         AZ::TickBus::Handler::BusDisconnect();
         Physics::CollisionRequestBus::Handler::BusDisconnect();
-        // JoltPhysicsRequestBus::Handler::BusDisconnect();
+        JoltPhysics::SystemRequestsBus::Handler::BusDisconnect();
         Physics::SystemRequestBus::Handler::BusDisconnect();
 
         m_defaultWorldComponent.Deactivate();
@@ -139,6 +143,26 @@ namespace JoltPhysics
             m_joltSystem->Shutdown();
             m_joltSystem = nullptr;
         }
+    }
+    
+    JPH::Ref<JPH::ConvexHullShape> JoltPhysicsSystemComponent::CreateConvexHull([[maybe_unused]] const void* vertices, [[maybe_unused]] AZ::u32 vertexNum, [[maybe_unused]] AZ::u32 vertexStride)
+    {
+        return nullptr;
+    }
+
+    JPH::Ref<JPH::ConvexHullShape> JoltPhysicsSystemComponent::CreateConvexHullFromCooked([[maybe_unused]] const void* cookedMeshData, [[maybe_unused]] AZ::u32 bufferSize)
+    {
+        return nullptr;
+    }
+
+    JPH::Ref<JPH::MeshShape> JoltPhysicsSystemComponent::CreateTriangleMeshFromCooked([[maybe_unused]] const void* cookedMeshData, [[maybe_unused]] AZ::u32 bufferSize)
+    {
+        return nullptr;
+    }
+
+    JPH::Ref<JPH::HeightFieldShape> JoltPhysicsSystemComponent::CreateHeightField([[maybe_unused]] const float* samples, [[maybe_unused]] size_t numColumns, [[maybe_unused]] size_t numRows)
+    {
+        return nullptr;
     }
 
     AZStd::shared_ptr<Physics::Shape> JoltPhysicsSystemComponent::CreateShape(
