@@ -56,6 +56,8 @@ set(FILES
 		Source/Clients/CylinderColliderComponent.h
 		Source/Clients/SphereColliderComponent.cpp
 		Source/Clients/SphereColliderComponent.h
+		Source/Clients/MeshColliderComponent.cpp
+		Source/Clients/MeshColliderComponent.h
 
 		Source/Debug/JoltDebug.cpp
 		Source/Debug/JoltDebug.h

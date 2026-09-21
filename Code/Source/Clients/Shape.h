@@ -109,7 +109,7 @@ namespace JoltPhysics
         JoltPhysics::JoltScene* GetScene();
         void ReleaseJoltShape(JPH::Shape* shape);
         
-        using JoltShapeUniquePtr = AZStd::unique_ptr<JPH::Shape, AZStd::function<void(JPH::Shape*)>>;
+        using JoltShapeUniquePtr = AZStd::unique_ptr<JPH::Shape, AZStd::function<void(JPH::Shape*)>>; // TODO: make this JPH::Ref<JPH::Shape>
 
         Shape() = default;
 

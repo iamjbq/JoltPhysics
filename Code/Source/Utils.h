@@ -154,6 +154,14 @@ namespace JoltPhysics
         //! Gets the overall scale, taking into account the scale from both the entity's Transform component and the
         //! Non-Uniform Scale component, if it is present.
         AZ::Vector3 GetOverallScale(AZ::EntityId entityId);
+        
+        //! Sets an array of material slots from Physics Asset.
+        //! If the configuration indicates that it should use the physics materials
+        //! assignment from the physics asset it will also use those materials for the slots.
+        //! If the shape configuration passed does not use Physics Asset this call won't do any operations.
+        //! @param shapeConfiguration Shape configuration with the information about Physics Assets.
+        //! @param materialSlots Output materials slots.
+        void SetMaterialsFromPhysicsAssetShape(const Physics::ShapeConfiguration& shapeConfiguration, Physics::MaterialSlots& materialSlots);
 
         namespace Geometry
         {

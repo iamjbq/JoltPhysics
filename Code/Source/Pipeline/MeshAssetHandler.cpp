@@ -77,7 +77,7 @@ namespace JoltPhysics
         AZ::Uuid MeshAssetHandler::GetComponentTypeId() const
         {
             // NOTE: This doesn't do anything when CanCreateComponent returns false
-            return AZ::Uuid("{1BC2A8DD-A8FC-4F9D-B94B-6C91BB96BC15}"); // EditorMeshColliderComponent // TODO: create EditorMeshColliderComponent and add Uuid
+            return AZ::Uuid("{9752D9BB-AA3C-4C93-A93A-E21B0D876679}"); // EditorMeshColliderComponent
         }
 
         bool MeshAssetHandler::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const

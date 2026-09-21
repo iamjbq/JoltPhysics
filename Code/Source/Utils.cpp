@@ -38,6 +38,7 @@
 // #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
 
 #include <Clients/JoltPhysicsSystemComponent.h>
+#include <JoltPhysics/MeshAsset.h>
 #include <JoltPhysics/Utils.h>
 #include <JoltPhysics/Material/JoltMaterialConfiguration.h>
 #include <JoltPhysics/MathConversions.h>
@@ -742,7 +743,52 @@ namespace JoltPhysics
             return GetTransformScale(entityId) * GetNonUniformScale(entityId);
         }
 
-        // TODO:
+        void SetMaterialsFromPhysicsAssetShape(const Physics::ShapeConfiguration& shapeConfiguration,
+            Physics::MaterialSlots& materialSlots)
+        {
+            if (shapeConfiguration.GetShapeType() != Physics::ShapeType::PhysicsAsset)
+            {
+                return;
+            }
+
+            const Physics::PhysicsAssetShapeConfiguration& assetConfiguration =
+                static_cast<const Physics::PhysicsAssetShapeConfiguration&>(shapeConfiguration);
+
+            if (!assetConfiguration.m_asset.GetId().IsValid())
+            {
+                // Set the default selection if there's no physics asset.
+                materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
+                return;
+            }
+
+            if (!assetConfiguration.m_asset.IsReady())
+            {
+                // The asset is valid but is still loading,
+                // Do not set the empty slots in this case to avoid the entity being in invalid state
+                return;
+            }
+
+            Pipeline::MeshAsset* meshAsset = assetConfiguration.m_asset.GetAs<Pipeline::MeshAsset>();
+            if (!meshAsset)
+            {
+                materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
+                AZ_Warning("Physics", false, "Invalid mesh asset in physics asset shape configuration.");
+                return;
+            }
+
+            // If it has to use the materials assets from the mesh.
+            if (assetConfiguration.m_useMaterialsFromAsset)
+            {
+                // Copy slots entirely, which also include the material assets assigned to them.
+                materialSlots = meshAsset->m_assetData.m_materialSlots;
+            }
+            else
+            {
+                // Set only the slots, but do not set the material assets.
+                materialSlots.SetSlots(meshAsset->m_assetData.m_materialSlots.GetSlotsNames());
+            }
+        }
+        
         namespace Geometry
         {
             PointList GenerateBoxPoints(const AZ::Vector3& min, const AZ::Vector3& max)
