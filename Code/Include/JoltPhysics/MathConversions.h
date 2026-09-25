@@ -10,7 +10,13 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Math/Vec3.h>
+#include <Jolt/Math/Float3.h>
 #include <Jolt/Geometry/AABox.h>
+
+AZ_FORCE_INLINE JPH::Float3 ToFloat3(const AZ::Vector3& inVec)
+{
+    return JPH::Float3(inVec.GetX(), inVec.GetY(), inVec.GetZ());
+}
 
 AZ_FORCE_INLINE JPH::Vec3 JoltMathConvert(const AZ::Vector3& inVec)
 {
