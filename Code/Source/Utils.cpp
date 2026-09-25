@@ -1,4 +1,3 @@
-
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
@@ -60,14 +59,16 @@ namespace JoltPhysics
             AZStd::vector<AZ::u8> cookedData;
             bool cookingResult = false;
             Physics::SystemRequestBus::BroadcastResult(cookingResult, &Physics::SystemRequests::CookConvexMeshToMemory,
-                points.data(), aznumeric_cast<AZ::u32>(points.size()), cookedData);
+                                                       points.data(), aznumeric_cast<AZ::u32>(points.size()),
+                                                       cookedData);
             shapeConfig.SetCookedMeshData(cookedData.data(), cookedData.size(),
-                Physics::CookedMeshShapeConfiguration::MeshType::Convex);
+                                          Physics::CookedMeshShapeConfiguration::MeshType::Convex);
             shapeConfig.m_scale = scale;
 
             if (!cookingResult)
             {
-                AZ_Error("Jolt", false, "Jolt cooking of mesh data failed");
+                AZ_Error("Jolt", false, "Jolt cooking of mesh data failed")
+                ;
                 return {};
             }
 
@@ -78,9 +79,11 @@ namespace JoltPhysics
             const Physics::ColliderConfiguration& colliderConfig,
             const Physics::ShapeConfiguration& primitiveShapeConfig, AZ::u8 subdivisionLevel, const AZ::Vector3& scale)
         {
-            AZ::u8 subdivisionLevelClamped = AZ::GetClamp(subdivisionLevel, MinCapsuleSubdivisionLevel, MaxCapsuleSubdivisionLevel);
+            AZ::u8 subdivisionLevelClamped = AZ::GetClamp(subdivisionLevel, MinCapsuleSubdivisionLevel,
+                                                          MaxCapsuleSubdivisionLevel);
 
-            auto applyColliderOffset = [&colliderConfig](const AZ::Vector3 point) {
+            auto applyColliderOffset = [&colliderConfig](const AZ::Vector3 point)
+            {
                 return colliderConfig.m_rotation.TransformVector(point) + colliderConfig.m_position;
             };
 
@@ -88,79 +91,82 @@ namespace JoltPhysics
             switch (shapeType)
             {
             case Physics::ShapeType::Box:
-            {
-                auto boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(primitiveShapeConfig);
-                AZStd::vector<AZ::Vector3> points;
-                points.reserve(8);
-                const float x = 0.5f * boxConfig.m_dimensions.GetX();
-                const float y = 0.5f * boxConfig.m_dimensions.GetY();
-                const float z = 0.5f * boxConfig.m_dimensions.GetZ();
-                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, -z)));
-                points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, +z)));
-                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, -z)));
-                points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, +z)));
-                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, -z)));
-                points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, +z)));
-                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, -z)));
-                points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, +z)));
-                return CreateJoltCookedMeshConfiguration(points, scale);
-            }
-            break;
+                {
+                    auto boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(primitiveShapeConfig);
+                    AZStd::vector<AZ::Vector3> points;
+                    points.reserve(8);
+                    const float x = 0.5f * boxConfig.m_dimensions.GetX();
+                    const float y = 0.5f * boxConfig.m_dimensions.GetY();
+                    const float z = 0.5f * boxConfig.m_dimensions.GetZ();
+                    points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, -z)));
+                    points.push_back(applyColliderOffset(AZ::Vector3(-x, -y, +z)));
+                    points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, -z)));
+                    points.push_back(applyColliderOffset(AZ::Vector3(-x, +y, +z)));
+                    points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, -z)));
+                    points.push_back(applyColliderOffset(AZ::Vector3(+x, -y, +z)));
+                    points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, -z)));
+                    points.push_back(applyColliderOffset(AZ::Vector3(+x, +y, +z)));
+                    return CreateJoltCookedMeshConfiguration(points, scale);
+                }
+                break;
             case Physics::ShapeType::Capsule:
-            {
-                auto capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(primitiveShapeConfig);
-                const AZ::u8 numLayers = subdivisionLevelClamped;
-                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
-                AZStd::vector<AZ::Vector3> points;
-                points.reserve(2 * numLayers * numPerLayer + 2);
-                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(0.5f * capsuleConfig.m_height)));
-                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-0.5f * capsuleConfig.m_height)));
-                for (AZ::u8 layerIndex = 0; layerIndex < numLayers; layerIndex++)
                 {
-                    const float theta = (layerIndex + 1) * AZ::Constants::HalfPi / aznumeric_cast<float>(numLayers);
-                    const float layerRadius = capsuleConfig.m_radius * AZ::Sin(theta);
-                    const float layerHeight = 0.5f * capsuleConfig.m_height + capsuleConfig.m_radius * (AZ::Cos(theta) - 1.0f);
-                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    auto capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(primitiveShapeConfig);
+                    const AZ::u8 numLayers = subdivisionLevelClamped;
+                    const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                    AZStd::vector<AZ::Vector3> points;
+                    points.reserve(2 * numLayers * numPerLayer + 2);
+                    points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(0.5f * capsuleConfig.m_height)));
+                    points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-0.5f * capsuleConfig.m_height)));
+                    for (AZ::u8 layerIndex = 0; layerIndex < numLayers; layerIndex++)
                     {
-                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
-                        points.push_back(applyColliderOffset(AZ::Vector3(
-                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
-                        points.push_back(applyColliderOffset(AZ::Vector3(
-                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), -layerHeight)));
+                        const float theta = (layerIndex + 1) * AZ::Constants::HalfPi / aznumeric_cast<float>(numLayers);
+                        const float layerRadius = capsuleConfig.m_radius * AZ::Sin(theta);
+                        const float layerHeight = 0.5f * capsuleConfig.m_height + capsuleConfig.m_radius * (
+                            AZ::Cos(theta) - 1.0f);
+                        for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                        {
+                            const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                            points.push_back(applyColliderOffset(AZ::Vector3(
+                                layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                            points.push_back(applyColliderOffset(AZ::Vector3(
+                                layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), -layerHeight)));
+                        }
                     }
+                    return CreateJoltCookedMeshConfiguration(points, scale);
                 }
-                return CreateJoltCookedMeshConfiguration(points, scale);
-            }
-            break;
+                break;
             case Physics::ShapeType::Sphere:
-            {
-                auto sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(primitiveShapeConfig);
-                const AZ::u8 numLayers = 2 * subdivisionLevelClamped;
-                const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
-                AZStd::vector<AZ::Vector3> points;
-                points.reserve((numLayers - 1) * numPerLayer + 2);
-                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(sphereConfig.m_radius)));
-                points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-sphereConfig.m_radius)));
-
-                for (AZ::u8 layerIndex = 1; layerIndex < numLayers; layerIndex++)
                 {
-                    const float theta = layerIndex * AZ::Constants::Pi / aznumeric_cast<float>(numLayers);
-                    const float layerRadius = sphereConfig.m_radius * AZ::Sin(theta);
-                    const float layerHeight = sphereConfig.m_radius * AZ::Cos(theta);
-                    for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                    auto sphereConfig = static_cast<const Physics::SphereShapeConfiguration&>(primitiveShapeConfig);
+                    const AZ::u8 numLayers = 2 * subdivisionLevelClamped;
+                    const AZ::u8 numPerLayer = 4 * subdivisionLevelClamped;
+                    AZStd::vector<AZ::Vector3> points;
+                    points.reserve((numLayers - 1) * numPerLayer + 2);
+                    points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(sphereConfig.m_radius)));
+                    points.push_back(applyColliderOffset(AZ::Vector3::CreateAxisZ(-sphereConfig.m_radius)));
+
+                    for (AZ::u8 layerIndex = 1; layerIndex < numLayers; layerIndex++)
                     {
-                        const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
-                        points.push_back(applyColliderOffset(AZ::Vector3(
-                            layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                        const float theta = layerIndex * AZ::Constants::Pi / aznumeric_cast<float>(numLayers);
+                        const float layerRadius = sphereConfig.m_radius * AZ::Sin(theta);
+                        const float layerHeight = sphereConfig.m_radius * AZ::Cos(theta);
+                        for (AZ::u8 radialIndex = 0; radialIndex < numPerLayer; radialIndex++)
+                        {
+                            const float phi = radialIndex * AZ::Constants::TwoPi / aznumeric_cast<float>(numPerLayer);
+                            points.push_back(applyColliderOffset(AZ::Vector3(
+                                layerRadius * AZ::Cos(phi), layerRadius * AZ::Sin(phi), layerHeight)));
+                        }
                     }
+                    return CreateJoltCookedMeshConfiguration(points, scale);
                 }
-                return CreateJoltCookedMeshConfiguration(points, scale);
-            }
-            break;
+                break;
             case Physics::ShapeType::CookedMesh:
                 return static_cast<const Physics::CookedMeshShapeConfiguration&>(primitiveShapeConfig);
             default:
-                AZ_Error("Jolt Utils", false, "CreateConvexFromPrimitive was called with a non-primitive shape configuration.");
+                AZ_Error("Jolt Utils", false,
+                         "CreateConvexFromPrimitive was called with a non-primitive shape configuration.")
+                ;
                 return {};
             }
         }
@@ -183,29 +189,35 @@ namespace JoltPhysics
 
             if (height <= 0.0f)
             {
-                AZ_Error("Jolt", false, "Frustum height %f must be greater than 0.", height);
+                AZ_Error("Jolt", false, "Frustum height %f must be greater than 0.", height)
+                ;
                 return {};
             }
 
             if (bottomRadius < 0.0f)
             {
-                AZ_Error("Jolt", false, "Frustum bottom radius %f must be greater or equal to 0.", bottomRadius);
+                AZ_Error("Jolt", false, "Frustum bottom radius %f must be greater or equal to 0.", bottomRadius)
+                ;
                 return {};
             }
             else if (topRadius < 0.0f)
             {
-                AZ_Error("Jolt", false, "Frustum top radius %f must be greater or equal to 0.", topRadius);
+                AZ_Error("Jolt", false, "Frustum top radius %f must be greater or equal to 0.", topRadius)
+                ;
                 return {};
             }
             else if (bottomRadius == 0.0f && topRadius == 0.0f)
             {
-                AZ_Error("Jolt", false, "Either frustum bottom radius or top radius must be greater than to 0.");
+                AZ_Error("Jolt", false, "Either frustum bottom radius or top radius must be greater than to 0.")
+                ;
                 return {};
             }
 
             if (subdivisions < MinFrustumSubdivisions || subdivisions > MaxFrustumSubdivisions)
             {
-                AZ_Error("Jolt", false, "Frustum subdivision count %u is not in [%u, %u] range", subdivisions, MinFrustumSubdivisions, MaxFrustumSubdivisions);
+                AZ_Error("Jolt", false, "Frustum subdivision count %u is not in [%u, %u] range", subdivisions,
+                         MinFrustumSubdivisions, MaxFrustumSubdivisions)
+                ;
                 return {};
             }
 
@@ -228,7 +240,8 @@ namespace JoltPhysics
         AzPhysics::Scene* GetDefaultScene()
         {
             AzPhysics::SceneHandle sceneHandle;
-            Physics::DefaultWorldBus::BroadcastResult(sceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+            Physics::DefaultWorldBus::BroadcastResult(sceneHandle,
+                                                      &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
 
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
             {
@@ -246,16 +259,18 @@ namespace JoltPhysics
         {
             if (!shapeConfiguration.m_scale.IsGreaterThan(AZ::Vector3::CreateZero()))
             {
-                AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for shape configuration scale values %s",
-                    AZStd::to_string(shapeConfiguration.m_scale).c_str())
+                AZ_Error("Jolt Utils", false,
+                         "Negative or zero values are invalid for shape configuration scale values %s",
+                         AZStd::to_string(shapeConfiguration.m_scale).c_str())
                 return nullptr;
             }
-            
+
             // TODO: maybe can be moved to body level AddShape before set?
             // We get the materials from the collider config here and extract them to set on a shape
             // We can't set Jolt materials on base shapes because we need to know the type
-            
-            AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(colliderConfiguration.m_materialSlots);
+
+            AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(
+                colliderConfiguration.m_materialSlots);
             AZStd::vector<const JoltPhysicsMaterial*> joltMaterials(materials.size(), nullptr);
             for (size_t materialIndex = 0; materialIndex < materials.size(); ++materialIndex)
             {
@@ -268,14 +283,16 @@ namespace JoltPhysics
             {
             case Physics::ShapeType::Sphere:
                 {
-                    const auto& sphereConfig = dynamic_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
+                    const auto& sphereConfig = dynamic_cast<const Physics::SphereShapeConfiguration&>(
+                        shapeConfiguration);
                     if (sphereConfig.m_radius <= 0.0f)
                     {
                         AZ_Error("Jolt Utils", false, "Invalid radius value: %f", sphereConfig.m_radius)
                         return nullptr;
                     }
-                    
-                    JPH::Ref<JPH::SphereShape> newSphere = new JPH::SphereShape(sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), joltMaterials.front());
+
+                    JPH::Ref<JPH::SphereShape> newSphere = new JPH::SphereShape(
+                        sphereConfig.m_radius * shapeConfiguration.m_scale.GetMaxElement(), joltMaterials.front());
                     newSphere->SetDensity(joltMaterials.front()->GetDensity());
                     newShape = newSphere;
                     break;
@@ -286,10 +303,10 @@ namespace JoltPhysics
                     if (!boxConfig.m_dimensions.IsGreaterThan(AZ::Vector3::CreateZero()))
                     {
                         AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for box dimensions %s",
-                            AZStd::to_string(boxConfig.m_dimensions).c_str())
+                                 AZStd::to_string(boxConfig.m_dimensions).c_str())
                         return nullptr;
                     }
-                    
+
                     JPH::Ref<JPH::BoxShape> newBox = new JPH::BoxShape(
                         JoltMathConvert(boxConfig.m_dimensions * 0.5f * shapeConfiguration.m_scale),
                         JPH::cDefaultConvexRadius,
@@ -300,52 +317,62 @@ namespace JoltPhysics
                 }
             case Physics::ShapeType::Capsule:
                 {
-                    const auto& capsuleConfig = dynamic_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
+                    const auto& capsuleConfig = dynamic_cast<const Physics::CapsuleShapeConfiguration&>(
+                        shapeConfiguration);
                     float height = capsuleConfig.m_height * capsuleConfig.m_scale.GetZ();
-                    float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(), capsuleConfig.m_scale.GetY());
-    
+                    float radius = capsuleConfig.m_radius * AZ::GetMax(capsuleConfig.m_scale.GetX(),
+                                                                       capsuleConfig.m_scale.GetY());
+
                     if (height <= 0.0f || radius <= 0.0f)
                     {
-                        AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
-                            capsuleConfig.m_height, capsuleConfig.m_radius)
+                        AZ_Error("Jolt Utils", false,
+                                 "Negative or zero values are invalid for capsule dimensions (height: %f, radius: %f)",
+                                 capsuleConfig.m_height, capsuleConfig.m_radius)
                         return nullptr;
                     }
 
                     float halfHeight = 0.5f * height - radius;
                     if (halfHeight <= 0.0f)
                     {
-                        AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in capsule configuration (height: %f, radius: %f)",
-                            capsuleConfig.m_height, capsuleConfig.m_radius)
+                        AZ_Warning("Jolt", halfHeight < 0.0f,
+                                   "Height must exceed twice the radius in capsule configuration (height: %f, radius: %f)",
+                                   capsuleConfig.m_height, capsuleConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
-                    
-                    JPH::Ref<JPH::CapsuleShape> newCapsule = new JPH::CapsuleShape(halfHeight, radius, joltMaterials.front());
+
+                    JPH::Ref<JPH::CapsuleShape> newCapsule = new JPH::CapsuleShape(
+                        halfHeight, radius, joltMaterials.front());
                     newCapsule->SetDensity(joltMaterials.front()->GetDensity());
                     newShape = newCapsule;
                     break;
                 }
             case Physics::ShapeType::Cylinder:
                 {
-                    const auto& cylinderConfig = dynamic_cast<const JoltPhysics::CylinderShapeConfiguration&>(shapeConfiguration);
+                    const auto& cylinderConfig = dynamic_cast<const JoltPhysics::CylinderShapeConfiguration&>(
+                        shapeConfiguration);
                     float height = cylinderConfig.m_height * cylinderConfig.m_scale.GetZ();
-                    float radius = cylinderConfig.m_radius * AZ::GetMax(cylinderConfig.m_scale.GetX(), cylinderConfig.m_scale.GetY());
+                    float radius = cylinderConfig.m_radius * AZ::GetMax(cylinderConfig.m_scale.GetX(),
+                                                                        cylinderConfig.m_scale.GetY());
 
                     if (height <= 0.0f || radius <= 0.0f)
                     {
-                        AZ_Error("Jolt Utils", false, "Negative or zero values are invalid for cylinder dimensions (height: %f, radius: %f)",
-                            cylinderConfig.m_height, cylinderConfig.m_radius)
+                        AZ_Error("Jolt Utils", false,
+                                 "Negative or zero values are invalid for cylinder dimensions (height: %f, radius: %f)",
+                                 cylinderConfig.m_height, cylinderConfig.m_radius)
                         return nullptr;
                     }
 
                     float halfHeight = 0.5f * height;
                     if (halfHeight <= 0.0f)
                     {
-                        AZ_Warning("Jolt", halfHeight < 0.0f, "Height must exceed twice the radius in cylinder configuration (height: %f, radius: %f)",
-                            cylinderConfig.m_height, cylinderConfig.m_radius)
+                        AZ_Warning("Jolt", halfHeight < 0.0f,
+                                   "Height must exceed twice the radius in cylinder configuration (height: %f, radius: %f)",
+                                   cylinderConfig.m_height, cylinderConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
                     }
-                
-                    JPH::Ref<JPH::CylinderShape> newCylinder = new JPH::CylinderShape(halfHeight, radius, JPH::cDefaultConvexRadius, joltMaterials.front());
+
+                    JPH::Ref<JPH::CylinderShape> newCylinder = new JPH::CylinderShape(
+                        halfHeight, radius, JPH::cDefaultConvexRadius, joltMaterials.front());
                     newCylinder->SetDensity(joltMaterials.front()->GetDensity());
                     newShape = newCylinder;
                     break;
@@ -353,8 +380,8 @@ namespace JoltPhysics
             case Physics::ShapeType::PhysicsAsset:
                 {
                     AZ_Assert(false,
-                        "CreateJoltShapeFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
-                        "Please iterate over m_colliderShapes in the asset and call this function for each of them.")
+                              "CreateJoltShapeFromConfig: Cannot pass PhysicsAsset configuration since it is a collection of shapes. "
+                              "Please iterate over m_colliderShapes in the asset and call this function for each of them.")
                     return nullptr;
                 }
             case Physics::ShapeType::Heightfield:
@@ -380,17 +407,18 @@ namespace JoltPhysics
                 AZ_Error("Jolt Rigid Body", false, "Failed to create shape.")
                 return nullptr;
             }
-            
+
             JPH::Ref<JPH::RotatedTranslatedShapeSettings> offsetShapeSettings = new JPH::RotatedTranslatedShapeSettings(
                 JoltMathConvert(colliderConfiguration.m_position),
                 JoltMathConvert(colliderConfiguration.m_rotation),
                 newShape);
-            
+
             return offsetShapeSettings->Create().Get();
         }
 
         AZStd::vector<float> ConvertHeightfieldSamples(const Physics::HeightfieldShapeConfiguration& heightfield,
-            const size_t startCol, const size_t startRow, const size_t numColsToUpdate, const size_t numRowsToUpdate)
+                                                       const size_t startCol, const size_t startRow,
+                                                       const size_t numColsToUpdate, const size_t numRowsToUpdate)
         {
             const size_t numCols = heightfield.GetNumColumnVertices();
             const size_t numRows = heightfield.GetNumRowVertices();
@@ -402,7 +430,8 @@ namespace JoltPhysics
 
             // Vector of O3DE format samples
             const AZStd::vector<Physics::HeightMaterialPoint>& samples = heightfield.GetSamples();
-            AZ_Assert(samples.size() == numRows * numCols, "Heightfield configuration has invalid heightfield sample size.")
+            AZ_Assert(samples.size() == numRows * numCols,
+                      "Heightfield configuration has invalid heightfield sample size.")
 
             if (samples.empty() || (numRowsToUpdate == 0) || (numColsToUpdate == 0))
             {
@@ -411,7 +440,7 @@ namespace JoltPhysics
 
             const float minHeightBounds = heightfield.GetMinHeightBounds();
             const float maxHeightBounds = heightfield.GetMaxHeightBounds();
-            const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
+            const float halfBounds{(maxHeightBounds - minHeightBounds) / 2.0f};
 
             // We're making the assumption that the min/max bounds are centered around 0
             AZ_Assert(
@@ -470,7 +499,8 @@ namespace JoltPhysics
                 AZ::u32 newCollisionGroup = collisionGroupIndex << 16;
 
                 // AZ_Printf("ConstructObjectLayer", "BPLayer %d, CLayer %d, CGrpIdx %d", newBPLayer, newCollisionLayer, newCollisionGroup)
-                return newCollisionGroup | newCollisionLayer | newBPLayer; // returned in order of setting in ObjectLayer
+                return newCollisionGroup | newCollisionLayer | newBPLayer;
+                // returned in order of setting in ObjectLayer
             }
             AZ_Warning("Jolt Utils", false, "Failed to Get Jolt System for ObJectLayer")
             return 0;
@@ -479,37 +509,41 @@ namespace JoltPhysics
         AZ::Transform GetColliderLocalTransform(const AZ::Vector3& colliderRelativePosition,
                                                 const AZ::Quaternion& colliderRelativeRotation)
         {
-            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation, colliderRelativePosition);
+            return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRelativeRotation,
+                                                                     colliderRelativePosition);
         }
 
         AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair)
         {
             AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
-            JoltPhysics::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &JoltPhysics::EditorColliderComponentRequests::GetColliderRotation);
+            JoltPhysics::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair,
+                                                                        &JoltPhysics::EditorColliderComponentRequests::GetColliderRotation);
 
             AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
-            JoltPhysics::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &JoltPhysics::EditorColliderComponentRequests::GetColliderOffset);
+            JoltPhysics::EditorColliderComponentRequestBus::EventResult(
+                colliderOffset, idPair, &JoltPhysics::EditorColliderComponentRequests::GetColliderOffset);
 
             return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRotation, colliderOffset);
         }
 
         AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform,
-            const AZ::Vector3& colliderRelativePosition,
-            const AZ::Quaternion& colliderRelativeRotation)
+                                                const AZ::Vector3& colliderRelativePosition,
+                                                const AZ::Quaternion& colliderRelativeRotation)
         {
             return worldTransform * GetColliderLocalTransform(colliderRelativePosition, colliderRelativeRotation);
         }
 
         void ColliderPointsLocalToWorld(AZStd::vector<AZ::Vector3>& pointsInOut,
-            const AZ::Transform& worldTransform,
-            const AZ::Vector3& colliderRelativePosition,
-            const AZ::Quaternion& colliderRelativeRotation,
-            const AZ::Vector3& nonUniformScale)
+                                        const AZ::Transform& worldTransform,
+                                        const AZ::Vector3& colliderRelativePosition,
+                                        const AZ::Quaternion& colliderRelativeRotation,
+                                        const AZ::Vector3& nonUniformScale)
         {
             for (AZ::Vector3& point : pointsInOut)
             {
                 point = worldTransform.TransformPoint(nonUniformScale *
-                    GetColliderLocalTransform(colliderRelativePosition, colliderRelativeRotation).TransformPoint(point));
+                    GetColliderLocalTransform(colliderRelativePosition,
+                                              colliderRelativeRotation).TransformPoint(point));
             }
         }
 
@@ -526,10 +560,10 @@ namespace JoltPhysics
         // }
 
         AZ::Aabb GetColliderAabb(const AZ::Transform& worldTransform,
-            bool hasNonUniformScale,
-            AZ::u8 subdivisionLevel,
-            const ::Physics::ShapeConfiguration& shapeConfiguration,
-            const ::Physics::ColliderConfiguration& colliderConfiguration)
+                                 bool hasNonUniformScale,
+                                 AZ::u8 subdivisionLevel,
+                                 const ::Physics::ShapeConfiguration& shapeConfiguration,
+                                 const ::Physics::ColliderConfiguration& colliderConfiguration)
         {
             const AZ::Aabb worldPosAabb = AZ::Aabb::CreateFromPoint(worldTransform.GetTranslation());
             // physx::PxGeometryHolder geometryHolder;
@@ -539,19 +573,21 @@ namespace JoltPhysics
             {
                 if (!hasNonUniformScale) // TODO: should check by shape type, not if uniform scale
                 {
-                    if (JPH::Ref<JPH::Shape> shape = CreateJoltShapeFromConfig(colliderConfiguration, shapeConfiguration))
+                    if (JPH::Ref<JPH::Shape> shape = CreateJoltShapeFromConfig(
+                        colliderConfiguration, shapeConfiguration))
                     {
                         JPH::Mat44 comTransform = JPH::Mat44::sRotationTranslation(
-                                JoltMathConvert(worldTransform.GetRotation()),
-                                JoltMathConvert(worldTransform.GetTranslation())
-                                );
+                            JoltMathConvert(worldTransform.GetRotation()),
+                            JoltMathConvert(worldTransform.GetTranslation())
+                        );
                         JPH::Vec3 scale = JoltMathConvert(shapeConfiguration.m_scale);
                         return JoltMathConvert(shape->GetWorldSpaceBounds(comTransform, scale));
                     }
                 }
                 else
                 {
-                    auto convexPrimitive = Utils::CreateConvexFromPrimitive(colliderConfiguration, shapeConfiguration, subdivisionLevel, shapeConfiguration.m_scale);
+                    auto convexPrimitive = Utils::CreateConvexFromPrimitive(
+                        colliderConfiguration, shapeConfiguration, subdivisionLevel, shapeConfiguration.m_scale);
                     if (convexPrimitive.has_value())
                     {
                         // if (CreatePxGeometryFromConfig(convexPrimitive.value(), geometryHolder))
@@ -577,10 +613,10 @@ namespace JoltPhysics
 
                 AzPhysics::ShapeColliderPairList colliderShapes;
                 GetColliderShapeConfigsFromAsset(physicsAssetConfig,
-                    colliderConfiguration,
-                    hasNonUniformScale,
-                    subdivisionLevel,
-                    colliderShapes);
+                                                 colliderConfiguration,
+                                                 hasNonUniformScale,
+                                                 subdivisionLevel,
+                                                 colliderShapes);
 
                 if (colliderShapes.empty())
                 {
@@ -615,22 +651,26 @@ namespace JoltPhysics
         //         &PhysX::ColliderShapeRequestBus::Events::IsTrigger);
         //     return response.value;
         // }
-        
+
         void GetColliderShapeConfigsFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
-            [[maybe_unused]] const Physics::ColliderConfiguration& originalColliderConfiguration, [[maybe_unused]] bool hasNonUniformScale,
-            [[maybe_unused]] AZ::u8 subdivisionLevel, [[maybe_unused]] AzPhysics::ShapeColliderPairList& resultingColliderShapes)
+                                              [[maybe_unused]] const Physics::ColliderConfiguration&
+                                              originalColliderConfiguration, [[maybe_unused]] bool hasNonUniformScale,
+                                              [[maybe_unused]] AZ::u8 subdivisionLevel,
+                                              [[maybe_unused]] AzPhysics::ShapeColliderPairList&
+                                              resultingColliderShapes)
         {
             if (!assetConfiguration.m_asset.IsReady())
             {
                 AZ_Error("Jolt", false, "GetColliderShapesFromAsset: Asset %s is not ready."
-                    "Please make sure the calling code connects to the AssetBus and "
-                    "creates the collider shapes only when OnAssetReady or OnAssetReload is invoked.",
-                    assetConfiguration.m_asset.GetHint().c_str());
+                         "Please make sure the calling code connects to the AssetBus and "
+                         "creates the collider shapes only when OnAssetReady or OnAssetReload is invoked.",
+                         assetConfiguration.m_asset.GetHint().c_str())
+                ;
                 return;
             }
-        
+
             // const Pipeline::MeshAsset* asset = assetConfiguration.m_asset.GetAs<Pipeline::MeshAsset>();
-        
+
             // if (!asset)
             // {
             //     AZ_Error("Jolt", false, "GetColliderShapesFromAsset: Mesh Asset %s is null."
@@ -639,10 +679,10 @@ namespace JoltPhysics
             //         assetConfiguration.m_asset.GetHint().c_str());
             //     return;
             // }
-        
+
             // const Pipeline::MeshAssetData& assetData = asset->m_assetData;
             // const Pipeline::MeshAssetData::ShapeConfigurationList& shapeConfigList = assetData.m_colliderShapes;
-        
+
             // resultingColliderShapes.reserve(resultingColliderShapes.size() + shapeConfigList.size());
             //
             // for (size_t shapeIndex = 0; shapeIndex < shapeConfigList.size(); shapeIndex++)
@@ -699,24 +739,26 @@ namespace JoltPhysics
         }
 
         void CreateShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
-            const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
-            AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes)
+                                   const Physics::ColliderConfiguration& originalColliderConfiguration,
+                                   bool hasNonUniformScale,
+                                   AZ::u8 subdivisionLevel,
+                                   AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes)
         {
             AzPhysics::ShapeColliderPairList resultingColliderShapeConfigs;
             GetColliderShapeConfigsFromAsset(assetConfiguration, originalColliderConfiguration,
-                hasNonUniformScale, subdivisionLevel, resultingColliderShapeConfigs);
-        
+                                             hasNonUniformScale, subdivisionLevel, resultingColliderShapeConfigs);
+
             resultingShapes.reserve(resultingShapes.size() + resultingColliderShapeConfigs.size());
-        
+
             for (const AzPhysics::ShapeColliderPair& shapeConfigPair : resultingColliderShapeConfigs)
             {
                 // Scale the collider offset
                 shapeConfigPair.first->m_position *= shapeConfigPair.second->m_scale;
-        
+
                 AZStd::shared_ptr<Physics::Shape> shape;
                 Physics::SystemRequestBus::BroadcastResult(shape, &Physics::SystemRequests::CreateShape,
-                    *shapeConfigPair.first, *shapeConfigPair.second);
-        
+                                                           *shapeConfigPair.first, *shapeConfigPair.second);
+
                 if (shape)
                 {
                     resultingShapes.emplace_back(shape);
@@ -734,7 +776,8 @@ namespace JoltPhysics
         AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
         {
             AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-            AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
+            AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, entityId,
+                                                       &AZ::NonUniformScaleRequests::GetScale);
             return nonUniformScale;
         }
 
@@ -744,7 +787,7 @@ namespace JoltPhysics
         }
 
         void SetMaterialsFromPhysicsAssetShape(const Physics::ShapeConfiguration& shapeConfiguration,
-            Physics::MaterialSlots& materialSlots)
+                                               Physics::MaterialSlots& materialSlots)
         {
             if (shapeConfiguration.GetShapeType() != Physics::ShapeType::PhysicsAsset)
             {
@@ -772,7 +815,8 @@ namespace JoltPhysics
             if (!meshAsset)
             {
                 materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
-                AZ_Warning("Physics", false, "Invalid mesh asset in physics asset shape configuration.");
+                AZ_Warning("Physics", false, "Invalid mesh asset in physics asset shape configuration.")
+                ;
                 return;
             }
 
@@ -788,7 +832,34 @@ namespace JoltPhysics
                 materialSlots.SetSlots(meshAsset->m_assetData.m_materialSlots.GetSlotsNames());
             }
         }
-        
+
+        bool WriteCookedMeshToFile(const AZStd::string& filePath, const AZStd::vector<AZ::u8>& joltCookedData,
+                                   Physics::CookedMeshShapeConfiguration::MeshType meshType)
+        {
+            Pipeline::MeshAssetData assetData;
+
+            AZStd::shared_ptr<Pipeline::AssetColliderConfiguration> colliderConfig;
+            AZStd::shared_ptr<Physics::CookedMeshShapeConfiguration> shapeConfig = AZStd::make_shared<
+                Physics::CookedMeshShapeConfiguration>();
+
+            shapeConfig->SetCookedMeshData(joltCookedData.data(), joltCookedData.size(), meshType);
+
+            assetData.m_colliderShapes.emplace_back(colliderConfig, shapeConfig);
+
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext,
+                                                         &AZ::ComponentApplicationRequests::GetSerializeContext);
+            return AZ::Utils::SaveObjectToFile(filePath, AZ::DataStream::ST_BINARY, &assetData, serializeContext);
+        }
+
+        // bool WriteCookedMeshToFile(const AZStd::string& filePath, const Pipeline::MeshAssetData& assetData)
+        // {
+        //     AZ::SerializeContext* serializeContext = nullptr;
+        //     AZ::ComponentApplicationBus::BroadcastResult(serializeContext,
+        //                                                  &AZ::ComponentApplicationRequests::GetSerializeContext);
+        //     return AZ::Utils::SaveObjectToFile(filePath, AZ::DataStream::ST_BINARY, &assetData, serializeContext);
+        // }
+
         namespace Geometry
         {
             PointList GenerateBoxPoints(const AZ::Vector3& min, const AZ::Vector3& max)

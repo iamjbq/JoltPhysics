@@ -454,8 +454,14 @@ namespace JoltPhysics
             const AZStd::vector<AZ::u16>& faceMaterials,
             AZStd::vector<AZ::u8>* output,
             const MeshGroup& meshGroup,
-            const AZStd::string& platformIdentifier)
+            [[maybe_unused]] const AZStd::string& platformIdentifier)
         {
+            // Make sure an allocator exists
+            if (JPH::Allocate == nullptr)
+            {
+                JPH::RegisterDefaultAllocator();
+            }
+            
             bool cookingSuccessful = false;
             AZStd::string cookingResultErrorCodeString;
             const ConvexAssetParams& convexAssetParams = meshGroup.GetConvexAssetParams();
@@ -468,7 +474,7 @@ namespace JoltPhysics
                 {
                     // pxCookingParams.areaTestEpsilon = convexAssetParams.GetAreaTestEpsilon();
                 }
-
+            
                 // pxCookingParams.planeTolerance = convexAssetParams.GetPlaneTolerance();
                 // pxCookingParams.gaussMapLimit = convexAssetParams.GetGaussMapLimit();
             }
@@ -478,64 +484,21 @@ namespace JoltPhysics
                 // pxCookingParams.meshWeldTolerance = triangleMeshAssetParams.GetMeshWeldTolerance();
                 // pxCookingParams.buildTriangleAdjacencies = triangleMeshAssetParams.GetBuildTriangleAdjacencies();
                 // pxCookingParams.suppressTriangleMeshRemapTable = triangleMeshAssetParams.GetSuppressTriangleMeshRemapTable();
-
+            
                 if (triangleMeshAssetParams.GetWeldVertices())
                 {
                     // pxCookingParams.meshPreprocessParams |= physx::PxMeshPreprocessingFlag::eWELD_VERTICES;
                 }
-
+            
                 if (triangleMeshAssetParams.GetDisableCleanMesh())
                 {
                     // pxCookingParams.meshPreprocessParams |= physx::PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH;
                 }
-
+            
                 if (triangleMeshAssetParams.GetForce32BitIndices())
                 {
                     // pxCookingParams.meshPreprocessParams |= physx::PxMeshPreprocessingFlag::eFORCE_32BIT_INDICES;
                 }
-            }
-            
-            JPH::VertexList vertexList;
-            JPH::IndexedTriangleList triangleList;
-            
-            const AZ::u32 triangleCount = indices.size() / 3;
-            vertexList.reserve(vertices.size());
-            triangleList.reserve(triangleCount);
-            
-            
-            for (int index = 0; index < vertices.size(); index++)
-            {
-                vertexList[index] = ToFloat3(vertices[index]);
-            }
-            
-            for (int index = 0; index < triangleCount; index++)
-            {
-                const AZ::u32 index0 = indices[index * 3 + 0];
-                const AZ::u32 index1 = indices[index * 3 + 1];
-                const AZ::u32 index2 = indices[index * 3 + 2];
-                
-                // Check if triangle is degenerate
-                if (index0 == index1 || index0 == index2 || index1 == index2)
-                {
-                    continue;
-                }
-                
-                const JPH::Vec3 vertex0(vertexList[index0]);
-                const JPH::Vec3 vertex1(vertexList[index1]);
-                const JPH::Vec3 vertex2(vertexList[index2]);
-                
-                if (vertex0.IsClose(vertex1, 0.001f) || vertex0.IsClose(vertex2, 0.001f) || vertex1.IsClose(vertex2, 0.001f))
-                {
-                    continue;
-                }
-                
-                const AZ::u16 materialId = faceMaterials[index];
-                
-                JPH::IndexedTriangle& triangle = triangleList.emplace_back();
-                triangle.mMaterialIndex = materialId;
-                triangle.mIdx[0] = index0;
-                triangle.mIdx[1] = index1;
-                triangle.mIdx[2] = index2;
             }
 
             // physx::PxBoundedData strideData;
@@ -543,18 +506,18 @@ namespace JoltPhysics
             // strideData.stride = sizeof(AZ::Vector3);
             // strideData.data = vertices.data();
             
-            JPH::Array<JPH::Vec3> joltVertices;
-            joltVertices.reserve(vertices.size());
-            for (const AZ::Vector3& vertex : vertices)
-            {
-                joltVertices.push_back(JoltMathConvert(vertex));
-            }
-            
             AZ::IO::ByteContainerStream<AZ::u8> byteStream;
             JoltPhysics::Pipeline::JoltByteStreamOut streamOut(byteStream);
 
             if (shouldExportAsConvex)
             {
+                JPH::Array<JPH::Vec3> joltVertices;
+                joltVertices.reserve(vertices.size());
+                for (const AZ::Vector3& vertex : vertices)
+                {
+                    joltVertices.push_back(JoltMathConvert(vertex));
+                }
+                
                 JPH::ConvexHullShapeSettings convexSettings;
                 convexSettings.mPoints = joltVertices;
                 JPH::Shape::ShapeResult result = convexSettings.Create();
@@ -575,6 +538,49 @@ namespace JoltPhysics
             }
             else
             {
+                JPH::VertexList vertexList;
+                JPH::IndexedTriangleList triangleList;
+            
+                vertexList.reserve(vertices.size());
+            
+                for (int index = 0; index < vertices.size(); index++)
+                {
+                    vertexList[index] = ToFloat3(vertices[index]);
+                }
+            
+                const AZ::u32 triangleCount = indices.size() / 3;
+                triangleList.reserve(triangleCount);
+            
+                for (int index = 0; index < triangleCount; index++)
+                {
+                    const AZ::u32 index0 = indices[index * 3 + 0];
+                    const AZ::u32 index1 = indices[index * 3 + 1];
+                    const AZ::u32 index2 = indices[index * 3 + 2];
+                
+                    // Check if triangle is degenerate
+                    if (index0 == index1 || index0 == index2 || index1 == index2)
+                    {
+                        continue;
+                    }
+                
+                    const JPH::Vec3 vertex0(vertexList[index0]);
+                    const JPH::Vec3 vertex1(vertexList[index1]);
+                    const JPH::Vec3 vertex2(vertexList[index2]);
+                
+                    if (vertex0.IsClose(vertex1, 0.001f) || vertex0.IsClose(vertex2, 0.001f) || vertex1.IsClose(vertex2, 0.001f))
+                    {
+                        continue;
+                    }
+                
+                    const AZ::u16 materialId = faceMaterials[index];
+                
+                    JPH::IndexedTriangle& triangle = triangleList.emplace_back();
+                    triangle.mMaterialIndex = materialId;
+                    triangle.mIdx[0] = index0;
+                    triangle.mIdx[1] = index1;
+                    triangle.mIdx[2] = index2;
+                }
+                
                 JPH::MeshShapeSettings meshSettings(vertexList, triangleList);
                 JPH::Shape::ShapeResult result = meshSettings.Create();
                 
@@ -657,9 +663,9 @@ namespace JoltPhysics
                 else
                 {
                     // Cook the mesh into a binary buffer.
-                    AZStd::vector<AZ::u8> physxData;
+                    AZStd::vector<AZ::u8> joltCookedData;
                     bool success = CookJoltMesh(subMesh.m_vertices, subMesh.m_indices, subMesh.m_perFaceMaterialIndices,
-                        &(physxData), meshGroup, context.GetPlatformIdentifier());
+                        &(joltCookedData), meshGroup, context.GetPlatformIdentifier());
 
                     if (success)
                     {
@@ -667,8 +673,8 @@ namespace JoltPhysics
                             AZStd::make_shared<Physics::CookedMeshShapeConfiguration>();
 
                         shapeConfig->SetCookedMeshData(
-                            physxData.data(),
-                            physxData.size(),
+                            joltCookedData.data(),
+                            joltCookedData.size(),
                             meshGroup.GetExportAsConvex() ? Physics::CookedMeshShapeConfiguration::MeshType::Convex
                                                           : Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh
                         );
