@@ -158,10 +158,12 @@ namespace JoltPhysics
             const JPH::Vec3 point2 = inManifold.GetWorldSpaceContactPointOn2(i);
 
             // Construct the impulse vector from constituents
-            auto [mContactImpulse, mFrictionImpulse1, mFrictionImpulse2] = estimate.mImpulses.at(i);
-            const JPH::Vec3 impulseVector = mContactImpulse * inManifold.mWorldSpaceNormal +
-                                            mFrictionImpulse1 * estimate.mTangent1 +
-                                            mFrictionImpulse2 * estimate.mTangent2;
+            float contactImpulse = estimate.mContactImpulse[i];
+            float frictionImpulse1 = estimate.mFrictionImpulse1;
+            float frictionImpulse2 = estimate.mFrictionImpulse2;
+            const JPH::Vec3 impulseVector = contactImpulse * inManifold.mWorldSpaceNormal +
+                                            frictionImpulse1 * estimate.mTangent1 +
+                                            frictionImpulse2 * estimate.mTangent2;
             
             AzPhysics::Contact& contact = collision.m_contacts[i];
             contact.m_position = JoltMathConvert(point1 + point2) * 0.5f;
