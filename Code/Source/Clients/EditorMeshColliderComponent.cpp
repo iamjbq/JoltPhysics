@@ -226,7 +226,7 @@ namespace JoltPhysics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorMeshColliderComponent, EditorComponentBase>()
-                ->Version(1 + (1<<JPH_VERSION_MINOR)) // TODO: not sure if needed for this one specifically, but triggers recompile for prefabs
+                ->Version(1 + (1<<JPH_VERSION_MINOR))
                 ->Field("ColliderConfiguration", &EditorMeshColliderComponent::m_configuration)
                 ->Field("ShapeConfiguration", &EditorMeshColliderComponent::m_proxyShapeConfiguration)
                 ->Field("DebugDrawSettings", &EditorMeshColliderComponent::m_colliderDebugDraw)
@@ -356,6 +356,7 @@ namespace JoltPhysics
         EditorMeshColliderValidationRequestBus::Handler::BusConnect(entityId);
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
+        
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
         AZ::NonUniformScaleRequestBus::Event(
@@ -482,60 +483,60 @@ namespace JoltPhysics
     void EditorMeshColliderComponent::UpdateCollider()
     {
         UpdateShapeConfiguration();
-        CreateStaticEditorCollider();
+        // CreateStaticEditorCollider();
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 
-    void EditorMeshColliderComponent::CreateStaticEditorCollider()
-    {
-        m_cachedAabbDirty = true;
-
-        if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
-        {
-            m_colliderDebugDraw.ClearCachedGeometry();
-            return;
-        }
-
-        if (m_proxyShapeConfiguration.m_physicsAsset.m_pxAsset.GetStatus() != AZ::Data::AssetData::AssetStatus::Ready)
-        {
-            // Mesh asset has not been loaded, wait for OnAssetReady to be invoked.
-            // We specifically check Ready state here rather than ReadyPreNotify to ensure OnAssetReady has been invoked
-            if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
-            {
-                m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            }
-            return;
-        }
-
-        AZ::Transform colliderTransform = GetWorldTM();
-        colliderTransform.ExtractUniformScale();
-        AzPhysics::StaticRigidBodyConfiguration configuration;
-        configuration.m_orientation = colliderTransform.GetRotation();
-        configuration.m_position = colliderTransform.GetTranslation();
-        configuration.m_entityId = GetEntityId();
-        configuration.m_debugName = GetEntity()->GetName();
-
-        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-        Utils::CreateShapesFromAsset(
-            m_proxyShapeConfiguration.m_physicsAsset.m_configuration,
-            m_configuration, m_hasNonUniformScale, m_proxyShapeConfiguration.m_subdivisionLevel, shapes);
-        configuration.m_colliderAndShapeData = shapes;
-
-        if (m_sceneInterface)
-        {
-            //remove the previous body if any
-            if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
-            {
-                m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            }
-            
-            m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
-        }
-
-        m_colliderDebugDraw.ClearCachedGeometry();
-
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
-    }
+    // void EditorMeshColliderComponent::CreateStaticEditorCollider()
+    // {
+    //     m_cachedAabbDirty = true;
+    //
+    //     if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
+    //     {
+    //         m_colliderDebugDraw.ClearCachedGeometry();
+    //         return;
+    //     }
+    //
+    //     if (m_proxyShapeConfiguration.m_physicsAsset.m_pxAsset.GetStatus() != AZ::Data::AssetData::AssetStatus::Ready)
+    //     {
+    //         // Mesh asset has not been loaded, wait for OnAssetReady to be invoked.
+    //         // We specifically check Ready state here rather than ReadyPreNotify to ensure OnAssetReady has been invoked
+    //         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+    //         {
+    //             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+    //         }
+    //         return;
+    //     }
+    //
+    //     AZ::Transform colliderTransform = GetWorldTM();
+    //     colliderTransform.ExtractUniformScale();
+    //     AzPhysics::StaticRigidBodyConfiguration configuration;
+    //     configuration.m_orientation = colliderTransform.GetRotation();
+    //     configuration.m_position = colliderTransform.GetTranslation();
+    //     configuration.m_entityId = GetEntityId();
+    //     configuration.m_debugName = GetEntity()->GetName();
+    //
+    //     AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
+    //     Utils::CreateShapesFromAsset(
+    //         m_proxyShapeConfiguration.m_physicsAsset.m_configuration,
+    //         m_configuration, m_hasNonUniformScale, m_proxyShapeConfiguration.m_subdivisionLevel, shapes);
+    //     configuration.m_colliderAndShapeData = shapes;
+    //
+    //     if (m_sceneInterface)
+    //     {
+    //         //remove the previous body if any
+    //         if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+    //         {
+    //             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+    //         }
+    //         
+    //         m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
+    //     }
+    //
+    //     m_colliderDebugDraw.ClearCachedGeometry();
+    //
+    //     AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+    // }
 
     AZ::Data::Asset<Pipeline::MeshAsset> EditorMeshColliderComponent::GetMeshAsset() const
     {

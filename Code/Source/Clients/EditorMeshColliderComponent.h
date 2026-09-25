@@ -203,7 +203,7 @@ namespace JoltPhysics
         void UpdateMeshAsset();
 
         void UpdateCollider();
-        void CreateStaticEditorCollider();
+        // void CreateStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
 

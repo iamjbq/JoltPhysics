@@ -72,5 +72,11 @@ set(FILES
     Source/Editor/DocumentationLinkWidget.h
     Source/Editor/PropertyTypes.cpp
     Source/Editor/PropertyTypes.h
-
+    
+    Source/Pipeline/MeshGroup.cpp
+    Source/Pipeline/MeshGroup.h
+    Source/Pipeline/MeshBehavior.cpp
+    Source/Pipeline/MeshBehavior.h
+    Source/Pipeline/MeshExporter.cpp
+    Source/Pipeline/MeshExporter.h
 )
