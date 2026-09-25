@@ -1,4 +1,7 @@
 
+#get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+#list(APPEND CMAKE_MODULE_PATH ${this_gem_root}/3rdParty)
+
 # Currently we are in the Code folder: ${CMAKE_CURRENT_LIST_DIR}
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 # Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
@@ -19,19 +22,19 @@ endif()
 
 # JoltPhysics Release Version
 set(JOLTPHYSICS_GIT_REPO "https://github.com/jrouwe/JoltPhysics")
-set(JOLTPHYSICS_GIT_TAG "v5.5.0")
+set(JOLTPHYSICS_GIT_TAG "v5.6.0")
 
 # Add JoltPhysics dependency
 include(FetchContent)
 FetchContent_Declare(
         JoltPhysics
         GIT_REPOSITORY ${JOLTPHYSICS_GIT_REPO}
-        GIT_TAG ${JOLTPHYSICS_GIT_TAG} # main branch as of Dec 28, 2025
+        GIT_TAG ${JOLTPHYSICS_GIT_TAG}
         SOURCE_SUBDIR "Build"
 )
 
 # please always be really clear about what third parties your gem uses.
-message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit 23dadd0 (License: MIT)")
+message(STATUS "JoltPhysics Gem uses ${JOLTPHYSICS_GIT_REPO} commit e77f175 (License: MIT)")
 
 # O3DE requires RTTI to be enabled for engine
 set(CPP_RTTI_ENABLED ON)
@@ -238,6 +241,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
 #                3rdParty::poly2tri
+                3rdParty::vhacd
+#                3rdParty::CoACD
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
@@ -248,7 +253,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 ${gem_name}.Private.Object
                 Gem::CommonFeaturesAtom.Static
-          Jolt::Jolt
+                Jolt::Jolt
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
     )
