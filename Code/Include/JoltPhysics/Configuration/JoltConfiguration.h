@@ -56,9 +56,6 @@ namespace JoltPhysics
         //! the object is allowed to go to sleep. Must be a positive number. (unit: m/s)
         float m_pointVelocitySleepThreshold = 0.03f;
 
-        //! By default, the simulation is deterministic, it is possible to turn this off by setting this setting to false. This will make the simulation run faster but it will no longer be deterministic.
-        bool m_deterministicSimulation = true;
-
         //! This is the max amount of rigid bodies that you can add to the physics system. If you try to add more you'll get an error.
         //! Note: This value is low because this is a simple test. For a real project use something in the order of 65536.
         unsigned int m_maxBodies = 65536;

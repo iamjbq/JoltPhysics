@@ -769,7 +769,6 @@ namespace JoltPhysics
             settings.mAllowSleeping = m_cachedSystemConfig.m_systemInitSettings.m_allowSleeping;
             settings.mTimeBeforeSleep = m_cachedSystemConfig.m_systemInitSettings.m_timeBeforeSleep;
             settings.mPointVelocitySleepThreshold = m_cachedSystemConfig.m_systemInitSettings.m_pointVelocitySleepThreshold;
-            settings.mDeterministicSimulation = m_cachedSystemConfig.m_systemInitSettings.m_deterministicSimulation;
             settings.mSpeculativeContactDistance = m_cachedSystemConfig.m_systemInitSettings.m_speculativeContactDistance;
             settings.mPenetrationSlop = m_cachedSystemConfig.m_systemInitSettings.m_penetrationSlop;
             settings.mBaumgarte = m_cachedSystemConfig.m_systemInitSettings.m_baumgarte;

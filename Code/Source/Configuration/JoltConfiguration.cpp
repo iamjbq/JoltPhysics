@@ -32,7 +32,6 @@ namespace JoltPhysics
                 ->Field("AllowSleeping", &SystemInitSettings::m_allowSleeping)
                 ->Field("TimeSleepThreshold", &SystemInitSettings::m_timeBeforeSleep)
                 ->Field("VelocitySleepThreshold", &SystemInitSettings::m_pointVelocitySleepThreshold)
-                ->Field("DeterministicSimulation", &SystemInitSettings::m_deterministicSimulation)
                 ->Field("CollisionSteps", &SystemInitSettings::m_collisionSteps)
                 ->Field("SpeculativeContactDistance", &SystemInitSettings::m_speculativeContactDistance)
                 ->Field("PenetrationSlop", &SystemInitSettings::m_penetrationSlop)
@@ -71,9 +70,6 @@ namespace JoltPhysics
                         "Tracks body center of mass and center point of the body bounding box faces which are furthest away from center.\n"
                         "All three points must be above the velocity threshold.")
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSpeedUnit())
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_deterministicSimulation,
-                        "Deterministic Simulation", "Whether the simulation should run deterministically.\n"
-                        "Default behaviour is deterministic, but can be disabled for increased performance at the cost of variation")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemInitSettings::m_collisionSteps,
                         "Collision Steps", "The number of collision steps for the solver to perform per update call.")
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
@@ -124,7 +120,6 @@ namespace JoltPhysics
             && m_allowSleeping == other.m_allowSleeping
             && m_timeBeforeSleep == other.m_timeBeforeSleep
             && m_pointVelocitySleepThreshold == other.m_pointVelocitySleepThreshold
-            && m_deterministicSimulation == other.m_deterministicSimulation
             && m_collisionSteps == other.m_collisionSteps
             && m_speculativeContactDistance == other.m_speculativeContactDistance
             && m_penetrationSlop == other.m_penetrationSlop
