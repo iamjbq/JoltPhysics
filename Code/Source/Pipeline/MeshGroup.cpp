@@ -22,19 +22,19 @@ namespace JoltPhysics
     {
         TriangleMeshAssetParams::TriangleMeshAssetParams()
         {
-            physx::PxCookingParams defaultCookingParams = physx::PxCookingParams(physx::PxTolerancesScale());
-            const AZ::u32 defaultMeshPreprocessParams = static_cast<AZ::u32>(defaultCookingParams.meshPreprocessParams);
-
-            m_mergeMeshes = true;
-            m_weldVertices = (defaultMeshPreprocessParams & physx::PxMeshPreprocessingFlag::eWELD_VERTICES) != 0;
-            m_disableCleanMesh = (defaultMeshPreprocessParams & physx::PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH) != 0;
-            m_force32BitIndices = (defaultMeshPreprocessParams & physx::PxMeshPreprocessingFlag::eFORCE_32BIT_INDICES) != 0;
-            m_suppressTriangleMeshRemapTable = defaultCookingParams.suppressTriangleMeshRemapTable;
-            m_buildTriangleAdjacencies = defaultCookingParams.buildTriangleAdjacencies;
-            m_meshWeldTolerance = defaultCookingParams.meshWeldTolerance;
-
-            defaultCookingParams.midphaseDesc.setToDefault(physx::PxMeshMidPhase::eBVH34);
-            m_numTrisPerLeaf = defaultCookingParams.midphaseDesc.mBVH34Desc.numPrimsPerLeaf;
+            // physx::PxCookingParams defaultCookingParams = physx::PxCookingParams(physx::PxTolerancesScale());
+            // const AZ::u32 defaultMeshPreprocessParams = static_cast<AZ::u32>(defaultCookingParams.meshPreprocessParams);
+            //
+            // m_mergeMeshes = true;
+            // m_weldVertices = (defaultMeshPreprocessParams & physx::PxMeshPreprocessingFlag::eWELD_VERTICES) != 0;
+            // m_disableCleanMesh = (defaultMeshPreprocessParams & physx::PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH) != 0;
+            // m_force32BitIndices = (defaultMeshPreprocessParams & physx::PxMeshPreprocessingFlag::eFORCE_32BIT_INDICES) != 0;
+            // m_suppressTriangleMeshRemapTable = defaultCookingParams.suppressTriangleMeshRemapTable;
+            // m_buildTriangleAdjacencies = defaultCookingParams.buildTriangleAdjacencies;
+            // m_meshWeldTolerance = defaultCookingParams.meshWeldTolerance;
+            //
+            // defaultCookingParams.midphaseDesc.setToDefault(physx::PxMeshMidPhase::eBVH34);
+            // m_numTrisPerLeaf = defaultCookingParams.midphaseDesc.mBVH34Desc.numPrimsPerLeaf;
         }
 
         void TriangleMeshAssetParams::Reflect(AZ::ReflectContext* context)
@@ -179,19 +179,19 @@ namespace JoltPhysics
 
         ConvexAssetParams::ConvexAssetParams()
         {
-            const physx::PxCookingParams defaultCookingParams = physx::PxCookingParams(physx::PxTolerancesScale());
-            const physx::PxConvexMeshDesc defaultconvexDesc;
-            const AZ::u32 defaultConvexFlags = static_cast<AZ::u32>(defaultconvexDesc.flags);
-
-            m_areaTestEpsilon = defaultCookingParams.areaTestEpsilon;
-            m_planeTolerance = defaultCookingParams.planeTolerance;
-            m_use16bitIndices = (defaultConvexFlags & physx::PxConvexFlag::e16_BIT_INDICES) != 0;
-            m_checkZeroAreaTriangles = (defaultConvexFlags & physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES) != 0;
-            m_quantizeInput = (defaultConvexFlags & physx::PxConvexFlag::eQUANTIZE_INPUT) != 0;
-            m_usePlaneShifting = (defaultConvexFlags & physx::PxConvexFlag::ePLANE_SHIFTING) != 0;
-            m_shiftVertices = (defaultConvexFlags & physx::PxConvexFlag::eSHIFT_VERTICES) != 0;
-            m_buildGpuData = false;
-            m_gaussMapLimit = defaultCookingParams.gaussMapLimit;
+            // const physx::PxCookingParams defaultCookingParams = physx::PxCookingParams(physx::PxTolerancesScale());
+            // const physx::PxConvexMeshDesc defaultconvexDesc;
+            // const AZ::u32 defaultConvexFlags = static_cast<AZ::u32>(defaultconvexDesc.flags);
+            //
+            // m_areaTestEpsilon = defaultCookingParams.areaTestEpsilon;
+            // m_planeTolerance = defaultCookingParams.planeTolerance;
+            // m_use16bitIndices = (defaultConvexFlags & physx::PxConvexFlag::e16_BIT_INDICES) != 0;
+            // m_checkZeroAreaTriangles = (defaultConvexFlags & physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES) != 0;
+            // m_quantizeInput = (defaultConvexFlags & physx::PxConvexFlag::eQUANTIZE_INPUT) != 0;
+            // m_usePlaneShifting = (defaultConvexFlags & physx::PxConvexFlag::ePLANE_SHIFTING) != 0;
+            // m_shiftVertices = (defaultConvexFlags & physx::PxConvexFlag::eSHIFT_VERTICES) != 0;
+            // m_buildGpuData = false;
+            // m_gaussMapLimit = defaultCookingParams.gaussMapLimit;
         }
 
         void ConvexAssetParams::Reflect(AZ::ReflectContext* context)
@@ -335,7 +335,7 @@ namespace JoltPhysics
         }
 
 
-        void PrimitiveAssetParams::Reflect(AZ::ReflectContext* context)
+        void PrimitiveAssetParams::Reflect([[maybe_unused]] AZ::ReflectContext* context)
         {
             if (
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -343,9 +343,9 @@ namespace JoltPhysics
             )
             {
                 serializeContext->Class<PrimitiveAssetParams>()->Version(1)
-                    ->Field("PrimitiveShapeTarget", &PrimitiveAssetParams::m_primitiveShapeTarget)
+                    // ->Field("PrimitiveShapeTarget", &PrimitiveAssetParams::m_primitiveShapeTarget)
                     ->Field("VolumeTermCoefficient", &PrimitiveAssetParams::m_volumeTermCoefficient);
-
+            
                 if (
                     AZ::EditContext* editContext = serializeContext->GetEditContext();
                     editContext
@@ -353,15 +353,15 @@ namespace JoltPhysics
                 {
                     editContext->Class<PrimitiveAssetParams>(QT_TRANSLATE_NOOP("JoltPhysics", "Primitive Asset Parameters"),
                         QT_TRANSLATE_NOOP("JoltPhysics", "Configure the parameters controlling the exported primitive asset."))
-
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PrimitiveAssetParams::m_primitiveShapeTarget, QT_TRANSLATE_NOOP("JoltPhysics", "Target Shape"),
-                            QT_TRANSLATE_NOOP("JoltPhysics", "<span>The shape that should be fitted to this mesh. If \"Automatic\" is selected, the "
-                            "algorithm will determine which of the shapes fits best.</span>"))
-                            ->EnumAttribute(PrimitiveShapeTarget::BestFit, QT_TRANSLATE_NOOP("JoltPhysics", "Automatic"))
-                            ->EnumAttribute(PrimitiveShapeTarget::Sphere, QT_TRANSLATE_NOOP("JoltPhysics", "Sphere"))
-                            ->EnumAttribute(PrimitiveShapeTarget::Box, QT_TRANSLATE_NOOP("JoltPhysics", "Box"))
-                            ->EnumAttribute(PrimitiveShapeTarget::Capsule, QT_TRANSLATE_NOOP("JoltPhysics", "Capsule"))
-
+            
+                        // ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PrimitiveAssetParams::m_primitiveShapeTarget, QT_TRANSLATE_NOOP("JoltPhysics", "Target Shape"),
+                        //     QT_TRANSLATE_NOOP("JoltPhysics", "<span>The shape that should be fitted to this mesh. If \"Automatic\" is selected, the "
+                        //     "algorithm will determine which of the shapes fits best.</span>"))
+                        //     ->EnumAttribute(PrimitiveShapeTarget::BestFit, QT_TRANSLATE_NOOP("JoltPhysics", "Automatic"))
+                        //     ->EnumAttribute(PrimitiveShapeTarget::Sphere, QT_TRANSLATE_NOOP("JoltPhysics", "Sphere"))
+                        //     ->EnumAttribute(PrimitiveShapeTarget::Box, QT_TRANSLATE_NOOP("JoltPhysics", "Box"))
+                        //     ->EnumAttribute(PrimitiveShapeTarget::Capsule, QT_TRANSLATE_NOOP("JoltPhysics", "Capsule"))
+            
                         ->DataElement(AZ_CRC_CE("VolumeTermCoefficient"), &PrimitiveAssetParams::m_volumeTermCoefficient, QT_TRANSLATE_NOOP("JoltPhysics", "Volume Term Coefficient"),
                             QT_TRANSLATE_NOOP("JoltPhysics", "<span>This parameter controls how aggressively the primitive fitting algorithm will try "
                             "to minimize the volume of the fitted primitive. A value of 0 (no volume minimization) is "
@@ -382,10 +382,10 @@ namespace JoltPhysics
             }
         }
 
-        PrimitiveShapeTarget PrimitiveAssetParams::GetPrimitiveShapeTarget() const
-        {
-            return m_primitiveShapeTarget;
-        }
+        // PrimitiveShapeTarget PrimitiveAssetParams::GetPrimitiveShapeTarget() const
+        // {
+        //     return m_primitiveShapeTarget;
+        // }
 
         float PrimitiveAssetParams::GetVolumeTermCoefficient() const
         {
@@ -555,7 +555,7 @@ namespace JoltPhysics
                     editContext
                 )
                 {
-                    editContext->Class<MeshGroup>(QT_TRANSLATE_NOOP("JoltPhysics", "PhysX Mesh group"), QT_TRANSLATE_NOOP("JoltPhysics", "Configure PhysX mesh data exporting."))
+                    editContext->Class<MeshGroup>(QT_TRANSLATE_NOOP("JoltPhysics", "Jolt Mesh group"), QT_TRANSLATE_NOOP("JoltPhysics", "Configure Jolt mesh data exporting."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -563,7 +563,7 @@ namespace JoltPhysics
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/physx-tab/")
 
-                        ->DataElement(AZ_CRC_CE("ManifestName"), &MeshGroup::m_name, QT_TRANSLATE_NOOP("JoltPhysics", "Name PhysX Mesh"),
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &MeshGroup::m_name, QT_TRANSLATE_NOOP("JoltPhysics", "Name Jolt Mesh"),
                             QT_TRANSLATE_NOOP("JoltPhysics", "<span>Name for the group. This name will also be used as a part of the name for the "
                             "generated file.</span>"))
 

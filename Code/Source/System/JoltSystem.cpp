@@ -57,7 +57,7 @@ namespace JoltPhysics
     // Callback for asserts, connect this to your own assert handler if you have one
     static bool JoltAssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, JPH::uint inLine)
     {
-        AZ_Assert(false, "Jolt - %s:%i: (%s) %s", inFile, inLine, inExpression, (inMessage != nullptr? inMessage : ""))
+        AZ_Assert(false, "Jolt System - %s:%i: (%s) %s", inFile, inLine, inExpression, (inMessage != nullptr? inMessage : ""))
 
         // Breakpoint
         return true;

@@ -5,6 +5,8 @@
 #include <Clients/EditorMeshColliderComponent.h>
 #include <Clients/EditorRigidBodyComponent.h>
 #include <Clients/EditorStaticRigidBodyComponent.h>
+#include <Pipeline/MeshBehavior.h>
+#include <Pipeline/MeshExporter.h>
 #include <Editor/JoltEditorSettingsRegistryManager.h>
 
 namespace JoltPhysics
@@ -19,6 +21,8 @@ namespace JoltPhysics
             EditorMeshColliderComponent::CreateDescriptor(),
             EditorRigidBodyComponent::CreateDescriptor(),
             EditorStaticRigidBodyComponent::CreateDescriptor(),
+            Pipeline::MeshBehavior::CreateDescriptor(),
+            Pipeline::MeshExporter::CreateDescriptor()
         };
 
         return descriptors;

@@ -84,18 +84,17 @@ namespace JoltPhysics
             const Physics::ColliderConfiguration& colliderConfigurationA,
             const Physics::ColliderConfiguration& colliderConfigurationB) override;
 
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
 
-        ////////////////////////////////////////////////////////////////////////
+        // Assets related data
+        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
+
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
-        ////////////////////////////////////////////////////////////////////////
 
     private:
         // Not sure if this is needed for Jolt implementation, but maybe a good switch to have

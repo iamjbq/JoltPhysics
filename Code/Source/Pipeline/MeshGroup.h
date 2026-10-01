@@ -4,6 +4,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
@@ -112,11 +113,11 @@ namespace JoltPhysics
 
             static void Reflect(AZ::ReflectContext* context);
 
-            PrimitiveShapeTarget GetPrimitiveShapeTarget() const;
+            // PrimitiveShapeTarget GetPrimitiveShapeTarget() const;
             float GetVolumeTermCoefficient() const;
 
         private:
-            PrimitiveShapeTarget m_primitiveShapeTarget = PrimitiveShapeTarget::BestFit;
+            // PrimitiveShapeTarget m_primitiveShapeTarget = PrimitiveShapeTarget::BestFit;
             float m_volumeTermCoefficient = 0.0f;
         };
 

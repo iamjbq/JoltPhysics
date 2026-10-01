@@ -1,3 +1,5 @@
+#include <JoltPhysics/Utils.h>
+
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
@@ -19,33 +21,26 @@
 #include <AzFramework/Physics/PhysicsSystem.h>
 // #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
-// #include <AzFramework/Physics/CollisionBus.h>
 
-#include <Jolt/Jolt.h>
 #include <Jolt/Math/Vec3.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
-#include <Jolt/Physics/Collision/Shape/Shape.h>
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
 #include "Jolt/Physics/Collision/Shape/BoxShape.h"
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
 #include "Jolt/Physics/Collision/Shape/CylinderShape.h"
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
-// #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
-// #include "Jolt/Physics/Collision/Shape/HeightFieldShape.h"
-// #include "Jolt/Physics/Collision/Shape/MeshShape.h"
-// #include "Jolt/Physics/Collision/Shape/PlaneShape.h"
-// #include "Jolt/Physics/SoftBody/SoftBodyShape.h"
 
 #include <Clients/JoltPhysicsSystemComponent.h>
 #include <JoltPhysics/MeshAsset.h>
-#include <JoltPhysics/Utils.h>
 #include <JoltPhysics/Material/JoltMaterialConfiguration.h>
 #include <JoltPhysics/MathConversions.h>
 #include <JoltPhysics/EditorColliderComponentRequestBus.h>
 #include <System/JoltSystem.h>
 #include <Clients/Shape.h>
-
+#include <System/JoltByteStreamWrapper.h>
 #include <Utils.h>
+
+#include "Jolt/Core/StreamWrapper.h"
 
 namespace JoltPhysics
 {
@@ -334,7 +329,7 @@ namespace JoltPhysics
                     float halfHeight = 0.5f * height - radius;
                     if (halfHeight <= 0.0f)
                     {
-                        AZ_Warning("Jolt", halfHeight < 0.0f,
+                        AZ_Warning("Jolt Utils", halfHeight < 0.0f,
                                    "Height must exceed twice the radius in capsule configuration (height: %f, radius: %f)",
                                    capsuleConfig.m_height, capsuleConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
@@ -365,7 +360,7 @@ namespace JoltPhysics
                     float halfHeight = 0.5f * height;
                     if (halfHeight <= 0.0f)
                     {
-                        AZ_Warning("Jolt", halfHeight < 0.0f,
+                        AZ_Warning("Jolt Utils", halfHeight < 0.0f,
                                    "Height must exceed twice the radius in cylinder configuration (height: %f, radius: %f)",
                                    cylinderConfig.m_height, cylinderConfig.m_radius)
                         halfHeight = std::numeric_limits<float>::epsilon();
@@ -375,6 +370,51 @@ namespace JoltPhysics
                         halfHeight, radius, JPH::cDefaultConvexRadius, joltMaterials.front());
                     newCylinder->SetDensity(joltMaterials.front()->GetDensity());
                     newShape = newCylinder;
+                    break;
+                }
+            case Physics::ShapeType::Native:
+                {
+                    break;
+                }
+            case Physics::ShapeType::CookedMesh:
+                {
+                    const Physics::CookedMeshShapeConfiguration& constCookedMeshShapeConfig =
+                    static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
+
+                    // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                    // native mesh pointer that gets stored in the configuration.
+                    Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+                        const_cast<Physics::CookedMeshShapeConfiguration&>(constCookedMeshShapeConfig);
+                    
+                    // Use the cached mesh object if it is there, otherwise create one and save in the shape configuration
+                    if (cookedMeshShapeConfig.GetCachedNativeMesh())
+                    {
+                        newShape = static_cast<JPH::Shape*>(cookedMeshShapeConfig.GetCachedNativeMesh());
+                    }
+                    else
+                    {
+                        AZStd::vector<AZ::u8> byteArray;
+                        JoltPhysics::JoltByteStreamIn streamIn(byteArray);
+                        
+                        streamIn.ReadBytes(const_cast<AZ::u8*>(cookedMeshShapeConfig.GetCookedMeshData().data()), cookedMeshShapeConfig.GetCookedMeshData().size());
+                        
+                        if (streamIn.IsFailed())
+                        {
+                            AZ_Printf("Jolt Utils", "Reading cooked mesh data from config failed") // TODO: failed but compiled
+                            break;
+                        }
+                        
+                        JPH::Shape::ShapeResult result = JPH::Shape::sRestoreFromBinaryState(streamIn);
+                        
+                        if (result.HasError())
+                        {
+                            AZ_Printf("Jolt Utils", "Restoring mesh asset from binary failed: %s", result.GetError().c_str())
+                            break;
+                        }
+                        
+                        newShape = result.Get();
+                        cookedMeshShapeConfig.SetCachedNativeMesh(newShape);
+                    }
                     break;
                 }
             case Physics::ShapeType::PhysicsAsset:
@@ -669,73 +709,73 @@ namespace JoltPhysics
                 return;
             }
 
-            // const Pipeline::MeshAsset* asset = assetConfiguration.m_asset.GetAs<Pipeline::MeshAsset>();
+            const Pipeline::MeshAsset* asset = assetConfiguration.m_asset.GetAs<Pipeline::MeshAsset>();
 
-            // if (!asset)
-            // {
-            //     AZ_Error("Jolt", false, "GetColliderShapesFromAsset: Mesh Asset %s is null."
-            //         "Please check the file is in the correct format. Try to delete it and get AssetProcessor re-create it. "
-            //         "The data is loaded in Pipeline::MeshAssetHandler::LoadAssetData()",
-            //         assetConfiguration.m_asset.GetHint().c_str());
-            //     return;
-            // }
+            if (!asset)
+            {
+                AZ_Error("Jolt", false, "GetColliderShapesFromAsset: Mesh Asset %s is null."
+                    "Please check the file is in the correct format. Try to delete it and get AssetProcessor re-create it. "
+                    "The data is loaded in Pipeline::MeshAssetHandler::LoadAssetData()",
+                    assetConfiguration.m_asset.GetHint().c_str());
+                return;
+            }
 
-            // const Pipeline::MeshAssetData& assetData = asset->m_assetData;
-            // const Pipeline::MeshAssetData::ShapeConfigurationList& shapeConfigList = assetData.m_colliderShapes;
+            const Pipeline::MeshAssetData& assetData = asset->m_assetData;
+            const Pipeline::MeshAssetData::ShapeConfigurationList& shapeConfigList = assetData.m_colliderShapes;
 
-            // resultingColliderShapes.reserve(resultingColliderShapes.size() + shapeConfigList.size());
-            //
-            // for (size_t shapeIndex = 0; shapeIndex < shapeConfigList.size(); shapeIndex++)
-            // {
-            //     const Pipeline::MeshAssetData::ShapeConfigurationPair& shapeConfigPair = shapeConfigList[shapeIndex];
-            //
-            //     AZStd::shared_ptr<Physics::ColliderConfiguration> thisColliderConfiguration =
-            //         AZStd::make_shared<Physics::ColliderConfiguration>(originalColliderConfiguration);
-            //
-            //     AZ::u16 shapeMaterialIndex = assetData.m_materialIndexPerShape[shapeIndex];
-            //
-            //     // Triangle meshes have material indices cooked in the data.
-            //     if (shapeMaterialIndex != Pipeline::MeshAssetData::TriangleMeshMaterialIndex)
-            //     {
-            //         // Clear the materials that came in from the component collider configuration
-            //         thisColliderConfiguration->m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
-            //
-            //         // Set the material that is relevant for this specific shape
-            //         thisColliderConfiguration->m_materialSlots.SetMaterialAsset(
-            //             0,
-            //             originalColliderConfiguration.m_materialSlots.GetMaterialAsset(shapeMaterialIndex));
-            //     }
-            //
-            //     // Here we use the collider configuration data saved in the asset to update the one coming from the component
-            //     if (const Pipeline::AssetColliderConfiguration* optionalColliderData = shapeConfigPair.first.get())
-            //     {
-            //         optionalColliderData->UpdateColliderConfiguration(*thisColliderConfiguration);
-            //     }
-            //
-            //     // Update the scale with the data from the asset configuration
-            //     AZStd::shared_ptr<Physics::ShapeConfiguration> thisShapeConfiguration = shapeConfigPair.second;
-            //     thisShapeConfiguration->m_scale = assetConfiguration.m_scale * assetConfiguration.m_assetScale;
-            //
-            //     // If the shape is a primitive and there is non-uniform scale, replace it with a convex approximation
-            //     if (hasNonUniformScale && Utils::IsPrimitiveShape(*thisShapeConfiguration))
-            //     {
-            //         auto scaledPrimitive = Utils::CreateConvexFromPrimitive(*thisColliderConfiguration,
-            //             *thisShapeConfiguration, subdivisionLevel, thisShapeConfiguration->m_scale);
-            //         if (scaledPrimitive.has_value())
-            //         {
-            //             thisShapeConfiguration = AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledPrimitive.value());
-            //             physx::PxGeometryHolder pxGeometryHolder;
-            //             CreatePxGeometryFromConfig(*thisShapeConfiguration, pxGeometryHolder);
-            //             thisColliderConfiguration->m_rotation = AZ::Quaternion::CreateIdentity();
-            //             thisColliderConfiguration->m_position = AZ::Vector3::CreateZero();
-            //             resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
-            //         }
-            //     }
-            //     else
-            //     {
-            //         resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
-            //     }
-            // }
+            resultingColliderShapes.reserve(resultingColliderShapes.size() + shapeConfigList.size());
+            
+            for (size_t shapeIndex = 0; shapeIndex < shapeConfigList.size(); shapeIndex++)
+            {
+                const Pipeline::MeshAssetData::ShapeConfigurationPair& shapeConfigPair = shapeConfigList[shapeIndex];
+            
+                AZStd::shared_ptr<Physics::ColliderConfiguration> thisColliderConfiguration =
+                    AZStd::make_shared<Physics::ColliderConfiguration>(originalColliderConfiguration);
+            
+                AZ::u16 shapeMaterialIndex = assetData.m_materialIndexPerShape[shapeIndex];
+            
+                // Triangle meshes have material indices cooked in the data.
+                if (shapeMaterialIndex != Pipeline::MeshAssetData::TriangleMeshMaterialIndex)
+                {
+                    // Clear the materials that came in from the component collider configuration
+                    thisColliderConfiguration->m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
+            
+                    // Set the material that is relevant for this specific shape
+                    thisColliderConfiguration->m_materialSlots.SetMaterialAsset(
+                        0,
+                        originalColliderConfiguration.m_materialSlots.GetMaterialAsset(shapeMaterialIndex));
+                }
+            
+                // Here we use the collider configuration data saved in the asset to update the one coming from the component
+                if (const Pipeline::AssetColliderConfiguration* optionalColliderData = shapeConfigPair.first.get())
+                {
+                    optionalColliderData->UpdateColliderConfiguration(*thisColliderConfiguration);
+                }
+            
+                // Update the scale with the data from the asset configuration
+                AZStd::shared_ptr<Physics::ShapeConfiguration> thisShapeConfiguration = shapeConfigPair.second;
+                thisShapeConfiguration->m_scale = assetConfiguration.m_scale * assetConfiguration.m_assetScale;
+            
+                // If the shape is a primitive and there is non-uniform scale, replace it with a convex approximation
+                if (hasNonUniformScale && Utils::IsPrimitiveShape(*thisShapeConfiguration)) // TODO: determine whether to keep this
+                {
+                    auto scaledPrimitive = Utils::CreateConvexFromPrimitive(*thisColliderConfiguration,
+                        *thisShapeConfiguration, subdivisionLevel, thisShapeConfiguration->m_scale);
+                    if (scaledPrimitive.has_value())
+                    {
+                        thisShapeConfiguration = AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(scaledPrimitive.value());
+                        // physx::PxGeometryHolder pxGeometryHolder;
+                        // CreatePxGeometryFromConfig(*thisShapeConfiguration, pxGeometryHolder);
+                        thisColliderConfiguration->m_rotation = AZ::Quaternion::CreateIdentity();
+                        thisColliderConfiguration->m_position = AZ::Vector3::CreateZero();
+                        resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
+                    }
+                }
+                else
+                {
+                    resultingColliderShapes.emplace_back(thisColliderConfiguration, thisShapeConfiguration);
+                }
+            }
         }
 
         void CreateShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
@@ -846,19 +886,17 @@ namespace JoltPhysics
 
             assetData.m_colliderShapes.emplace_back(colliderConfig, shapeConfig);
 
+            return Utils::WriteCookedMeshToFile(filePath, assetData);
+        }
+
+        bool WriteCookedMeshToFile(const AZStd::string& filePath, const Pipeline::MeshAssetData& assetData)
+        {
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext,
                                                          &AZ::ComponentApplicationRequests::GetSerializeContext);
+
             return AZ::Utils::SaveObjectToFile(filePath, AZ::DataStream::ST_BINARY, &assetData, serializeContext);
         }
-
-        // bool WriteCookedMeshToFile(const AZStd::string& filePath, const Pipeline::MeshAssetData& assetData)
-        // {
-        //     AZ::SerializeContext* serializeContext = nullptr;
-        //     AZ::ComponentApplicationBus::BroadcastResult(serializeContext,
-        //                                                  &AZ::ComponentApplicationRequests::GetSerializeContext);
-        //     return AZ::Utils::SaveObjectToFile(filePath, AZ::DataStream::ST_BINARY, &assetData, serializeContext);
-        // }
 
         namespace Geometry
         {

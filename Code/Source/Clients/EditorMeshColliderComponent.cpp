@@ -211,7 +211,7 @@ namespace JoltPhysics
     void EditorMeshColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        // required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorMeshColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -238,7 +238,7 @@ namespace JoltPhysics
             {
                 editContext
                     ->Class<EditorMeshColliderComponent>(
-                    QT_TRANSLATE_NOOP("JoltPhysics", "Jolt Mesh Collider"), QT_TRANSLATE_NOOP("JoltPhysics", "Creates geometry in the Jolt simulation using geometry from an asset."))
+                    QT_TRANSLATE_NOOP("JoltPhysics", "Mesh Collider"), QT_TRANSLATE_NOOP("JoltPhysics", "Creates geometry in the Jolt simulation using geometry from an asset."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Jolt")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXMeshCollider.svg")
@@ -329,6 +329,11 @@ namespace JoltPhysics
 
     void EditorMeshColliderComponent::Activate()
     {
+        // Hide the config properties which don't correspond with Jolt collision shapes
+        m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::CollisionLayer, false);
+        m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
+        m_configuration.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::ContactOffset, false);
+        
         m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
         {
@@ -450,7 +455,7 @@ namespace JoltPhysics
         auto sharedColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(m_configuration);
         m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_subdivisionLevel = m_proxyShapeConfiguration.m_subdivisionLevel;
 
-        auto* meshColliderComponent = gameEntity->CreateComponent<MeshColliderComponent>(); // TODO: Make runtime mesh collider
+        auto* meshColliderComponent = gameEntity->CreateComponent<MeshColliderComponent>();
         meshColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
             sharedColliderConfig,
             AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_proxyShapeConfiguration.m_physicsAsset.m_configuration)) });
@@ -580,7 +585,6 @@ namespace JoltPhysics
             return;
         }
         
-        // TODO:
         Utils::SetMaterialsFromPhysicsAssetShape(m_proxyShapeConfiguration.m_physicsAsset.m_configuration, m_configuration.m_materialSlots);
 
         m_configuration.m_materialSlots.SetSlotsReadOnly(m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_useMaterialsFromAsset);

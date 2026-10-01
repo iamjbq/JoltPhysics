@@ -36,6 +36,7 @@
 #include "Jolt/Physics/Collision/Shape/ConvexHullShape.h"
 #include "Jolt/Physics/Collision/Shape/MeshShape.h"
 #include "JoltPhysics/MathConversions.h"
+#include "System/JoltByteStreamWrapper.h"
 
 
 // A utility macro helping set/clear bits in a single line
@@ -49,47 +50,7 @@ namespace JoltPhysics
         namespace SceneEvents = AZ::SceneAPI::Events;
         namespace SceneUtil = AZ::SceneAPI::Utilities;
         
-        class JoltByteStreamOut : public JPH::StreamOut
-        {
-        public:
-            JoltByteStreamOut(AZ::IO::ByteContainerStream<AZ::u8>& inContainer) : m_byteStream(inContainer) { }
-            
-            void WriteBytes(const void* inData, size_t inNumBytes) override {m_byteStream.Write(inNumBytes, inData);}
-            
-            bool IsFailed() const override {return !m_byteStream.IsOpen();}
-            
-        private:
-            AZ::IO::ByteContainerStream<AZ::u8>& m_byteStream;
-        };
-        
-        class JoltByteStreamIn : public JPH::StreamIn
-        {
-        public:
-            JoltByteStreamIn(AZ::IO::ByteContainerStream<AZ::u8>& inContainer) : m_byteStream(inContainer) { }
-            
-            void ReadBytes(void* outData, size_t inNumBytes) override { m_byteStream.Read(inNumBytes, outData); }
-            
-            bool IsEOF() const override { return m_byteStream.GetCurPos() >= m_byteStream.GetLength(); }
-            
-            bool IsFailed() const override { return !m_byteStream.IsOpen(); }
-            
-        private:
-            AZ::IO::ByteContainerStream<AZ::u8>& m_byteStream;
-        };
-
-        // static physx::PxDefaultAllocator pxDefaultAllocatorCallback;
         static const char* const DefaultMaterialName = "default";
-
-        // Implementation of the PhysX error callback interface directing errors to ErrorWindow output.
-        // static class PxExportErrorCallback
-        //     : public physx::PxErrorCallback
-        // {
-        // public:
-        //     void reportError([[maybe_unused]] physx::PxErrorCode::Enum code, [[maybe_unused]] const char* message, [[maybe_unused]] const char* file, [[maybe_unused]] int line) override final
-        //     {
-        //         AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "PxErrorCode %i: %s (line %i in %s)", code, message, line, file);
-        //     }
-        // } pxDefaultErrorCallback;
 
         // A struct to store the geometry data per scene node
         struct NodeCollisionGeomExportData
@@ -106,7 +67,7 @@ namespace JoltPhysics
         {
             void Log(const char* const msg) override final
             {
-                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "V-HACD: %s", msg)
+                AZ_Trace(AZ::SceneAPI::Utilities::LogWindow, "V-HACD: %s", msg)
             }
         } vhacdDefaultLogCallback;
 
@@ -278,28 +239,32 @@ namespace JoltPhysics
 
             bool ValidateCookedTriangleMesh(void* assetData, AZ::u32 assetDataSize)
             {
-                // std::stringstream data;
-                // JPH::StreamInWrapper streamIn(data);
-                
-                AZ::IO::ByteContainerStream<AZ::u8> byteContainer;
-                JoltPhysics::Pipeline::JoltByteStreamIn streamIn(byteContainer);
+                AZStd::vector<AZ::u8> byteArray;
+                JoltPhysics::JoltByteStreamIn streamIn(byteArray);
                 streamIn.ReadBytes(assetData, assetDataSize);
                 
                 JPH::Shape::ShapeResult result = JPH::Shape::sRestoreFromBinaryState(streamIn);
+                
+                if (result.HasError())
+                {
+                    AZ_Printf("ValidateCookedTriangleMesh", "Cooking Mesh failed: %s", result.GetError().c_str())
+                }
                 
                 return result.IsValid();
             }
 
             bool ValidateCookedConvexMesh(void* assetData, AZ::u32 assetDataSize)
             {
-                // std::stringstream data;
-                // JPH::StreamInWrapper streamIn(data);
-                
-                AZ::IO::ByteContainerStream<AZ::u8> byteContainer;
-                JoltPhysics::Pipeline::JoltByteStreamIn streamIn(byteContainer);
+                AZStd::vector<AZ::u8> byteArray;
+                JoltPhysics::JoltByteStreamIn streamIn(byteArray);
                 streamIn.ReadBytes(assetData, assetDataSize);
                 
                 JPH::Shape::ShapeResult result = JPH::Shape::sRestoreFromBinaryState(streamIn);
+                
+                if (result.HasError())
+                {
+                    AZ_Trace(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", result.GetError().c_str())
+                }
                 
                 return result.IsValid();
             }
@@ -341,7 +306,7 @@ namespace JoltPhysics
                         AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = sceneGraph.Find(name);
                         if (!nodeIndex.IsValid())
                         {
-                            AZ_TracePrintf(
+                            AZ_Trace(
                                 AZ::SceneAPI::Utilities::WarningWindow,
                                 "Node '%s' was not found in the scene graph.",
                                 name.c_str());
@@ -360,7 +325,7 @@ namespace JoltPhysics
                             GenerateLocalNodeMaterialMap(sceneGraph, nodeIndex);
                         if (localSourceSceneMaterialsList.empty())
                         {
-                            AZ_TracePrintf(
+                            AZ_Trace(
                                 AZ::SceneAPI::Utilities::WarningWindow,
                                 "Node '%.*s' does not have any material assigned to it. Material '%s' will be used.",
                                 AZ_STRING_ARG(nodeName),
@@ -384,7 +349,7 @@ namespace JoltPhysics
                                 const int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
                                 if (materialId >= localSourceSceneMaterialsList.size())
                                 {
-                                    AZ_TracePrintf(
+                                    AZ_Trace(
                                         AZ::SceneAPI::Utilities::ErrorWindow,
                                         "materialId %d for face %d is out of bound for localSourceSceneMaterialsList (size %d).",
                                         materialId,
@@ -415,7 +380,7 @@ namespace JoltPhysics
 
                         if (limitToOneMaterial && nodeMaterials.size() > 1)
                         {
-                            AZ_TracePrintf(
+                            AZ_Trace(
                                 AZ::SceneAPI::Utilities::WarningWindow,
                                 "Node '%s' has %d materials, but cooking methods Convex and Primitive support one material per node. The "
                                 "first material '%s' will be used.",
@@ -442,7 +407,7 @@ namespace JoltPhysics
             AZStd::unordered_set<AZ::u16> uniqueFaceMaterials(faceMaterials.begin(), faceMaterials.end());
             if (uniqueFaceMaterials.size() > 1)
             {
-                AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow,
+                AZ_Trace(AZ::SceneAPI::Utilities::WarningWindow,
                     "Should only have 1 material assigned to a non-triangle mesh. Assigned: %d", uniqueFaceMaterials.size());
             }
         }
@@ -456,12 +421,6 @@ namespace JoltPhysics
             const MeshGroup& meshGroup,
             [[maybe_unused]] const AZStd::string& platformIdentifier)
         {
-            // Make sure an allocator exists
-            if (JPH::Allocate == nullptr)
-            {
-                JPH::RegisterDefaultAllocator();
-            }
-            
             bool cookingSuccessful = false;
             AZStd::string cookingResultErrorCodeString;
             const ConvexAssetParams& convexAssetParams = meshGroup.GetConvexAssetParams();
@@ -500,23 +459,19 @@ namespace JoltPhysics
                     // pxCookingParams.meshPreprocessParams |= physx::PxMeshPreprocessingFlag::eFORCE_32BIT_INDICES;
                 }
             }
-
-            // physx::PxBoundedData strideData;
-            // strideData.count = static_cast<physx::PxU32>(vertices.size());
-            // strideData.stride = sizeof(AZ::Vector3);
-            // strideData.data = vertices.data();
             
-            AZ::IO::ByteContainerStream<AZ::u8> byteStream;
-            JoltPhysics::Pipeline::JoltByteStreamOut streamOut(byteStream);
-
+            AZStd::vector<AZ::u8> byteArray;
+            JoltPhysics::JoltByteStreamOut streamOut(byteArray);
+            
             if (shouldExportAsConvex)
             {
-                JPH::Array<JPH::Vec3> joltVertices;
+                JPH::Array<JPH::Vec3> joltVertices; 
                 joltVertices.reserve(vertices.size());
                 for (const AZ::Vector3& vertex : vertices)
                 {
                     joltVertices.push_back(JoltMathConvert(vertex));
                 }
+                AZ_Printf("shouldExportAsConvex", "joltVertices: %d", joltVertices.size())
                 
                 JPH::ConvexHullShapeSettings convexSettings;
                 convexSettings.mPoints = joltVertices;
@@ -524,13 +479,13 @@ namespace JoltPhysics
                 
                 if (result.HasError())
                 {
-                    AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", result.GetError().c_str())
+                    AZ_Trace(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", result.GetError().c_str())
                     return false;
                 }
                 
                 result.Get()->SaveBinaryState(streamOut);
                 
-                cookingSuccessful = Utils::ValidateCookedConvexMesh(byteStream.GetData(), static_cast<AZ::u32>(byteStream.GetLength())); 
+                cookingSuccessful = Utils::ValidateCookedConvexMesh(byteArray.data(), static_cast<AZ::u32>(byteArray.size())); 
 
                 // Check how many unique materials are assigned onto the convex mesh.
                 // Report it to the user if there's more than 1 since Jolt only supports a single material assigned to a convex hull
@@ -541,17 +496,17 @@ namespace JoltPhysics
                 JPH::VertexList vertexList;
                 JPH::IndexedTriangleList triangleList;
             
-                vertexList.reserve(vertices.size());
-            
-                for (int index = 0; index < vertices.size(); index++)
+                vertexList.resize(vertices.size());
+                
+                for (size_t vertIndex = 0; vertIndex < vertices.size(); vertIndex++)
                 {
-                    vertexList[index] = ToFloat3(vertices[index]);
+                    vertexList[vertIndex] = ToFloat3(vertices[vertIndex]);
                 }
             
                 const AZ::u32 triangleCount = indices.size() / 3;
                 triangleList.reserve(triangleCount);
             
-                for (int index = 0; index < triangleCount; index++)
+                for (AZ::u32 index = 0; index < triangleCount; index++)
                 {
                     const AZ::u32 index0 = indices[index * 3 + 0];
                     const AZ::u32 index1 = indices[index * 3 + 1];
@@ -586,32 +541,24 @@ namespace JoltPhysics
                 
                 if (result.HasError())
                 {
-                    AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", result.GetError().c_str())
+                    AZ_Trace(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", result.GetError().c_str())
                     return false;
                 }
                 
                 result.Get()->SaveBinaryState(streamOut);
                 
-                // physx::PxTriangleMeshDesc meshDesc;
-                // meshDesc.points = strideData;
-                //
-                // meshDesc.triangles.count = static_cast<physx::PxU32>(indices.size() / 3);
-                // meshDesc.triangles.stride = sizeof(AZ::u32) * 3;
-                // meshDesc.triangles.data = indices.data();
-                //
-                // meshDesc.materialIndices.stride = sizeof(AZ::u16);
-                // meshDesc.materialIndices.data = faceMaterials.data();
-                
-                cookingSuccessful = Utils::ValidateCookedTriangleMesh(byteStream.GetData(), static_cast<AZ::u32>(byteStream.GetLength()));
+                cookingSuccessful = Utils::ValidateCookedTriangleMesh(byteArray.data(), static_cast<AZ::u32>(byteArray.size()));
             }
 
             if (cookingSuccessful)
             {
-                output->insert(output->end(), byteStream.GetData(), byteStream.GetData() + byteStream.GetLength());
+                AZ_Printf("cookingSuccessful", "sending to output")
+                output->insert(output->end(), byteArray.data(), byteArray.data() + byteArray.size());
             }
             else
             {
-                AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", cookingResultErrorCodeString.c_str())
+                AZ_Printf("!cookingSuccessful", "validation failed")
+                AZ_Trace(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", cookingResultErrorCodeString.c_str())
             }
 
             return cookingSuccessful;
@@ -649,16 +596,16 @@ namespace JoltPhysics
                 {
                     // Only one material can be assigned to a primitive collider, so report a warning if the mesh has
                     // multiple materials assigned to it.
-                    RequireSingleFaceMaterial(subMesh.m_perFaceMaterialIndices);
-
-                    const PrimitiveAssetParams& primitiveAssetParams = meshGroup.GetPrimitiveAssetParams();
-
-                    shape = FitPrimitiveShape(
-                        subMesh.m_nodeName,
-                        subMesh.m_vertices,
-                        primitiveAssetParams.GetVolumeTermCoefficient(),
-                        primitiveAssetParams.GetPrimitiveShapeTarget()
-                    );
+                    // RequireSingleFaceMaterial(subMesh.m_perFaceMaterialIndices);
+                    //
+                    // const PrimitiveAssetParams& primitiveAssetParams = meshGroup.GetPrimitiveAssetParams();
+                    //
+                    // shape = FitPrimitiveShape(
+                    //     subMesh.m_nodeName,
+                    //     subMesh.m_vertices,
+                    //     primitiveAssetParams.GetVolumeTermCoefficient(),
+                    //     primitiveAssetParams.GetPrimitiveShapeTarget()
+                    // );
                 }
                 else
                 {
@@ -669,6 +616,7 @@ namespace JoltPhysics
 
                     if (success)
                     {
+                        AZ_Printf("WriteJoltMeshAsset", "Cooking Mesh exported successfully")
                         AZStd::shared_ptr<Physics::CookedMeshShapeConfiguration> shapeConfig =
                             AZStd::make_shared<Physics::CookedMeshShapeConfiguration>();
 
@@ -683,21 +631,22 @@ namespace JoltPhysics
                     }
                     else
                     {
-                        AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Mesh cooking terminated unsuccessfully.");
+                        AZ_Trace(AZ::SceneAPI::Utilities::ErrorWindow, "Mesh cooking terminated unsuccessfully")
                     }
                 }
 
                 if (shape.second)
                 {
+                    AZ_Printf("WriteJoltMeshAsset", "Shape added to assetData")
                     assetData.m_colliderShapes.push_back(shape);
                 }
                 else
                 {
-                    AZ_TracePrintf(
+                    AZ_Trace(
                         AZ::SceneAPI::Utilities::ErrorWindow,
                         "WriteJoltMeshAsset: Failed to create asset. Node: %s",
                         subMesh.m_nodeName.c_str()
-                    );
+                    )
 
                     return SceneEvents::ProcessingResult::Failure;
                 }
@@ -727,6 +676,7 @@ namespace JoltPhysics
             {
                 AZStd::string productUuidString = meshGroup.GetId().ToString<AZStd::string>();
                 AZ::Uuid productUuid = AZ::Uuid::CreateName(productUuidString);
+                AZ_Printf("WriteJoltMeshAsset", "Successfully wrote to file: %s", productUuidString.c_str())
 
                 auto& meshProduct = context.GetProductList().AddProduct(
                     AZStd::move(filename), productUuid, AZ::AzTypeInfo<MeshAsset>::Uuid(), AZStd::nullopt, AZStd::nullopt);
@@ -752,7 +702,7 @@ namespace JoltPhysics
             }
             else
             {
-                AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Unable to write to a file for a PhysX mesh asset. AssetName: %s, filename: %s", assetName.c_str(), filename.c_str());
+                AZ_Trace(AZ::SceneAPI::Utilities::ErrorWindow, "Unable to write to a file for a PhysX mesh asset. AssetName: %s, filename: %s", assetName.c_str(), filename.c_str());
                 result = SceneEvents::ProcessingResult::Failure;
             }
 
@@ -817,7 +767,7 @@ namespace JoltPhysics
             const AZ::u32 numberOfHulls = decomposer->GetNConvexHulls();
 
             AZ_Assert(numberOfHulls > 0, "V-HACD returned no convex hulls.");
-            AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Convex decomposition returned %d hulls", numberOfHulls);
+            AZ_Trace(AZ::SceneAPI::Utilities::LogWindow, "Convex decomposition returned %d hulls", numberOfHulls);
 
             for (AZ::u32 hullCounter = 0; hullCounter < numberOfHulls; ++hullCounter)
             {
@@ -872,7 +822,7 @@ namespace JoltPhysics
             auto view = SceneContainers::MakeExactFilterView<MeshGroup>(valueStorage);
 
             ScopedVHACD decomposer;
-
+            
             for (const MeshGroup& joltMeshGroup : view)
             {
                 // Gather material data from asset for the mesh group
@@ -929,7 +879,8 @@ namespace JoltPhysics
                 }
 
                 SceneEvents::ProcessingResult enumerationResult = SceneEvents::ProcessingResult::Success;
-
+                
+                // Here we actually loop through the selected nodes (mesh file which can contain multiple submeshs)
                 sceneNodeSelectionList.EnumerateSelectedNodes(
                     [&](const AZStd::string& name)
                     {
@@ -950,12 +901,13 @@ namespace JoltPhysics
 
                         NodeCollisionGeomExportData nodeExportData;
                         nodeExportData.m_nodeName = nodeName.GetName();
-
+                        
                         const AZ::u32 vertexCount = nodeMesh->GetVertexCount();
                         const AZ::u32 faceCount = nodeMesh->GetFaceCount();
 
                         nodeExportData.m_vertices.resize(vertexCount);
-
+                        
+                        // Collect the actual data needed for Jolt and convert
                         for (AZ::u32 vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
                         {
                             AZ::Vector3 pos = nodeMesh->GetPosition(vertexIndex);
@@ -969,7 +921,7 @@ namespace JoltPhysics
                             assetMaterialData->m_nodesToPerFaceMaterialIndices[nodeExportData.m_nodeName];
                         if (nodeExportData.m_perFaceMaterialIndices.size() != faceCount)
                         {
-                            AZ_TracePrintf(
+                            AZ_Trace(
                                 AZ::SceneAPI::Utilities::WarningWindow,
                                 "Node '%s' material information face count %d does not match the node's %d.",
                                 nodeExportData.m_nodeName.c_str(),
@@ -1003,8 +955,8 @@ namespace JoltPhysics
                 {
                     return enumerationResult;
                 }
-
-                // Merge triangle meshes if there's more than 1
+                
+                // Merge triangle meshes if there's more than 1, like the Shader Ball
                 if (joltMeshGroup.GetExportAsTriMesh() && joltMeshGroup.GetTriangleMeshAssetParams().GetMergeMeshes() && totalExportData.size() > 1)
                 {
                     NodeCollisionGeomExportData mergedData;

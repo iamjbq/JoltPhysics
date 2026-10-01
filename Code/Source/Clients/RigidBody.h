@@ -125,7 +125,7 @@ namespace JoltPhysics
         void SetLinearDamping(float damping) override;
         float GetAngularDamping() const override;
         void SetAngularDamping(float damping) override;
-
+        
         //sleeping
         bool IsAwake() const override;
         void ForceAsleep() override;
@@ -152,6 +152,7 @@ namespace JoltPhysics
         //! This shape cannot be edited without re-constructing it.
         void BuildFinalShape();
         
+        // TODO: Body::ApplyBodyCreationSettings can now update without recreating
     private:
         void CreateJoltBody(const AzPhysics::RigidBodyConfiguration& configuration);
 

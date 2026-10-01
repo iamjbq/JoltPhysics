@@ -51,7 +51,7 @@ namespace JoltPhysics
         {
             if (AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IMeshData>(scene, false))
             {
-                categories.emplace_back("PhysX", MeshGroup::TYPEINFO_Uuid(), s_meshBehaviorPreferredTabOrder);
+                categories.emplace_back("Jolt", MeshGroup::TYPEINFO_Uuid(), s_meshBehaviorPreferredTabOrder);
             }
         }
 
@@ -157,7 +157,7 @@ namespace JoltPhysics
         {
             bool updated = false;
             AZ::SceneAPI::Containers::SceneManifest& manifest = scene.GetManifest();
-            auto valueStorage  = manifest.GetValueStorage();
+            auto valueStorage = manifest.GetValueStorage();
             auto view = AZ::SceneAPI::Containers::MakeDerivedFilterView<MeshGroup>(valueStorage);
             for (MeshGroup& group : view)
             {

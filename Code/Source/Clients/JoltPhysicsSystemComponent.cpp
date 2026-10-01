@@ -9,6 +9,7 @@
 #include <Material/JoltMaterialManager.h>
 #include <System/JoltSystem.h>
 #include <Clients/Shape.h>
+#include <Pipeline/MeshAssetHandler.h>
 #include <JoltPhysics/Configuration/JoltConfiguration.h>
 #include <JoltPhysics/JoltPhysicsTypeIds.h>
 #include "JoltPhysics/Material/JoltMaterialConfiguration.h"
@@ -116,6 +117,9 @@ namespace JoltPhysics
         }
 
         m_defaultWorldComponent.Activate();
+        
+        // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
+        RegisterAsset<Pipeline::MeshAssetHandler, Pipeline::MeshAsset>(m_assetHandlers);
 
         Physics::SystemRequestBus::Handler::BusConnect();
         JoltPhysics::SystemRequestsBus::Handler::BusConnect();
@@ -143,6 +147,8 @@ namespace JoltPhysics
             m_joltSystem->Shutdown();
             m_joltSystem = nullptr;
         }
+        
+        m_assetHandlers.clear();
     }
     
     JPH::Ref<JPH::ConvexHullShape> JoltPhysicsSystemComponent::CreateConvexHull([[maybe_unused]] const void* vertices, [[maybe_unused]] AZ::u32 vertexNum, [[maybe_unused]] AZ::u32 vertexStride)

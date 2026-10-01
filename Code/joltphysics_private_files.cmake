@@ -74,6 +74,7 @@ set(FILES
         Source/System/JoltSystem.h
         Source/System/CollisionLayerFilters.cpp
         Source/System/CollisionLayerFilters.h
+		Source/System/JoltByteStreamWrapper.h
 
         Source/Configuration/JoltConfiguration.cpp
 		Source/Configuration/JoltSettingsRegistryManager.cpp

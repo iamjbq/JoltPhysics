@@ -9,8 +9,10 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/optional.h>
 
-// #include <Jolt/Jolt.h>
-// #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics//Collision/Shape/Shape.h>
+#include <Jolt/Core/Reference.h>
 
 // #include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
 // #include "Jolt/Physics/Collision/Shape/MeshShape.h"
@@ -35,8 +37,8 @@ namespace Physics
 
 namespace JPH
 {
-    // class Shape;
-    class BroadPhaseLayer;
+    class Shape;
+    // class BroadPhaseLayer;
 }
 
 namespace JoltPhysics
@@ -162,6 +164,10 @@ namespace JoltPhysics
         //! @param shapeConfiguration Shape configuration with the information about Physics Assets.
         //! @param materialSlots Output materials slots.
         void SetMaterialsFromPhysicsAssetShape(const Physics::ShapeConfiguration& shapeConfiguration, Physics::MaterialSlots& materialSlots);
+        
+        bool WriteCookedMeshToFile(const AZStd::string& filePath, const Pipeline::MeshAssetData& assetData);
+        bool WriteCookedMeshToFile(const AZStd::string& filePath, const AZStd::vector<AZ::u8>& physxData, 
+            Physics::CookedMeshShapeConfiguration::MeshType meshType);
 
         namespace Geometry
         {
