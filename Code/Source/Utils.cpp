@@ -393,14 +393,12 @@ namespace JoltPhysics
                     }
                     else
                     {
-                        AZStd::vector<AZ::u8> byteArray;
+                        AZStd::vector<AZ::u8> byteArray(cookedMeshShapeConfig.GetCookedMeshData().data(), cookedMeshShapeConfig.GetCookedMeshData().data() + cookedMeshShapeConfig.GetCookedMeshData().size());
                         JoltPhysics::JoltByteStreamIn streamIn(byteArray);
-                        
-                        streamIn.ReadBytes(const_cast<AZ::u8*>(cookedMeshShapeConfig.GetCookedMeshData().data()), cookedMeshShapeConfig.GetCookedMeshData().size());
                         
                         if (streamIn.IsFailed())
                         {
-                            AZ_Printf("Jolt Utils", "Reading cooked mesh data from config failed") // TODO: failed but compiled
+                            AZ_Printf("Jolt Utils", "Reading cooked mesh data from config failed")
                             break;
                         }
                         
