@@ -16,6 +16,7 @@ namespace JoltPhysics
         void WriteBytes(const void* inData, size_t inNumBytes) override
         {
             if (m_failed) { return; }
+
             AZ::IO::SizeType written = m_stream.Write(inNumBytes, inData);
             if (written != inNumBytes)
             {
@@ -39,6 +40,7 @@ namespace JoltPhysics
         void ReadBytes(void* outData, size_t inNumBytes) override
         {
             if (m_failed) { return; }
+
             AZ::IO::SizeType readCount = m_stream.Read(inNumBytes, outData);
             if (readCount != inNumBytes)
             {
@@ -46,7 +48,7 @@ namespace JoltPhysics
             }
         }
 
-        bool IsEOF() const override { return m_stream.GetCurPos() >= m_stream.GetLength(); }
+        bool IsEOF() const override { return m_failed; }
         bool IsFailed() const override { return m_failed; }
 
     private:
