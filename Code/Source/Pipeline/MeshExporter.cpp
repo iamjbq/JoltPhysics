@@ -237,33 +237,15 @@ namespace JoltPhysics
                 physicsMaterialSlots = AZStd::move(newSlots);
             }
 
-            bool ValidateCookedTriangleMesh(void* assetData, AZ::u32 assetDataSize)
+            bool ValidateCookedMesh(AZStd::vector<AZ::u8>& assetData, [[maybe_unused]] size_t assetDataSize)
             {
-                AZStd::vector<AZ::u8> byteArray;
-                JoltPhysics::JoltByteStreamIn streamIn(byteArray);
-                streamIn.ReadBytes(assetData, assetDataSize);
+                JoltPhysics::JoltByteStreamIn streamIn(assetData);
                 
                 JPH::Shape::ShapeResult result = JPH::Shape::sRestoreFromBinaryState(streamIn);
                 
                 if (result.HasError())
                 {
-                    AZ_Printf("ValidateCookedTriangleMesh", "Cooking Mesh failed: %s", result.GetError().c_str())
-                }
-                
-                return result.IsValid();
-            }
-
-            bool ValidateCookedConvexMesh(void* assetData, AZ::u32 assetDataSize)
-            {
-                AZStd::vector<AZ::u8> byteArray;
-                JoltPhysics::JoltByteStreamIn streamIn(byteArray);
-                streamIn.ReadBytes(assetData, assetDataSize);
-                
-                JPH::Shape::ShapeResult result = JPH::Shape::sRestoreFromBinaryState(streamIn);
-                
-                if (result.HasError())
-                {
-                    AZ_Trace(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", result.GetError().c_str())
+                    AZ_Printf("ValidateCookedMesh", "Cooking Mesh failed: %s", result.GetError().c_str())
                 }
                 
                 return result.IsValid();
@@ -485,7 +467,7 @@ namespace JoltPhysics
                 
                 result.Get()->SaveBinaryState(streamOut);
                 
-                cookingSuccessful = Utils::ValidateCookedConvexMesh(byteArray.data(), static_cast<AZ::u32>(byteArray.size())); 
+                cookingSuccessful = Utils::ValidateCookedMesh(byteArray, byteArray.size()); 
 
                 // Check how many unique materials are assigned onto the convex mesh.
                 // Report it to the user if there's more than 1 since Jolt only supports a single material assigned to a convex hull
@@ -547,7 +529,9 @@ namespace JoltPhysics
                 
                 result.Get()->SaveBinaryState(streamOut);
                 
-                cookingSuccessful = Utils::ValidateCookedTriangleMesh(byteArray.data(), static_cast<AZ::u32>(byteArray.size()));
+                AZ_Printf("!shouldExportAsConvex", "Size of byteArray: %zu", byteArray.size())
+                
+                cookingSuccessful = Utils::ValidateCookedMesh(byteArray, byteArray.size());
             }
 
             if (cookingSuccessful)
